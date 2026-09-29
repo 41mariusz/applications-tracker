@@ -68,7 +68,18 @@ async function request(path, { method = "GET", form } = {}) {
   };
 }
 
-const editedFields = { company, position: "Senior Developer", salary_range: "18-24k", quoted_rate: "24k" };
+const hrContact = { hr_contact_name: "Anna Łukasik", hr_contact_phone: "+48 600 100 200" };
+const editedFields = {
+  company,
+  position: "Senior Developer",
+  salary_range: "18-24k",
+  quoted_rate: "24k",
+  ...hrContact,
+};
+
+function search(q) {
+  return request(`/dashboard?q=${encodeURIComponent(q)}`);
+}
 
 function editApplication(form) {
   return request(`/api/applications/${applicationId}`, { method: "PATCH", form });
@@ -109,7 +120,7 @@ const steps = [
     async () => {
       const result = await request("/api/applications", {
         method: "POST",
-        form: { company, position: "Senior Developer", salary_range: "18-24k", quoted_rate: "22k" },
+        form: { company, position: "Senior Developer", salary_range: "18-24k", quoted_rate: "22k", ...hrContact },
       });
       if (result.status === 201) applicationId = JSON.parse(result.body).id;
       return result;
@@ -117,6 +128,26 @@ const steps = [
     { status: 201 },
   ],
   ["dashboard lists the new application", () => request("/dashboard"), { status: 200, bodyIncludes: company }],
+  [
+    "search finds it by company, ignoring case",
+    () => search(company.toLowerCase()),
+    { status: 200, bodyIncludes: 'data-testid="search-count">1<' },
+  ],
+  [
+    "search finds it by HR name without Polish diacritics",
+    () => search("lukasik"),
+    { status: 200, bodyIncludes: 'data-testid="search-count">1<' },
+  ],
+  [
+    "search finds it by HR phone in another format",
+    () => search("600-100-200"),
+    { status: 200, bodyIncludes: 'data-testid="search-count">1<' },
+  ],
+  [
+    "search with no match says so",
+    () => search("no-such-company-xyz"),
+    { status: 200, bodyIncludes: 'data-testid="search-count">0<' },
+  ],
   [
     "status moves forward, skipping a stage",
     () => changeStatus({ status: "interviews" }),

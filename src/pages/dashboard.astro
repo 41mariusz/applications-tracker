@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase";
 import { listApplications } from "@/lib/services/applications";
 import StatusControl from "@/components/applications/StatusControl";
 import { isClosed } from "@/lib/domain/status";
+import { matchesQuery } from "@/lib/domain/search";
+import { formatDate } from "@/lib/format";
 import type { Application } from "@/types";
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
@@ -19,6 +21,11 @@ if (supabase) {
     loadError = "Nie udało się wczytać aplikacji.";
   }
 }
+
+// ?q= filters on the server too, so search works without JavaScript and links can be bookmarked.
+// All cards are rendered; non-matching ones are hidden, so the in-page filter can widen the search.
+const query = Astro.url.searchParams.get("q")?.trim() ?? "";
+const matches = new Set(applications.filter((a) => matchesQuery(a, query)).map((a) => a.id));
 ---
 
 <Layout title="Moje aplikacje">
@@ -43,6 +50,29 @@ if (supabase) {
         </p>
       )}
 
+      {applications.length > 0 && (
+        <form method="GET" class="mb-4" role="search" id="search-form">
+          <label for="q" class="sr-only">
+            Szukaj
+          </label>
+          <input
+            id="q"
+            name="q"
+            type="search"
+            value={query}
+            autocomplete="off"
+            placeholder="Szukaj: firma, stanowisko, nazwisko lub telefon HR"
+            class="w-full rounded-lg border border-white/20 bg-white/10 px-4 py-3 text-white placeholder-white/40 focus:ring-2 focus:ring-purple-400 focus:outline-none"
+          />
+          <p class="mt-2 text-xs text-blue-100/60" hidden={!query} id="search-summary">
+            Wyniki: <span data-testid="search-count">{matches.size}</span>
+          </p>
+          <p class="mt-2 text-sm text-blue-100/70" hidden={!query || matches.size > 0} id="search-empty">
+            Brak wyników. Spróbuj fragmentu nazwy albo numeru.
+          </p>
+        </form>
+      )}
+
       <ul class="space-y-3" data-testid="applications-list">
         {applications.map((a) => (
           <li
@@ -51,13 +81,23 @@ if (supabase) {
               isClosed(a.status) && "opacity-50",
             ]}
             data-status={a.status}
+            data-search={JSON.stringify({
+              company: a.company,
+              position: a.position,
+              hr_contact_name: a.hr_contact_name,
+              hr_contact_phone: a.hr_contact_phone,
+            })}
+            hidden={!matches.has(a.id)}
           >
             <div class="flex flex-wrap items-baseline justify-between gap-2">
               <div class:list={[isClosed(a.status) && "line-through"]}>
                 <a href={`/applications/${a.id}`} class="font-semibold hover:underline">
                   {a.company}
                 </a>
-                <p class="text-sm text-blue-100/70">{a.position}</p>
+                <p class="text-sm text-blue-100/70">
+                  {a.position}
+                  {a.applied_on && <span class="text-blue-100/50"> · {formatDate(a.applied_on)}</span>}
+                </p>
               </div>
               <StatusControl applicationId={a.id} status={a.status} client:visible />
             </div>
@@ -74,3 +114,45 @@ if (supabase) {
     </div>
   </div>
 </Layout>
+
+<script>
+  // As-you-type filtering with the same rule the server uses for ?q=.
+  import { matchesQuery, type Searchable } from "@/lib/domain/search";
+
+  const form = document.querySelector<HTMLFormElement>("#search-form");
+  const input = document.querySelector<HTMLInputElement>("#q");
+  const summary = document.querySelector<HTMLElement>("#search-summary");
+  const empty = document.querySelector<HTMLElement>("#search-empty");
+  const items = [...document.querySelectorAll<HTMLLIElement>("li[data-search]")].map((li) => ({
+    li,
+    data: JSON.parse(li.dataset.search ?? "{}") as Searchable,
+  }));
+
+  function apply(query: string) {
+    let count = 0;
+    for (const { li, data } of items) {
+      const match = matchesQuery(data, query);
+      li.hidden = !match;
+      if (match) count++;
+    }
+    const active = query.trim() !== "";
+    if (summary) {
+      summary.hidden = !active;
+      const counter = summary.querySelector("span");
+      if (counter) counter.textContent = String(count);
+    }
+    if (empty) empty.hidden = !active || count > 0;
+    const url = new URL(window.location.href);
+    if (active) url.searchParams.set("q", query);
+    else url.searchParams.delete("q");
+    window.history.replaceState(null, "", url);
+  }
+
+  input?.addEventListener("input", () => {
+    apply(input.value);
+  });
+  form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    input?.blur();
+  });
+</script>
