@@ -55,3 +55,24 @@ jobs:
           BASE_URL=http://localhost:4321 SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" npm run smoke
       - if: always()
         run: supabase stop --no-backup
+
+  deploy:
+    # Auto-deploy on merge: only after lint/build and the smoke test pass on main.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [ci, smoke]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

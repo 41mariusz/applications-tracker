@@ -55,7 +55,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - Env vars: `SUPABASE_URL`, `SUPABASE_KEY` (copy `.env.example` to `.env` for Node, or `.dev.vars` for Cloudflare local dev)
 - Local Supabase: `npx supabase start` (requires Docker)
 - Cloudflare local dev: secrets go in `.dev.vars` (gitignored)
-- Deploy: `npx wrangler deploy` (requires Cloudflare account + `wrangler` auth)
+- Deploy: CI job `deploy` runs `npx wrangler deploy` after `ci` + `smoke` pass on `main` (GitHub secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`). Manual: `npm run build && npx wrangler deploy` with the same two vars in `.env`. Production: https://applications-tracker.41mariusz.workers.dev (Worker secrets `SUPABASE_URL`, `SUPABASE_KEY` set via `wrangler secret`).
 
 ## CI
 
