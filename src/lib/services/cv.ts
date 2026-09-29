@@ -77,19 +77,21 @@ export async function setApplicationCv(
   return data === true;
 }
 
-// Short-lived link to download a CV; null if the file is not the caller's.
-export async function cvDownloadUrl(supabase: SupabaseClient, cvFileId: string): Promise<string | null> {
+// The CV's bytes for preview or download; null if the file is not the caller's (RLS on both
+// the library table and the bucket).
+export async function readCv(
+  supabase: SupabaseClient,
+  cvFileId: string,
+): Promise<{ bytes: ArrayBuffer; mimeType: string; fileName: string } | null> {
   const { data: file, error } = await supabase
     .from("cv_files")
-    .select("storage_path, file_name")
+    .select("storage_path, file_name, mime_type")
     .eq("id", cvFileId)
-    .maybeSingle<{ storage_path: string; file_name: string }>();
+    .maybeSingle<{ storage_path: string; file_name: string; mime_type: string }>();
   if (error) throw error;
   if (!file) return null;
 
-  const { data, error: signError } = await supabase.storage
-    .from(BUCKET)
-    .createSignedUrl(file.storage_path, 60, { download: file.file_name });
-  if (signError) throw signError;
-  return data.signedUrl;
+  const { data, error: downloadError } = await supabase.storage.from(BUCKET).download(file.storage_path);
+  if (downloadError) throw downloadError;
+  return { bytes: await data.arrayBuffer(), mimeType: file.mime_type, fileName: file.file_name };
 }

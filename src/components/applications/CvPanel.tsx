@@ -1,9 +1,12 @@
-import React, { useState } from "react";
-import { FileText } from "lucide-react";
+import React, { lazy, Suspense, useState } from "react";
+import { Download, Eye, EyeOff, FileText } from "lucide-react";
 import { formatFileSize } from "@/lib/domain/cv";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { CvFile } from "@/types";
+
+// Loaded only when the preview is opened.
+const CvPreview = lazy(() => import("./CvPreview"));
 
 interface Props {
   applicationId: string;
@@ -27,6 +30,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   async function run(action: () => Promise<string | null>) {
     setPending(true);
@@ -68,13 +72,38 @@ export default function CvPanel({ applicationId, current, library }: Props) {
     <section className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm" data-testid="cv-panel">
       <h2 className="mb-2 font-semibold">CV</h2>
       {current ? (
-        <p className="flex flex-wrap items-center gap-2">
-          <FileText className="size-4 text-purple-300" />
-          <a href={`/api/cv/${current.id}`} className="text-purple-300 underline" data-testid="cv-current">
-            {current.file_name}
-          </a>
-          <span className="text-xs text-blue-100/50">{formatFileSize(current.size_bytes)}</span>
-        </p>
+        <>
+          <p className="flex flex-wrap items-center gap-2">
+            <FileText className="size-4 text-purple-300" />
+            <span data-testid="cv-current">{current.file_name}</span>
+            <span className="text-xs text-blue-100/50">{formatFileSize(current.size_bytes)}</span>
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setPreviewOpen(!previewOpen);
+              }}
+              aria-expanded={previewOpen}
+              className="inline-flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium hover:bg-purple-500"
+            >
+              {previewOpen ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
+              {previewOpen ? "Ukryj podgląd" : "Podgląd"}
+            </button>
+            <a
+              href={`/api/cv/${current.id}?download=1`}
+              className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-xs hover:bg-white/10"
+            >
+              <Download className="size-3.5" />
+              Pobierz
+            </a>
+          </div>
+          {previewOpen && (
+            <Suspense fallback={<p className="mt-3 text-xs text-blue-100/60">Wczytywanie podglądu…</p>}>
+              <CvPreview cvId={current.id} mimeType={current.mime_type} />
+            </Suspense>
+          )}
+        </>
       ) : (
         <p className="text-blue-100/60">Nie dołączono CV.</p>
       )}

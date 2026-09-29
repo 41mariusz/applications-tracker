@@ -11,7 +11,7 @@ A personal job-application tracker — an "ATS for the candidate". When a recrui
 - **Search** — by company, position, HR name, or HR phone; ignores case, Polish diacritics, and phone formatting (`+48 600 100 200` = `600-100-200`). Filters as you type; `/dashboard?q=…` works without JavaScript.
 - **Details for a call** — rates, status, and the latest agreement first; tap-to-call HR.
 - **Status filter** — pick one or more statuses (with counts) above the list; combines with search; `?status=offer,interviews` is bookmarkable.
-- **CV per application** — attach a PDF/DOCX (≤ 5 MB) by uploading it or picking one from your CV library; download via a short-lived link from a private bucket. Files are content-addressed (SHA-256): the same file uploaded again, under any name, is stored once.
+- **CV per application** — attach a PDF/DOCX (≤ 5 MB) by uploading it or picking one from your CV library; preview it in the page (PDF via pdf.js, DOCX via docx-preview — rendered in the browser, loaded only when opened, no external viewer) or download it; files are served by the app from a private bucket to the signed-in owner only. Files are content-addressed (SHA-256): the same file uploaded again, under any name, is stored once.
 - **Notes** — typed (phone call / comment), dated, newest first.
 - **Nothing is lost** — edits to fields, statuses, and notes are logged with old and new values; "removing" an application sets it to Withdrawn, and a removed note stays on the timeline crossed out. A change and its history entry are saved in one transaction.
 

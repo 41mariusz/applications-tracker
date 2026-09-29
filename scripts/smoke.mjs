@@ -64,6 +64,7 @@ async function request(path, { method = "GET", form } = {}) {
   return {
     status: response.status,
     location: response.headers.get("location") ?? "",
+    disposition: response.headers.get("content-disposition") ?? "",
     body: await response.text(),
   };
 }
@@ -277,9 +278,14 @@ const steps = [
   ["details page shows the attached CV", details, { status: 200, bodyIncludes: "CV Anna.pdf" }],
   ["attaching the CV is in the change log", details, { status: 200, bodyIncludes: "CV:" }],
   [
-    "CV downloads through a short-lived link",
+    "CV opens in the browser for preview",
     () => request(`/api/cv/${cvId}`),
-    { status: 302, location: SUPABASE_URL },
+    { status: 200, bodyIncludes: "%PDF", disposition: "inline" },
+  ],
+  [
+    "CV can also be downloaded",
+    () => request(`/api/cv/${cvId}?download=1`),
+    { status: 200, bodyIncludes: "%PDF", disposition: "attachment" },
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
@@ -338,7 +344,8 @@ for (const [name, run, expected] of steps) {
     actual.status === expected.status &&
     (expected.location === undefined || actual.location.startsWith(expected.location)) &&
     (expected.bodyIncludes === undefined || actual.body.includes(expected.bodyIncludes)) &&
-    (expected.bodyExcludes === undefined || !actual.body.includes(expected.bodyExcludes));
+    (expected.bodyExcludes === undefined || !actual.body.includes(expected.bodyExcludes)) &&
+    (expected.disposition === undefined || (actual.disposition ?? "").startsWith(expected.disposition));
   console.log(`${ok ? "PASS" : "FAIL"}  ${name}  -> ${actual.status} ${actual.location}`);
   if (!ok) {
     failed++;
