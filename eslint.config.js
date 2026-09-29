@@ -74,7 +74,16 @@ const scriptsConfig = defineConfig({
   files: ["scripts/**/*.mjs"],
   extends: [tseslint.configs.disableTypeChecked],
   languageOptions: {
-    globals: { console: true, process: true, fetch: true, URLSearchParams: true, FormData: true, Blob: true },
+    globals: {
+      console: true,
+      process: true,
+      fetch: true,
+      URLSearchParams: true,
+      FormData: true,
+      Blob: true,
+      crypto: true,
+      TextEncoder: true,
+    },
   },
   rules: { "no-console": "off" },
 });

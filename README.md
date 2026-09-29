@@ -78,6 +78,10 @@ BASE_URL=http://localhost:4321 SUPABASE_URL=http://127.0.0.1:54321 \
 
 `npm run lint` and `npx astro check` cover style and types.
 
+### Test data
+
+`npm run demo-data` adds ~300 `[TEST]` applications (notes, status history, rate edits) and four CV PDFs attached to most of them, for the only user in the project (or `DEMO_EMAIL=...`). `npm run demo-data -- --reset` first **deletes all of that user's applications and CV files**. It needs `SUPABASE_SERVICE_ROLE_KEY` (the project's secret key) in `.env` — only this script uses it; the app never does.
+
 ## CI/CD
 
 GitHub Actions (`.github/workflows/ci.yml`) on every push and PR to `main`:
