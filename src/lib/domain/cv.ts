@@ -38,3 +38,15 @@ export function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1).replace(".", ",")} MB`;
 }
+
+// Library view: which applications each CV is attached to, most important first (list order).
+export function groupByCv<A extends { cv_file_id: string | null }>(
+  files: readonly { id: string }[],
+  applications: readonly A[],
+): Map<string, A[]> {
+  const groups = new Map<string, A[]>(files.map((f) => [f.id, []]));
+  for (const application of applications) {
+    if (application.cv_file_id) groups.get(application.cv_file_id)?.push(application);
+  }
+  return groups;
+}

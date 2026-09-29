@@ -95,7 +95,7 @@ Primary persona: the author themself — a single candidate running many recruit
 ### CV
 
 - FR-013: User can attach one CV (PDF or DOCX, up to 5 MB) to an application — uploading a new file or choosing one already in their CV library — preview it in the page (on phones too, without downloading) and download it on demand. Identical files (same content, any file name) are stored only once. Changing the attached CV is recorded in the change log; CV files are never deleted. Priority: must-have
-  > Added 2026-10-01 at the user's request ("opcja dołączenia CV do aplikacji … żeby nie duplikowały się CV … szkoda miejsca na dysku"). Decisions: one CV per application, chosen from a personal library; PDF + DOCX up to 5 MB. Update 2026-10-01: "podgląd CV powinien być na poziomie www bez potrzeby ściągania (ale powinna być taka możliwość)" — in-page preview added, download kept.
+  > Added 2026-10-01 at the user's request ("opcja dołączenia CV do aplikacji … żeby nie duplikowały się CV … szkoda miejsca na dysku"). Decisions: one CV per application, chosen from a personal library; PDF + DOCX up to 5 MB. Update 2026-10-01: "podgląd CV powinien być na poziomie www bez potrzeby ściągania (ale powinna być taka możliwość)" — in-page preview added, download kept. Update 2026-10-01: a CV library page lists each CV and the applications it is attached to (user request).
 
 ## Non-Functional Requirements
 

@@ -1,0 +1,43 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
+import CvLibrary, { type CvLibraryEntry } from "@/components/applications/CvLibrary";
+import { createClient } from "@/lib/supabase";
+import { groupByCv } from "@/lib/domain/cv";
+import { listApplications } from "@/lib/services/applications";
+import { listCvFiles } from "@/lib/services/cv";
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+let entries: CvLibraryEntry[] = [];
+let loadError: string | null = null;
+if (supabase) {
+  try {
+    const [files, applications] = await Promise.all([listCvFiles(supabase), listApplications(supabase)]);
+    const groups = groupByCv(files, applications);
+    entries = files.map((file) => ({
+      file,
+      applications: (groups.get(file.id) ?? []).map(({ id, company, position, status }) => ({
+        id,
+        company,
+        position,
+        status,
+      })),
+    }));
+  } catch (e) {
+    // eslint-disable-next-line no-console -- server-side log for failed reads
+    console.error("CV library failed", e);
+    loadError = "Nie udało się wczytać biblioteki CV.";
+  }
+}
+---
+
+<Layout title="Biblioteka CV">
+  <div class="bg-cosmic min-h-screen p-4 sm:p-8">
+    <Topbar />
+    <div class="mx-auto max-w-3xl text-white">
+      <h1 class="mb-4 text-2xl font-bold">Biblioteka CV</h1>
+      {loadError && <p class="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{loadError}</p>}
+      {!loadError && <CvLibrary entries={entries} client:load />}
+    </div>
+  </div>
+</Layout>

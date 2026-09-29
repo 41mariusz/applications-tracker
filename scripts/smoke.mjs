@@ -283,12 +283,19 @@ const steps = [
     { status: 200, bodyIncludes: "%PDF", disposition: "inline" },
   ],
   [
+    "CV library lists the CV with its usage",
+    () => request("/cv"),
+    { status: 200, bodyIncludes: 'data-usage-count="1"' },
+  ],
+  ["CV library knows which application uses it", () => request("/cv"), { status: 200, bodyIncludes: applicationId }],
+  [
     "CV can also be downloaded",
     () => request(`/api/cv/${cvId}?download=1`),
     { status: 200, bodyIncludes: "%PDF", disposition: "attachment" },
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
+  ["CV library requires sign-in", () => request("/cv"), { status: 302, location: "/auth/signin" }],
   [
     "anonymous user cannot save an application",
     () => request("/api/applications", { method: "POST", form: { company: "X", position: "Y" } }),
@@ -320,6 +327,7 @@ const steps = [
     () => editApplication({ ...editedFields, company: "hijacked" }),
     { status: 404 },
   ],
+  ["second user's CV library is empty", () => request("/cv"), { status: 200, bodyExcludes: "CV Anna.pdf" }],
   ["second user cannot download the first user's CV", () => request(`/api/cv/${cvId}`), { status: 404 }],
   [
     "second user cannot attach the first user's CV",

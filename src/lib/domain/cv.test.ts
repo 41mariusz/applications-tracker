@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { checkCvFile, cvStoragePath, formatFileSize, MAX_CV_BYTES, sha256Hex } from "@/lib/domain/cv";
+import { checkCvFile, cvStoragePath, formatFileSize, groupByCv, MAX_CV_BYTES, sha256Hex } from "@/lib/domain/cv";
 
 const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -58,5 +58,22 @@ describe("formatFileSize", () => {
     expect(formatFileSize(512)).toBe("512 B");
     expect(formatFileSize(200 * 1024)).toBe("200 KB");
     expect(formatFileSize(1.5 * 1024 * 1024)).toBe("1,5 MB");
+  });
+});
+
+describe("groupByCv", () => {
+  it("lists the applications of each CV, keeps their order, and includes unused CVs", () => {
+    const groups = groupByCv(
+      [{ id: "cv-a" }, { id: "cv-b" }, { id: "cv-unused" }],
+      [
+        { id: "1", cv_file_id: "cv-a" },
+        { id: "2", cv_file_id: null },
+        { id: "3", cv_file_id: "cv-b" },
+        { id: "4", cv_file_id: "cv-a" },
+      ],
+    );
+    expect(groups.get("cv-a")?.map((a) => a.id)).toEqual(["1", "4"]);
+    expect(groups.get("cv-b")?.map((a) => a.id)).toEqual(["3"]);
+    expect(groups.get("cv-unused")).toEqual([]);
   });
 });
