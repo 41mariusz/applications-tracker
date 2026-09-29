@@ -8,12 +8,17 @@ export const POST: APIRoute = async (context) => {
 
   const supabase = createClient(context.request.headers, context.cookies);
   if (!supabase) {
-    return context.redirect(`/auth/signin?error=${encodeURIComponent("Supabase is not configured")}`);
+    return context.redirect(`/auth/signin?error=${encodeURIComponent("Supabase nie jest skonfigurowany.")}`);
   }
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
-    return context.redirect(`/auth/signin?error=${encodeURIComponent(error.message)}`);
+    // Supabase messages are English and too specific; one message avoids revealing which part was wrong.
+    const message =
+      error.code === "invalid_credentials" || error.status === 400
+        ? "Nieprawidłowy e-mail lub hasło."
+        : "Nie udało się zalogować. Spróbuj ponownie.";
+    return context.redirect(`/auth/signin?error=${encodeURIComponent(message)}`);
   }
 
   return context.redirect("/dashboard");

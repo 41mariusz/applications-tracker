@@ -101,13 +101,14 @@ const steps = [
   [
     "signin rejects wrong password",
     () => request("/api/auth/signin", { method: "POST", form: { email, password: "wrong" } }),
-    { status: 302, location: "/auth/signin?error=" },
+    { status: 302, location: "/auth/signin?error=Nieprawid" },
   ],
   [
     "signin accepts correct password",
     () => request("/api/auth/signin", { method: "POST", form: { email, password } }),
     { status: 302, location: "/dashboard" },
   ],
+  ["home sends a signed-in user to the list", () => request("/"), { status: 302, location: "/dashboard" }],
   ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
   ["new application form renders", () => request("/applications/new"), { status: 200 }],
   [
