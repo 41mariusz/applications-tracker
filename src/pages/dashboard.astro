@@ -54,7 +54,9 @@ if (supabase) {
           >
             <div class="flex flex-wrap items-baseline justify-between gap-2">
               <div class:list={[isClosed(a.status) && "line-through"]}>
-                <p class="font-semibold">{a.company}</p>
+                <a href={`/applications/${a.id}`} class="font-semibold hover:underline">
+                  {a.company}
+                </a>
                 <p class="text-sm text-blue-100/70">{a.position}</p>
               </div>
               <StatusControl applicationId={a.id} status={a.status} client:visible />

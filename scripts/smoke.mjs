@@ -11,6 +11,8 @@ const email = `smoke-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const company = `Smoke Corp ${Date.now()}`;
 let applicationId = "";
+let noteId = "";
+const agreement = `Agreed rate ${Date.now()}`;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to create the smoke-test user.");
@@ -64,6 +66,10 @@ async function request(path, { method = "GET", form } = {}) {
     location: response.headers.get("location") ?? "",
     body: await response.text(),
   };
+}
+
+function details() {
+  return request(`/applications/${applicationId}`);
 }
 
 function changeStatus(form) {
@@ -122,6 +128,41 @@ const steps = [
     () => changeStatus({ status: "offer", confirm: "true" }),
     { status: 200, bodyIncludes: "offer" },
   ],
+  ["details page shows the application", details, { status: 200, bodyIncludes: company }],
+  [
+    "empty note is rejected",
+    () =>
+      request(`/api/applications/${applicationId}/notes`, {
+        method: "POST",
+        form: { kind: "phone_call", body: " ", noted_at: new Date().toISOString() },
+      }),
+    { status: 400, bodyIncludes: "body" },
+  ],
+  [
+    "phone-call note is added",
+    async () => {
+      const result = await request(`/api/applications/${applicationId}/notes`, {
+        method: "POST",
+        form: { kind: "phone_call", body: agreement, noted_at: new Date().toISOString() },
+      });
+      if (result.status === 201) noteId = JSON.parse(result.body).id;
+      return result;
+    },
+    { status: 201 },
+  ],
+  ["details page shows the note as the latest agreement", details, { status: 200, bodyIncludes: agreement }],
+  [
+    "note is edited",
+    () =>
+      request(`/api/notes/${noteId}`, {
+        method: "PATCH",
+        form: { kind: "phone_call", body: `${agreement} (updated)`, noted_at: new Date().toISOString() },
+      }),
+    { status: 200 },
+  ],
+  ["edited note keeps its previous version", details, { status: 200, bodyIncludes: "Poprzednie wersje" }],
+  ["note is removed", () => request(`/api/notes/${noteId}`, { method: "DELETE" }), { status: 200 }],
+  ["removed note stays on the timeline, crossed out", details, { status: 200, bodyIncludes: 'data-removed="true"' }],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   [
@@ -139,6 +180,25 @@ const steps = [
     "second user does not see the first user's application",
     () => request("/dashboard"),
     { status: 200, bodyExcludes: company },
+  ],
+  ["second user cannot open the first user's application", details, { status: 404, bodyExcludes: company }],
+  [
+    "second user cannot add a note to it",
+    () =>
+      request(`/api/applications/${applicationId}/notes`, {
+        method: "POST",
+        form: { kind: "comment", body: "intrusion", noted_at: new Date().toISOString() },
+      }),
+    { status: 404 },
+  ],
+  [
+    "second user cannot edit the first user's note",
+    () =>
+      request(`/api/notes/${noteId}`, {
+        method: "PATCH",
+        form: { kind: "comment", body: "intrusion", noted_at: new Date().toISOString() },
+      }),
+    { status: 404 },
   ],
 ];
 

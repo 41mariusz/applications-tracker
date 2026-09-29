@@ -1,0 +1,151 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
+import StatusControl from "@/components/applications/StatusControl";
+import NotesPanel from "@/components/applications/NotesPanel";
+import { createClient } from "@/lib/supabase";
+import { latestActiveNote } from "@/lib/domain/notes";
+import { isClosed } from "@/lib/domain/status";
+import { formatDate, formatDateTime } from "@/lib/format";
+import { getApplicationDetails, type ApplicationDetails } from "@/lib/services/notes";
+import { EMPLOYMENT_TYPE_LABELS, NOTE_KIND_LABELS, STATUS_LABELS, WORK_MODE_LABELS } from "@/types";
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+let details: ApplicationDetails | null = null;
+let loadError: string | null = null;
+if (supabase && Astro.params.id) {
+  try {
+    details = await getApplicationDetails(supabase, Astro.params.id);
+  } catch (e) {
+    // eslint-disable-next-line no-console -- server-side log for failed reads
+    console.error("getApplicationDetails failed", e);
+    loadError = "Nie udało się wczytać aplikacji.";
+  }
+}
+if (!details && !loadError) {
+  Astro.response.status = 404;
+}
+
+const application = details?.application;
+const latest = details ? latestActiveNote(details.notes) : null;
+const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_phone.replace(/[^\d+]/g, "")}` : null;
+---
+
+<Layout title={application ? `${application.company} — ${application.position}` : "Aplikacja"}>
+  <div class="bg-cosmic min-h-screen p-4 sm:p-8">
+    <Topbar />
+    <div class="mx-auto max-w-2xl space-y-4 text-white">
+      <a href="/dashboard" class="text-sm text-purple-300 hover:underline">
+        ← Moje aplikacje
+      </a>
+
+      {loadError && <p class="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{loadError}</p>}
+      {!details && !loadError && (
+        <p class="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-blue-100/70">
+          Nie znaleziono tej aplikacji.
+        </p>
+      )}
+
+      {details && application && (
+        <>
+          {/* What is needed during a call comes first (PRD FR-006). */}
+          <section
+            class="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur-xl"
+            data-testid="call-summary"
+          >
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class:list={[isClosed(application.status) && "line-through opacity-60"]}>
+                <h1 class="text-xl font-bold">{application.company}</h1>
+                <p class="text-blue-100/70">{application.position}</p>
+              </div>
+              <StatusControl applicationId={application.id} status={application.status} client:load />
+            </div>
+            <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <dt class="text-blue-100/60">Widełki</dt>
+                <dd class="text-base font-semibold">{application.salary_range ?? "—"}</dd>
+              </div>
+              <div>
+                <dt class="text-blue-100/60">Moja stawka</dt>
+                <dd class="text-base font-semibold">{application.quoted_rate ?? "—"}</dd>
+              </div>
+            </dl>
+            <div class="mt-4 rounded-lg bg-white/5 p-3 text-sm">
+              <p class="text-blue-100/60">Ostatnie ustalenie</p>
+              {latest ? (
+                <>
+                  <p class="mt-1 whitespace-pre-wrap">{latest.body}</p>
+                  <p class="mt-1 text-xs text-blue-100/50">
+                    {NOTE_KIND_LABELS[latest.kind]} · {formatDateTime(latest.noted_at)}
+                  </p>
+                </>
+              ) : (
+                <p class="mt-1 text-blue-100/50">Brak notatek.</p>
+              )}
+            </div>
+            {(application.hr_contact_name ?? phoneHref) && (
+              <p class="mt-3 text-sm">
+                <span class="text-blue-100/60">HR: </span>
+                {application.hr_contact_name}
+                {phoneHref && (
+                  <>
+                    {application.hr_contact_name && " · "}
+                    <a href={phoneHref} class="text-purple-300 underline">
+                      {application.hr_contact_phone}
+                    </a>
+                  </>
+                )}
+              </p>
+            )}
+          </section>
+
+          <NotesPanel applicationId={application.id} notes={details.notes} client:load />
+
+          <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
+            <h2 class="mb-2 font-semibold">Szczegóły</h2>
+            <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+              <dt class="text-blue-100/60">Ogłoszenie</dt>
+              <dd class="truncate">
+                {application.posting_url ? (
+                  <a
+                    href={application.posting_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-purple-300 underline"
+                  >
+                    {application.posting_url}
+                  </a>
+                ) : (
+                  "—"
+                )}
+              </dd>
+              <dt class="text-blue-100/60">Aplikowano</dt>
+              <dd>{application.applied_on ? formatDate(application.applied_on) : "—"}</dd>
+              <dt class="text-blue-100/60">Forma</dt>
+              <dd>{application.employment_type ? EMPLOYMENT_TYPE_LABELS[application.employment_type] : "—"}</dd>
+              <dt class="text-blue-100/60">Tryb</dt>
+              <dd>{application.work_mode ? WORK_MODE_LABELS[application.work_mode] : "—"}</dd>
+            </dl>
+          </section>
+
+          <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
+            <h2 class="mb-2 font-semibold">Historia statusów</h2>
+            {details.statusChanges.length === 0 ? (
+              <p class="text-blue-100/60">Bez zmian od dodania ({formatDateTime(application.created_at)}).</p>
+            ) : (
+              <ul class="space-y-1">
+                {details.statusChanges.map((c) => (
+                  <li>
+                    <span class="text-blue-100/60">{formatDateTime(c.changed_at)}</span> ·{" "}
+                    {STATUS_LABELS[c.from_status]} → {STATUS_LABELS[c.to_status]}
+                    {c.is_revert && <span class="text-amber-300"> (cofnięcie)</span>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        </>
+      )}
+    </div>
+  </div>
+</Layout>

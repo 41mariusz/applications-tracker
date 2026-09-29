@@ -54,3 +54,40 @@ export const WORK_MODE_LABELS: Record<WorkMode, string> = {
   hybrid: "Hybrydowo",
   onsite: "Stacjonarnie",
 };
+
+export const NOTE_KINDS = ["comment", "phone_call"] as const;
+export type NoteKind = (typeof NOTE_KINDS)[number];
+
+export const NOTE_KIND_LABELS: Record<NoteKind, string> = {
+  comment: "Komentarz",
+  phone_call: "Rozmowa telefoniczna",
+};
+
+export interface NoteRevision {
+  id: string;
+  note_id: string;
+  previous_kind: NoteKind;
+  previous_body: string;
+  previous_noted_at: string;
+  changed_at: string;
+}
+
+export interface Note {
+  id: string;
+  application_id: string;
+  kind: NoteKind;
+  body: string;
+  noted_at: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  revisions: NoteRevision[];
+}
+
+export interface StatusChange {
+  id: string;
+  from_status: ApplicationStatus;
+  to_status: ApplicationStatus;
+  is_revert: boolean;
+  changed_at: string;
+}
