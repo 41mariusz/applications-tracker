@@ -1,8 +1,11 @@
 -- Test data: ~300 job applications with notes, status history and a few rate edits,
 -- for trying the app by hand (ordering, search, details) and the "< 1 s search" NFR.
 --
--- Run in the Supabase SQL Editor (as postgres; RLS does not apply there).
--- Targets the only user in the project; set v_email below if there are several.
+-- Load into the cloud project with `npx supabase db push --include-seed` (it is the seed file in
+-- supabase/config.toml; Supabase remembers it was applied and won't insert it twice), or paste it
+-- into the SQL Editor. Runs as postgres, so RLS does not apply.
+-- Targets the only user in the project; set v_email below if there are several. With no single
+-- user (fresh local database, CI) it does nothing.
 -- Every company is prefixed with "[TEST] " — remove it all with cleanup-test-data.sql.
 
 do $$
@@ -63,7 +66,9 @@ begin
     select id into v_user from auth.users;
   end if;
   if v_user is null then
-    raise exception 'Set v_email at the top of the script (found % users).', (select count(*) from auth.users);
+    raise notice 'Test data skipped: expected exactly one user or v_email (found % users).',
+      (select count(*) from auth.users);
+    return;
   end if;
 
   perform setseed(0.42);
