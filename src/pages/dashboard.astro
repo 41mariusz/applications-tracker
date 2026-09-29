@@ -1,27 +1,66 @@
 ---
 import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
+import { createClient } from "@/lib/supabase";
+import { listApplications } from "@/lib/services/applications";
+import { STATUS_LABELS, type Application } from "@/types";
 
-const { user } = Astro.locals;
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+let applications: Application[] = [];
+let loadError: string | null = null;
+if (supabase) {
+  try {
+    applications = await listApplications(supabase);
+  } catch (e) {
+    // eslint-disable-next-line no-console -- server-side log for failed reads
+    console.error("listApplications failed", e);
+    loadError = "Nie udało się wczytać aplikacji.";
+  }
+}
 ---
 
-<Layout title="Dashboard">
-  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
-    <div class="rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl">
-      <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
-        Dashboard
-      </h1>
-      <p class="text-blue-100/80">
-        Welcome, <span class="font-semibold text-white">{user?.email}</span>
-      </p>
-      <p class="mt-2 text-sm text-blue-100/50">This page is only for authenticated users.</p>
-      <form method="POST" action="/api/auth/signout" class="mt-6">
-        <button
-          type="submit"
-          class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+<Layout title="Moje aplikacje">
+  <div class="bg-cosmic min-h-screen p-4 sm:p-8">
+    <Topbar />
+    <div class="mx-auto max-w-3xl text-white">
+      <div class="mb-4 flex items-center justify-between gap-4">
+        <h1 class="text-2xl font-bold">Moje aplikacje</h1>
+        <a
+          href="/applications/new"
+          class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium transition-colors hover:bg-purple-500"
         >
-          Sign out
-        </button>
-      </form>
+          + Dodaj aplikację
+        </a>
+      </div>
+
+      {loadError && <p class="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{loadError}</p>}
+
+      {!loadError && applications.length === 0 && (
+        <p class="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-blue-100/70">
+          Nie masz jeszcze żadnych aplikacji. Dodaj pierwszą po wysłaniu CV.
+        </p>
+      )}
+
+      <ul class="space-y-3" data-testid="applications-list">
+        {applications.map((a) => (
+          <li class="rounded-xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <div>
+                <p class="font-semibold">{a.company}</p>
+                <p class="text-sm text-blue-100/70">{a.position}</p>
+              </div>
+              <span class="rounded-full bg-purple-500/30 px-3 py-0.5 text-xs">{STATUS_LABELS[a.status]}</span>
+            </div>
+            {(a.salary_range ?? a.quoted_rate) && (
+              <p class="mt-2 text-sm text-blue-100/80">
+                {a.salary_range && <span>Widełki: {a.salary_range}</span>}
+                {a.salary_range && a.quoted_rate && <span> · </span>}
+                {a.quoted_rate && <span>Moja stawka: {a.quoted_rate}</span>}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   </div>
 </Layout>

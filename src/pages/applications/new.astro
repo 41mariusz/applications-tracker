@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
+import ApplicationForm from "@/components/applications/ApplicationForm";
+---
+
+<Layout title="Nowa aplikacja">
+  <div class="bg-cosmic min-h-screen p-4 sm:p-8">
+    <Topbar />
+    <div class="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl sm:p-8">
+      <h1 class="mb-6 text-2xl font-bold">Nowa aplikacja</h1>
+      <ApplicationForm client:load />
+    </div>
+  </div>
+</Layout>
