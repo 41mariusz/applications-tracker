@@ -5,6 +5,7 @@ import StatusControl from "@/components/applications/StatusControl";
 import NotesPanel from "@/components/applications/NotesPanel";
 import { createClient } from "@/lib/supabase";
 import { latestActiveNote } from "@/lib/domain/notes";
+import { FIELD_LABELS, mergeHistory, type TrackedField } from "@/lib/domain/changes";
 import { isClosed } from "@/lib/domain/status";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { getApplicationDetails, type ApplicationDetails } from "@/lib/services/notes";
@@ -27,6 +28,16 @@ if (!details && !loadError) {
 }
 
 const application = details?.application;
+const history = details ? mergeHistory(details.fieldChanges, details.statusChanges) : [];
+
+// Show stored values the way the form shows them.
+function displayValue(field: TrackedField, value: string | null): string {
+  if (value === null || value === "") return "—";
+  if (field === "employment_type") return EMPLOYMENT_TYPE_LABELS[value as keyof typeof EMPLOYMENT_TYPE_LABELS];
+  if (field === "work_mode") return WORK_MODE_LABELS[value as keyof typeof WORK_MODE_LABELS];
+  if (field === "applied_on") return formatDate(value);
+  return value;
+}
 const latest = details ? latestActiveNote(details.notes) : null;
 const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_phone.replace(/[^\d+]/g, "")}` : null;
 ---
@@ -102,7 +113,12 @@ const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_
           <NotesPanel applicationId={application.id} notes={details.notes} client:load />
 
           <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
-            <h2 class="mb-2 font-semibold">Szczegóły</h2>
+            <div class="mb-2 flex items-center justify-between">
+              <h2 class="font-semibold">Szczegóły</h2>
+              <a href={`/applications/${application.id}/edit`} class="text-purple-300 hover:underline">
+                Edytuj
+              </a>
+            </div>
             <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
               <dt class="text-blue-100/60">Ogłoszenie</dt>
               <dd class="truncate">
@@ -128,17 +144,27 @@ const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_
             </dl>
           </section>
 
-          <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
-            <h2 class="mb-2 font-semibold">Historia statusów</h2>
-            {details.statusChanges.length === 0 ? (
+          <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm" data-testid="history">
+            <h2 class="mb-2 font-semibold">Historia zmian</h2>
+            {history.length === 0 ? (
               <p class="text-blue-100/60">Bez zmian od dodania ({formatDateTime(application.created_at)}).</p>
             ) : (
               <ul class="space-y-1">
-                {details.statusChanges.map((c) => (
+                {history.map((h) => (
                   <li>
-                    <span class="text-blue-100/60">{formatDateTime(c.changed_at)}</span> ·{" "}
-                    {STATUS_LABELS[c.from_status]} → {STATUS_LABELS[c.to_status]}
-                    {c.is_revert && <span class="text-amber-300"> (cofnięcie)</span>}
+                    <span class="text-blue-100/60">{formatDateTime(h.at)}</span> ·{" "}
+                    {h.type === "status" ? (
+                      <>
+                        Status: {STATUS_LABELS[h.from]} → {STATUS_LABELS[h.to]}
+                        {h.is_revert && <span class="text-amber-300"> (cofnięcie)</span>}
+                      </>
+                    ) : (
+                      <>
+                        {FIELD_LABELS[h.field]}:{" "}
+                        <span class="line-through opacity-70">{displayValue(h.field, h.old_value)}</span> →{" "}
+                        {displayValue(h.field, h.new_value)}
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>

@@ -1,0 +1,46 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Topbar from "@/components/Topbar.astro";
+import ApplicationForm from "@/components/applications/ApplicationForm";
+import { createClient } from "@/lib/supabase";
+import { TRACKED_FIELDS } from "@/lib/domain/changes";
+import type { ApplicationFormValues } from "@/lib/services/applications";
+import type { Application } from "@/types";
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+let application: Application | null = null;
+let loadError: string | null = null;
+if (supabase && Astro.params.id) {
+  const { data, error } = await supabase
+    .from("applications")
+    .select("*")
+    .eq("id", Astro.params.id)
+    .maybeSingle<Application>();
+  if (error) {
+    // eslint-disable-next-line no-console -- server-side log for failed reads
+    console.error("load application for edit failed", error);
+    loadError = "Nie udało się wczytać aplikacji.";
+  }
+  application = data;
+}
+if (!application && !loadError) {
+  Astro.response.status = 404;
+}
+
+// Form fields are strings; missing values become "".
+const values = application
+  ? (Object.fromEntries(TRACKED_FIELDS.map((f) => [f, application[f] ?? ""])) as ApplicationFormValues)
+  : null;
+---
+
+<Layout title="Edytuj aplikację">
+  <div class="bg-cosmic min-h-screen p-4 sm:p-8">
+    <Topbar />
+    <div class="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl sm:p-8">
+      <h1 class="mb-6 text-2xl font-bold">Edytuj aplikację</h1>
+      {loadError && <p class="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{loadError}</p>}
+      {!application && !loadError && <p class="text-blue-100/70">Nie znaleziono tej aplikacji.</p>}
+      {application && values && <ApplicationForm application={{ id: application.id, values }} client:load />}
+    </div>
+  </div>
+</Layout>

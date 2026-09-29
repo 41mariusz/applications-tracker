@@ -2,6 +2,8 @@ import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { APPLICATION_STATUSES, EMPLOYMENT_TYPES, WORK_MODES, type Application, type ApplicationStatus } from "@/types";
 import { checkTransition, sortApplications } from "@/lib/domain/status";
+import { diffFields, TRACKED_FIELDS, type TrackedField } from "@/lib/domain/changes";
+import { addNote } from "@/lib/services/notes";
 
 // Empty form fields arrive as "" — store them as null.
 const optionalText = (max: number) =>
@@ -140,4 +142,47 @@ export async function listApplications(supabase: SupabaseClient): Promise<Applic
     .overrideTypes<Application[], { merge: false }>();
   if (error) throw error;
   return sortApplications(data);
+}
+
+export type UpdateApplicationResult = { ok: true; changed: number } | { ok: false; code: "not_found"; message: string };
+
+// Edits leave a trace: one field_changes row per changed field (PRD FR-003, FR-012).
+// A quoted-rate change can carry an optional note explaining why; it lands on the notes timeline.
+export async function updateApplication(
+  supabase: SupabaseClient,
+  id: string,
+  input: CreateApplicationInput,
+  rateChangeNote: string | null,
+): Promise<UpdateApplicationResult> {
+  const { data: current, error: readError } = await supabase
+    .from("applications")
+    .select(TRACKED_FIELDS.join(", "))
+    .eq("id", id)
+    .maybeSingle<Record<TrackedField, string | null>>();
+  if (readError) throw readError;
+  if (!current) return { ok: false, code: "not_found", message: "Nie znaleziono aplikacji." };
+
+  const changes = diffFields(current, input);
+  if (changes.length === 0) return { ok: true, changed: 0 };
+
+  const { error: updateError } = await supabase
+    .from("applications")
+    .update({ ...input, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (updateError) throw updateError;
+
+  const { error: logError } = await supabase
+    .from("field_changes")
+    .insert(changes.map((c) => ({ application_id: id, ...c })));
+  if (logError) throw logError;
+
+  const rateChange = changes.find((c) => c.field === "quoted_rate");
+  if (rateChange && rateChangeNote) {
+    await addNote(supabase, id, {
+      kind: "comment",
+      body: `Zmiana stawki: ${rateChange.old_value ?? "—"} → ${rateChange.new_value ?? "—"}. ${rateChangeNote}`,
+      noted_at: new Date().toISOString(),
+    });
+  }
+  return { ok: true, changed: changes.length };
 }

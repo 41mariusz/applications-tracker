@@ -68,6 +68,12 @@ async function request(path, { method = "GET", form } = {}) {
   };
 }
 
+const editedFields = { company, position: "Senior Developer", salary_range: "18-24k", quoted_rate: "24k" };
+
+function editApplication(form) {
+  return request(`/api/applications/${applicationId}`, { method: "PATCH", form });
+}
+
 function details() {
   return request(`/applications/${applicationId}`);
 }
@@ -163,6 +169,28 @@ const steps = [
   ["edited note keeps its previous version", details, { status: 200, bodyIncludes: "Poprzednie wersje" }],
   ["note is removed", () => request(`/api/notes/${noteId}`, { method: "DELETE" }), { status: 200 }],
   ["removed note stays on the timeline, crossed out", details, { status: 200, bodyIncludes: 'data-removed="true"' }],
+  ["edit page renders", () => request(`/applications/${applicationId}/edit`), { status: 200, bodyIncludes: company }],
+  [
+    "edit without company is rejected",
+    () => editApplication({ ...editedFields, company: "" }),
+    { status: 400, bodyIncludes: "Podaj nazwę firmy" },
+  ],
+  [
+    "quoted rate is changed with a reason",
+    () => editApplication({ ...editedFields, rate_change_note: "after the tech interview" }),
+    { status: 200, bodyIncludes: '"changed":1' },
+  ],
+  ["change log shows the old and new rate", details, { status: 200, bodyIncludes: 'line-through opacity-70">22k<' }],
+  [
+    "the reason lands on the notes timeline",
+    details,
+    { status: 200, bodyIncludes: "Zmiana stawki: 22k → 24k. after the tech interview" },
+  ],
+  [
+    "saving without changes logs nothing",
+    () => editApplication(editedFields),
+    { status: 200, bodyIncludes: '"changed":0' },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   [
@@ -189,6 +217,11 @@ const steps = [
         method: "POST",
         form: { kind: "comment", body: "intrusion", noted_at: new Date().toISOString() },
       }),
+    { status: 404 },
+  ],
+  [
+    "second user cannot edit the first user's application",
+    () => editApplication({ ...editedFields, company: "hijacked" }),
     { status: 404 },
   ],
   [

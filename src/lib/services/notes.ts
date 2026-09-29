@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { isNoteChanged, sortNotes, type NoteInput } from "@/lib/domain/notes";
-import type { Application, Note, NoteRevision, StatusChange } from "@/types";
+import type { Application, FieldChangeRow, Note, NoteRevision, StatusChange } from "@/types";
 
 export type NoteResult = { ok: true; id: string } | { ok: false; code: "not_found"; message: string };
 
@@ -83,6 +83,7 @@ export interface ApplicationDetails {
   application: Application;
   notes: Note[];
   statusChanges: StatusChange[];
+  fieldChanges: FieldChangeRow[];
 }
 
 export async function getApplicationDetails(
@@ -97,7 +98,7 @@ export async function getApplicationDetails(
   if (error) throw error;
   if (!application) return null;
 
-  const [notesResult, changesResult] = await Promise.all([
+  const [notesResult, changesResult, fieldsResult] = await Promise.all([
     supabase
       .from("notes")
       .select("*, revisions:note_revisions(*)")
@@ -109,13 +110,20 @@ export async function getApplicationDetails(
       .eq("application_id", applicationId)
       .order("changed_at", { ascending: false })
       .overrideTypes<StatusChange[], { merge: false }>(),
+    supabase
+      .from("field_changes")
+      .select("id, field, old_value, new_value, changed_at")
+      .eq("application_id", applicationId)
+      .order("changed_at", { ascending: false })
+      .overrideTypes<FieldChangeRow[], { merge: false }>(),
   ]);
   if (notesResult.error) throw notesResult.error;
   if (changesResult.error) throw changesResult.error;
+  if (fieldsResult.error) throw fieldsResult.error;
 
   const notes = sortNotes(notesResult.data).map((note) => ({
     ...note,
     revisions: [...note.revisions].sort((a, b) => Date.parse(b.changed_at) - Date.parse(a.changed_at)),
   }));
-  return { application, notes, statusChanges: changesResult.data };
+  return { application, notes, statusChanges: changesResult.data, fieldChanges: fieldsResult.data };
 }

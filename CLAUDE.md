@@ -17,7 +17,7 @@ This file provides guidance to AI Agent when working with code in this repositor
 - `npm run lint:fix` — auto-fix lint issues
 - `npm run format` — Prettier (includes prettier-plugin-astro + prettier-plugin-tailwindcss)
 - `npm test` — Vitest unit tests (`src/**/*.test.ts`), e.g. the status-transition and list-ordering rule in `src/lib/domain/status.ts`.
-- `npm run smoke` — dependency-free end-to-end smoke test (`scripts/smoke.mjs`): auth, adding an application, status transitions, notes (add/edit/remove with history), per-user data isolation. Runs against a live server (`BASE_URL`, default `http://localhost:4321`) and needs `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` of a **local** Supabase to create test users (no self sign-up). CI runs it against the production preview with a local Supabase. Extend it with each user-facing feature.
+- `npm run smoke` — dependency-free end-to-end smoke test (`scripts/smoke.mjs`): auth, adding an application, status transitions, notes (add/edit/remove with history), editing with a field change log, per-user data isolation. Runs against a live server (`BASE_URL`, default `http://localhost:4321`) and needs `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` of a **local** Supabase to create test users (no self sign-up). CI runs it against the production preview with a local Supabase. Extend it with each user-facing feature.
 
 Pre-commit hooks: husky + lint-staged runs `eslint --fix` on `*.{ts,tsx,astro}` and `prettier --write` on `*.{json,css,md}`.
 

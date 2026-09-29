@@ -91,3 +91,11 @@ export interface StatusChange {
   is_revert: boolean;
   changed_at: string;
 }
+
+export interface FieldChangeRow {
+  id: string;
+  field: string;
+  old_value: string | null;
+  new_value: string | null;
+  changed_at: string;
+}
