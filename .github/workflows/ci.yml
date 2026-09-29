@@ -61,6 +61,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [ci, smoke]
     runs-on: ubuntu-latest
+    # Cloudflare secrets may live in the "SUPABASE" environment; repository secrets are visible here too.
+    environment: SUPABASE
     concurrency:
       group: deploy-production
       cancel-in-progress: false
@@ -87,6 +89,6 @@ jobs:
             echo "::error title=Missing secrets::CLOUDFLARE_API_TOKEN set: $([ -n "$CLOUDFLARE_API_TOKEN" ] && echo yes || echo no), CLOUDFLARE_ACCOUNT_ID set: $([ -n "$CLOUDFLARE_ACCOUNT_ID" ] && echo yes || echo no)"
             exit 1
           fi
-          npx wrangler whoami > whoami.log 2>&1 || { report "wrangler whoami failed" whoami.log; exit 1; }
+          npx wrangler whoami > whoami.log 2>&1 || { echo "::error title=wrangler whoami failed::Token rejected by Cloudflare (check CLOUDFLARE_API_TOKEN)"; exit 1; }
           npx wrangler deploy > deploy.log 2>&1 || { report "wrangler deploy failed" deploy.log; exit 1; }
           tail -n 5 deploy.log
