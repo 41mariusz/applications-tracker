@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { EMPLOYMENT_TYPES, WORK_MODES, type Application } from "@/types";
+import { APPLICATION_STATUSES, EMPLOYMENT_TYPES, WORK_MODES, type Application, type ApplicationStatus } from "@/types";
+import { checkTransition, sortApplications } from "@/lib/domain/status";
 
 // Empty form fields arrive as "" — store them as null.
 const optionalText = (max: number) =>
@@ -79,11 +80,64 @@ export async function createApplication(supabase: SupabaseClient, input: CreateA
   return data;
 }
 
+export const changeStatusSchema = z.object({
+  status: z.enum(APPLICATION_STATUSES),
+  confirm: z.literal("true").optional(),
+});
+
+export type ChangeStatusResult =
+  | { ok: true; status: ApplicationStatus }
+  | { ok: false; code: "not_found" | "not_allowed" | "needs_confirmation" | "conflict"; message: string };
+
+export async function changeApplicationStatus(
+  supabase: SupabaseClient,
+  id: string,
+  to: ApplicationStatus,
+  confirmed: boolean,
+): Promise<ChangeStatusResult> {
+  const { data: current, error: readError } = await supabase
+    .from("applications")
+    .select("status")
+    .eq("id", id)
+    .maybeSingle<{ status: ApplicationStatus }>();
+  if (readError) throw readError;
+  if (!current) return { ok: false, code: "not_found", message: "Nie znaleziono aplikacji." };
+
+  const transition = checkTransition(current.status, to);
+  if (!transition.allowed) return { ok: false, code: "not_allowed", message: transition.reason };
+  if (transition.requiresConfirmation && !confirmed) {
+    return { ok: false, code: "needs_confirmation", message: "Cofnięcie statusu końcowego wymaga potwierdzenia." };
+  }
+
+  const now = new Date().toISOString();
+  // Guard on the status we checked, so a concurrent change can't slip past the rule.
+  const { data: updated, error: updateError } = await supabase
+    .from("applications")
+    .update({ status: to, last_activity_at: now, updated_at: now })
+    .eq("id", id)
+    .eq("status", current.status)
+    .select("id");
+  if (updateError) throw updateError;
+  if (updated.length === 0) {
+    return { ok: false, code: "conflict", message: "Status zmienił się w międzyczasie. Odśwież stronę." };
+  }
+
+  const { error: historyError } = await supabase.from("status_changes").insert({
+    application_id: id,
+    from_status: current.status,
+    to_status: to,
+    is_revert: transition.kind === "revert",
+  });
+  if (historyError) throw historyError;
+
+  return { ok: true, status: to };
+}
+
 export async function listApplications(supabase: SupabaseClient): Promise<Application[]> {
   const { data, error } = await supabase
     .from("applications")
     .select("*")
-    .order("last_activity_at", { ascending: false });
+    .overrideTypes<Application[], { merge: false }>();
   if (error) throw error;
-  return data as Application[];
+  return sortApplications(data);
 }

@@ -3,7 +3,9 @@ import Layout from "@/layouts/Layout.astro";
 import Topbar from "@/components/Topbar.astro";
 import { createClient } from "@/lib/supabase";
 import { listApplications } from "@/lib/services/applications";
-import { STATUS_LABELS, type Application } from "@/types";
+import StatusControl from "@/components/applications/StatusControl";
+import { isClosed } from "@/lib/domain/status";
+import type { Application } from "@/types";
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 let applications: Application[] = [];
@@ -43,13 +45,19 @@ if (supabase) {
 
       <ul class="space-y-3" data-testid="applications-list">
         {applications.map((a) => (
-          <li class="rounded-xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl">
+          <li
+            class:list={[
+              "rounded-xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl",
+              isClosed(a.status) && "opacity-50",
+            ]}
+            data-status={a.status}
+          >
             <div class="flex flex-wrap items-baseline justify-between gap-2">
-              <div>
+              <div class:list={[isClosed(a.status) && "line-through"]}>
                 <p class="font-semibold">{a.company}</p>
                 <p class="text-sm text-blue-100/70">{a.position}</p>
               </div>
-              <span class="rounded-full bg-purple-500/30 px-3 py-0.5 text-xs">{STATUS_LABELS[a.status]}</span>
+              <StatusControl applicationId={a.id} status={a.status} client:visible />
             </div>
             {(a.salary_range ?? a.quoted_rate) && (
               <p class="mt-2 text-sm text-blue-100/80">

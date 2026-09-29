@@ -10,6 +10,7 @@ const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
 const email = `smoke-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const company = `Smoke Corp ${Date.now()}`;
+let applicationId = "";
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required to create the smoke-test user.");
@@ -65,6 +66,10 @@ async function request(path, { method = "GET", form } = {}) {
   };
 }
 
+function changeStatus(form) {
+  return request(`/api/applications/${applicationId}/status`, { method: "POST", form });
+}
+
 const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
@@ -89,14 +94,34 @@ const steps = [
   ],
   [
     "new application is saved",
-    () =>
-      request("/api/applications", {
+    async () => {
+      const result = await request("/api/applications", {
         method: "POST",
         form: { company, position: "Senior Developer", salary_range: "18-24k", quoted_rate: "22k" },
-      }),
+      });
+      if (result.status === 201) applicationId = JSON.parse(result.body).id;
+      return result;
+    },
     { status: 201 },
   ],
   ["dashboard lists the new application", () => request("/dashboard"), { status: 200, bodyIncludes: company }],
+  [
+    "status moves forward, skipping a stage",
+    () => changeStatus({ status: "interviews" }),
+    { status: 200, bodyIncludes: "interviews" },
+  ],
+  ["status cannot move backward", () => changeStatus({ status: "sent" }), { status: 400 }],
+  ["application can be closed", () => changeStatus({ status: "rejected" }), { status: 200 }],
+  [
+    "reverting a closed application needs confirmation",
+    () => changeStatus({ status: "offer" }),
+    { status: 409, bodyIncludes: "requiresConfirmation" },
+  ],
+  [
+    "confirmed revert is accepted",
+    () => changeStatus({ status: "offer", confirm: "true" }),
+    { status: 200, bodyIncludes: "offer" },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   [

@@ -104,7 +104,7 @@ The application orders the user's recruitment processes by stage and, within a s
 
 **Statuses.** Active: Sent → HR contact → Interviews → Offer. Terminal: Accepted, Rejected (the company declined), Withdrawn (the user resigned — this is also how an application is "removed", see FR-004).
 
-**Transitions.** Forward moves are allowed, including skipping stages (e.g., Sent → Interviews when HR invites straight away). From any active status the user can move to Rejected or Withdrawn. A terminal status can be reverted only after explicit confirmation (e.g., a company comes back after a month), and the revert is recorded in the change log. Any other move (e.g., Offer → Sent) is refused.
+**Transitions.** Forward moves are allowed, including skipping stages (e.g., Sent → Interviews when HR invites straight away). From any active status the user can move to Rejected or Withdrawn. A terminal status can be reverted — to any other status the user picks, including another terminal one (e.g., Accepted → Withdrawn) — only after explicit confirmation (e.g., a company comes back after a month), and the revert is recorded in the change log. Any other move (e.g., Offer → Sent) is refused.
 
 **Ordering.** Inputs: each application's status and the date of its most recent activity (latest note or status change). Output: the application list the user sees on opening the app — Accepted on top (until the user starts a new job), then Offer, Interviews, HR contact, Sent; within a stage, the most recently active first. Rejected and Withdrawn sit at the bottom, crossed out.
 
