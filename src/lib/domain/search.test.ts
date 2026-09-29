@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { filterApplications, matchesQuery, normalizePhone, normalizeText } from "@/lib/domain/search";
+import {
+  filterApplications,
+  matchesQuery,
+  matchesStatus,
+  normalizePhone,
+  normalizeText,
+  parseStatusFilter,
+} from "@/lib/domain/search";
 
 const app = (company: string, position: string, hr_contact_name: string | null, hr_contact_phone: string | null) => ({
   company,
@@ -69,5 +76,28 @@ describe("filterApplications", () => {
       "Globex",
       "Acme Software House",
     ]);
+  });
+});
+
+describe("parseStatusFilter", () => {
+  it("accepts comma-separated and repeated values, in pipeline order", () => {
+    expect(parseStatusFilter(["offer,interviews"])).toEqual(["interviews", "offer"]);
+    expect(parseStatusFilter(["sent", "rejected"])).toEqual(["sent", "rejected"]);
+  });
+
+  it("ignores unknown values and empty input", () => {
+    expect(parseStatusFilter(["offer,bogus", ""])).toEqual(["offer"]);
+    expect(parseStatusFilter([])).toEqual([]);
+  });
+});
+
+describe("matchesStatus", () => {
+  it("shows everything when nothing is selected", () => {
+    expect(matchesStatus("rejected", [])).toBe(true);
+  });
+
+  it("shows only selected statuses otherwise", () => {
+    expect(matchesStatus("offer", ["offer", "interviews"])).toBe(true);
+    expect(matchesStatus("sent", ["offer", "interviews"])).toBe(false);
   });
 });

@@ -3,9 +3,12 @@ import Layout from "@/layouts/Layout.astro";
 import Topbar from "@/components/Topbar.astro";
 import StatusControl from "@/components/applications/StatusControl";
 import NotesPanel from "@/components/applications/NotesPanel";
+import CvPanel from "@/components/applications/CvPanel";
+import { listCvFiles } from "@/lib/services/cv";
+import type { CvFile } from "@/types";
 import { createClient } from "@/lib/supabase";
 import { latestActiveNote } from "@/lib/domain/notes";
-import { FIELD_LABELS, mergeHistory, type TrackedField } from "@/lib/domain/changes";
+import { FIELD_LABELS, mergeHistory, type HistoryField } from "@/lib/domain/changes";
 import { isClosed } from "@/lib/domain/status";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { getApplicationDetails, type ApplicationDetails } from "@/lib/services/notes";
@@ -13,10 +16,11 @@ import { EMPLOYMENT_TYPE_LABELS, NOTE_KIND_LABELS, STATUS_LABELS, WORK_MODE_LABE
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 let details: ApplicationDetails | null = null;
+let cvLibrary: CvFile[] = [];
 let loadError: string | null = null;
 if (supabase && Astro.params.id) {
   try {
-    details = await getApplicationDetails(supabase, Astro.params.id);
+    [details, cvLibrary] = await Promise.all([getApplicationDetails(supabase, Astro.params.id), listCvFiles(supabase)]);
   } catch (e) {
     // eslint-disable-next-line no-console -- server-side log for failed reads
     console.error("getApplicationDetails failed", e);
@@ -29,9 +33,10 @@ if (!details && !loadError) {
 
 const application = details?.application;
 const history = details ? mergeHistory(details.fieldChanges, details.statusChanges) : [];
+const currentCv = cvLibrary.find((f) => f.id === details?.application.cv_file_id) ?? null;
 
 // Show stored values the way the form shows them.
-function displayValue(field: TrackedField, value: string | null): string {
+function displayValue(field: HistoryField, value: string | null): string {
   if (value === null || value === "") return "—";
   if (field === "employment_type") return EMPLOYMENT_TYPE_LABELS[value as keyof typeof EMPLOYMENT_TYPE_LABELS];
   if (field === "work_mode") return WORK_MODE_LABELS[value as keyof typeof WORK_MODE_LABELS];
@@ -111,6 +116,8 @@ const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_
           </section>
 
           <NotesPanel applicationId={application.id} notes={details.notes} client:load />
+
+          <CvPanel applicationId={application.id} current={currentCv} library={cvLibrary} client:visible />
 
           <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
             <div class="mb-2 flex items-center justify-between">

@@ -77,8 +77,9 @@ Primary persona: the author themself — a single candidate running many recruit
   > Socrates: Counter-argument considered: "all fields + notes timeline + change log on a phone means long scrolling during a call." Resolution: accepted; call-critical information shown first.
 - FR-007: User can see a list of all their applications with each one's status, ordered with the most important applications at the top and less important ones at the bottom. Priority: must-have
   > Socrates: Counter-argument considered: "closed processes clutter the list — after a few weeks most entries are rejections." Resolution (user's words): "najważniejsze aplikacje na górze, mniej ważne na dole" — the list is ordered by importance. What makes an application "important" is the domain rule — defined in Business Logic (phase 5).
-- FR-008: User can filter the application list by status. Priority: nice-to-have
+- FR-008: User can filter the application list by one or more statuses, combined with search. Priority: must-have
   > Socrates: Counter-argument considered: "duplicates importance ordering — if important applications are already on top, a filter may be unnecessary in the MVP." Resolution: accepted; demoted to nice-to-have.
+  > Update 2026-10-01: promoted to must-have after hands-on testing with ~300 applications — the user asked for it ("przydałoby się sortowanie po statusach"; clarified as a multi-select status filter).
 
 ### Notes & status
 
@@ -90,6 +91,11 @@ Primary persona: the author themself — a single candidate running many recruit
   > Socrates: Counter-argument considered: "arbitrary status changes corrupt data — e.g., 'rejected' back to 'sent' by mistake." Resolution: accepted; allowed transitions to be defined in Business Logic (phase 5).
 - FR-012: User can view an application's change log: which field changed, from what value to what value, and when. When changing the quoted rate, user can optionally attach a note explaining why. Priority: must-have
   > Socrates: Counter-argument considered: "a rate change without context (why?) says little — the change log can't replace notes about negotiation." Resolution: accepted; optional note attached to a quoted-rate change.
+
+### CV
+
+- FR-013: User can attach one CV (PDF or DOCX, up to 5 MB) to an application — uploading a new file or choosing one already in their CV library — and download it later. Identical files (same content, any file name) are stored only once. Changing the attached CV is recorded in the change log; CV files are never deleted. Priority: must-have
+  > Added 2026-10-01 at the user's request ("opcja dołączenia CV do aplikacji … żeby nie duplikowały się CV … szkoda miejsca na dysku"). Decisions: one CV per application, chosen from a personal library; PDF + DOCX up to 5 MB.
 
 ## Non-Functional Requirements
 
@@ -122,7 +128,6 @@ The application orders the user's recruitment processes by stage and, within a s
 - No reminders or notifications (email / push) — importance is expressed only through list ordering.
 - No offline mode and no native app — requires an internet connection; runs in the browser on phone and desktop.
 - No self sign-up — a single account provisioned by the owner (FR-001).
-- Filtering the list by status (FR-008) is nice-to-have, outside the MVP — importance ordering covers the need.
 
 ## Open Questions
 

@@ -28,6 +28,7 @@ export interface Application {
   applied_on: string | null;
   employment_type: EmploymentType | null;
   work_mode: WorkMode | null;
+  cv_file_id: string | null;
   status: ApplicationStatus;
   last_activity_at: string;
   created_at: string;
@@ -98,4 +99,12 @@ export interface FieldChangeRow {
   old_value: string | null;
   new_value: string | null;
   changed_at: string;
+}
+
+export interface CvFile {
+  id: string;
+  file_name: string;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string;
 }

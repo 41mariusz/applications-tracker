@@ -1,3 +1,5 @@
+import { APPLICATION_STATUSES, type ApplicationStatus } from "@/types";
+
 // Search rule (PRD FR-005): find an application during a call by company, position,
 // HR contact name, or HR phone — regardless of phone formatting, case, or Polish diacritics.
 // Pure functions, shared by the server (?q=) and the browser (as-you-type filter).
@@ -59,4 +61,15 @@ export function matchesQuery(item: Searchable, query: string): boolean {
 
 export function filterApplications<T extends Searchable>(items: readonly T[], query: string): T[] {
   return items.filter((item) => matchesQuery(item, query));
+}
+
+// Status filter (PRD FR-008): `?status=offer,interviews` or repeated `?status=` values.
+// Unknown values are ignored; an empty selection shows every status.
+export function parseStatusFilter(values: readonly string[]): ApplicationStatus[] {
+  const requested = new Set(values.flatMap((v) => v.split(",")).map((v) => v.trim()));
+  return APPLICATION_STATUSES.filter((s) => requested.has(s));
+}
+
+export function matchesStatus(status: ApplicationStatus, selected: readonly ApplicationStatus[]): boolean {
+  return selected.length === 0 || selected.includes(status);
 }

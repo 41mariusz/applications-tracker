@@ -68,6 +68,23 @@ async function request(path, { method = "GET", form } = {}) {
   };
 }
 
+// Multipart upload (the CV endpoint takes a file), sharing the session cookies.
+async function upload(path, fileName, type, content) {
+  const body = new FormData();
+  body.set("file", new Blob([content], { type }), fileName);
+  const response = await fetch(BASE_URL + path, {
+    method: "POST",
+    redirect: "manual",
+    headers: { Cookie: cookieHeader(), Origin: BASE_URL },
+    body,
+  });
+  storeCookies(response);
+  return { status: response.status, location: response.headers.get("location") ?? "", body: await response.text() };
+}
+
+const cvContent = `%PDF-1.4 smoke CV ${Date.now()}`;
+let cvId = "";
+
 const hrContact = { hr_contact_name: "Anna Łukasik", hr_contact_phone: "+48 600 100 200" };
 const editedFields = {
   company,
@@ -223,6 +240,47 @@ const steps = [
     () => editApplication(editedFields),
     { status: 200, bodyIncludes: '"changed":0' },
   ],
+  [
+    "status filter shows only the selected statuses",
+    () => request("/dashboard?status=offer"),
+    { status: 200, bodyIncludes: 'data-testid="search-count">1<' },
+  ],
+  [
+    "status filter hides other statuses",
+    () => request("/dashboard?status=sent,rejected"),
+    { status: 200, bodyIncludes: 'data-testid="search-count">0<' },
+  ],
+  [
+    "a non-CV file is rejected",
+    () => upload("/api/cv", "photo.png", "image/png", "not a cv"),
+    { status: 400, bodyIncludes: "PDF i DOCX" },
+  ],
+  [
+    "CV is uploaded to the library",
+    async () => {
+      const result = await upload("/api/cv", "CV Anna.pdf", "application/pdf", cvContent);
+      if (result.status === 201) cvId = JSON.parse(result.body).file.id;
+      return result;
+    },
+    { status: 201, bodyIncludes: '"reused":false' },
+  ],
+  [
+    "the same file under another name is not stored twice",
+    () => upload("/api/cv", "copy of my CV.pdf", "application/pdf", cvContent),
+    { status: 200, bodyIncludes: '"reused":true' },
+  ],
+  [
+    "CV is attached to the application",
+    () => request(`/api/applications/${applicationId}/cv`, { method: "POST", form: { cv_file_id: cvId } }),
+    { status: 200 },
+  ],
+  ["details page shows the attached CV", details, { status: 200, bodyIncludes: "CV Anna.pdf" }],
+  ["attaching the CV is in the change log", details, { status: 200, bodyIncludes: "CV:" }],
+  [
+    "CV downloads through a short-lived link",
+    () => request(`/api/cv/${cvId}`),
+    { status: 302, location: SUPABASE_URL },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   [
@@ -254,6 +312,12 @@ const steps = [
   [
     "second user cannot edit the first user's application",
     () => editApplication({ ...editedFields, company: "hijacked" }),
+    { status: 404 },
+  ],
+  ["second user cannot download the first user's CV", () => request(`/api/cv/${cvId}`), { status: 404 }],
+  [
+    "second user cannot attach the first user's CV",
+    () => request(`/api/applications/${applicationId}/cv`, { method: "POST", form: { cv_file_id: cvId } }),
     { status: 404 },
   ],
   [

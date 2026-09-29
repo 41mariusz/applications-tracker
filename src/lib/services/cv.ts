@@ -1,0 +1,95 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { checkCvFile, cvStoragePath, sha256Hex } from "@/lib/domain/cv";
+import type { CvFile } from "@/types";
+
+const BUCKET = "cvs";
+const CV_COLUMNS = "id, file_name, mime_type, size_bytes, created_at";
+
+export type UploadCvResult =
+  { ok: true; file: CvFile; reused: boolean } | { ok: false; code: "invalid"; message: string };
+
+// Deduplicated upload: the file is identified by the SHA-256 of its bytes. If the user already
+// has it (under any name), the existing library entry is returned and nothing is stored again.
+export async function uploadCv(supabase: SupabaseClient, userId: string, file: File): Promise<UploadCvResult> {
+  const check = checkCvFile(file);
+  if (!check.ok) return { ok: false, code: "invalid", message: check.message };
+
+  const bytes = await file.arrayBuffer();
+  const sha256 = await sha256Hex(bytes);
+
+  const existing = await findBySha(supabase, sha256);
+  if (existing) return { ok: true, file: existing, reused: true };
+
+  const path = cvStoragePath(userId, sha256, check.extension);
+  const { error: uploadError } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, bytes, { contentType: check.mimeType, upsert: false });
+  // "Duplicate" means the bytes are already stored (e.g. an earlier attempt failed after the
+  // upload): reuse them and just record the library entry.
+  if (uploadError && !/exists|duplicate/i.test(uploadError.message)) throw uploadError;
+
+  const { data, error } = await supabase
+    .from("cv_files")
+    .insert({
+      sha256,
+      file_name: file.name.slice(0, 200),
+      mime_type: check.mimeType,
+      size_bytes: file.size,
+      storage_path: path,
+    })
+    .select(CV_COLUMNS)
+    .single<CvFile>();
+  if (error) {
+    // Two uploads of the same file at once: the other one won; use its entry.
+    const winner = error.code === "23505" ? await findBySha(supabase, sha256) : null;
+    if (winner) return { ok: true, file: winner, reused: true };
+    throw error;
+  }
+  return { ok: true, file: data, reused: false };
+}
+
+async function findBySha(supabase: SupabaseClient, sha256: string): Promise<CvFile | null> {
+  const { data, error } = await supabase.from("cv_files").select(CV_COLUMNS).eq("sha256", sha256).maybeSingle<CvFile>();
+  if (error) throw error;
+  return data;
+}
+
+export async function listCvFiles(supabase: SupabaseClient): Promise<CvFile[]> {
+  const { data, error } = await supabase
+    .from("cv_files")
+    .select(CV_COLUMNS)
+    .order("created_at", { ascending: false })
+    .overrideTypes<CvFile[], { merge: false }>();
+  if (error) throw error;
+  return data;
+}
+
+// Attach (or detach with null) a CV; the change is logged in the same transaction.
+export async function setApplicationCv(
+  supabase: SupabaseClient,
+  applicationId: string,
+  cvFileId: string | null,
+): Promise<boolean> {
+  const { data, error } = await supabase
+    .rpc("set_application_cv", { p_application_id: applicationId, p_cv_file_id: cvFileId })
+    .overrideTypes<boolean, { merge: false }>();
+  if (error) throw error;
+  return data === true;
+}
+
+// Short-lived link to download a CV; null if the file is not the caller's.
+export async function cvDownloadUrl(supabase: SupabaseClient, cvFileId: string): Promise<string | null> {
+  const { data: file, error } = await supabase
+    .from("cv_files")
+    .select("storage_path, file_name")
+    .eq("id", cvFileId)
+    .maybeSingle<{ storage_path: string; file_name: string }>();
+  if (error) throw error;
+  if (!file) return null;
+
+  const { data, error: signError } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(file.storage_path, 60, { download: file.file_name });
+  if (signError) throw signError;
+  return data.signedUrl;
+}

@@ -47,6 +47,16 @@ describe("mergeHistory", () => {
     ]);
   });
 
+  it("includes CV changes", () => {
+    const history = mergeHistory(
+      [{ field: "cv", old_value: null, new_value: "CV 2026.pdf", changed_at: "2026-10-03T10:00:00Z" }],
+      [],
+    );
+    expect(history).toEqual([
+      { type: "field", at: "2026-10-03T10:00:00Z", field: "cv", old_value: null, new_value: "CV 2026.pdf" },
+    ]);
+  });
+
   it("ignores unknown field names", () => {
     const history = mergeHistory(
       [{ field: "legacy_column", old_value: "a", new_value: "b", changed_at: "2026-10-03T10:00:00Z" }],

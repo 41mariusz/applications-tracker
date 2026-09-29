@@ -15,7 +15,11 @@ export const TRACKED_FIELDS = [
 ] as const;
 export type TrackedField = (typeof TRACKED_FIELDS)[number];
 
-export const FIELD_LABELS: Record<TrackedField, string> = {
+// Fields that appear in the change log: form fields plus the attached CV (set separately).
+export const HISTORY_FIELDS = [...TRACKED_FIELDS, "cv"] as const;
+export type HistoryField = (typeof HISTORY_FIELDS)[number];
+
+export const FIELD_LABELS: Record<HistoryField, string> = {
   company: "Firma",
   position: "Stanowisko",
   posting_url: "Link do ogłoszenia",
@@ -26,6 +30,7 @@ export const FIELD_LABELS: Record<TrackedField, string> = {
   applied_on: "Data aplikowania",
   employment_type: "Forma zatrudnienia",
   work_mode: "Tryb pracy",
+  cv: "CV",
 };
 
 export interface FieldChange {
@@ -44,7 +49,7 @@ export function diffFields(current: Values, next: Values): FieldChange[] {
 }
 
 export type HistoryEntry =
-  | { type: "field"; at: string; field: TrackedField; old_value: string | null; new_value: string | null }
+  | { type: "field"; at: string; field: HistoryField; old_value: string | null; new_value: string | null }
   | { type: "status"; at: string; from: ApplicationStatus; to: ApplicationStatus; is_revert: boolean };
 
 // One timeline for the details screen: field edits and status changes, newest first.
@@ -59,7 +64,7 @@ export function mergeHistory(
 ): HistoryEntry[] {
   const entries: HistoryEntry[] = [
     ...fieldChanges
-      .filter((c): c is typeof c & { field: TrackedField } => (TRACKED_FIELDS as readonly string[]).includes(c.field))
+      .filter((c): c is typeof c & { field: HistoryField } => (HISTORY_FIELDS as readonly string[]).includes(c.field))
       .map((c) => ({
         type: "field" as const,
         at: c.changed_at,
