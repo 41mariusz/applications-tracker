@@ -26,7 +26,9 @@ export const PATCH: APIRoute = async (context) => {
 
   try {
     const updated = await updateApplication(supabase, id, result.data, rateChangeNote);
-    if (!updated.ok) return Response.json({ error: updated.message }, { status: 404 });
+    if (!updated.ok) {
+      return Response.json({ error: updated.message }, { status: updated.code === "conflict" ? 409 : 404 });
+    }
     return Response.json({ id, changed: updated.changed }, { status: 200 });
   } catch (e) {
     // eslint-disable-next-line no-console -- server-side log for failed writes

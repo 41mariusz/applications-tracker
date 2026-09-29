@@ -7,15 +7,7 @@ export type NoteResult = { ok: true; id: string } | { ok: false; code: "not_foun
 const NOT_FOUND = { ok: false, code: "not_found", message: "Nie znaleziono." } as const;
 
 // Adding a note is activity on the application: it moves up within its stage on the list.
-async function touchApplication(supabase: SupabaseClient, applicationId: string) {
-  const now = new Date().toISOString();
-  const { error } = await supabase
-    .from("applications")
-    .update({ last_activity_at: now, updated_at: now })
-    .eq("id", applicationId);
-  if (error) throw error;
-}
-
+// The note and the activity bump are saved in one transaction.
 export async function addNote(supabase: SupabaseClient, applicationId: string, input: NoteInput): Promise<NoteResult> {
   const { data: application, error: readError } = await supabase
     .from("applications")
@@ -25,14 +17,16 @@ export async function addNote(supabase: SupabaseClient, applicationId: string, i
   if (readError) throw readError;
   if (!application) return NOT_FOUND;
 
-  const { data, error } = await supabase
-    .from("notes")
-    .insert({ application_id: applicationId, ...input })
-    .select("id")
-    .single<{ id: string }>();
-  if (error) throw error;
-  await touchApplication(supabase, applicationId);
-  return { ok: true, id: data.id };
+  const result = await supabase.rpc("add_note", {
+    p_application_id: applicationId,
+    p_kind: input.kind,
+    p_body: input.body,
+    p_noted_at: input.noted_at,
+  });
+  if (result.error) throw result.error;
+  const id: unknown = result.data;
+  if (typeof id !== "string") throw new Error("add_note returned no id");
+  return { ok: true, id };
 }
 
 async function readNote(supabase: SupabaseClient, noteId: string) {
@@ -51,20 +45,17 @@ export async function editNote(supabase: SupabaseClient, noteId: string, input: 
   if (!current || current.deleted_at) return NOT_FOUND;
   if (!isNoteChanged(current, input)) return { ok: true, id: noteId };
 
-  const { error: revisionError } = await supabase.from("note_revisions").insert({
-    note_id: noteId,
-    previous_kind: current.kind,
-    previous_body: current.body,
-    previous_noted_at: current.noted_at,
-  });
-  if (revisionError) throw revisionError;
-
-  const { error } = await supabase
-    .from("notes")
-    .update({ ...input, updated_at: new Date().toISOString() })
-    .eq("id", noteId);
+  // One transaction: the previous version is stored in note_revisions before the note changes.
+  const { data: edited, error } = await supabase
+    .rpc("edit_note", {
+      p_note_id: noteId,
+      p_kind: input.kind,
+      p_body: input.body,
+      p_noted_at: input.noted_at,
+    })
+    .overrideTypes<boolean, { merge: false }>();
   if (error) throw error;
-  return { ok: true, id: noteId };
+  return edited === true ? { ok: true, id: noteId } : NOT_FOUND;
 }
 
 // "Removing" marks the note; it stays on the timeline, crossed out.

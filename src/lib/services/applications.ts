@@ -3,7 +3,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { APPLICATION_STATUSES, EMPLOYMENT_TYPES, WORK_MODES, type Application, type ApplicationStatus } from "@/types";
 import { checkTransition, sortApplications } from "@/lib/domain/status";
 import { diffFields, TRACKED_FIELDS, type TrackedField } from "@/lib/domain/changes";
-import { addNote } from "@/lib/services/notes";
 
 // Empty form fields arrive as "" — store them as null.
 const optionalText = (max: number) =>
@@ -111,27 +110,20 @@ export async function changeApplicationStatus(
     return { ok: false, code: "needs_confirmation", message: "Cofnięcie statusu końcowego wymaga potwierdzenia." };
   }
 
-  const now = new Date().toISOString();
-  // Guard on the status we checked, so a concurrent change can't slip past the rule.
-  const { data: updated, error: updateError } = await supabase
-    .from("applications")
-    .update({ status: to, last_activity_at: now, updated_at: now })
-    .eq("id", id)
-    .eq("status", current.status)
-    .select("id");
-  if (updateError) throw updateError;
-  if (updated.length === 0) {
+  // One transaction: the status and its history row are saved together. The function only
+  // updates if the status is still the one we checked, so a concurrent change can't slip past the rule.
+  const { data: updated, error } = await supabase
+    .rpc("change_application_status", {
+      p_application_id: id,
+      p_from: current.status,
+      p_to: to,
+      p_is_revert: transition.kind === "revert",
+    })
+    .overrideTypes<boolean, { merge: false }>();
+  if (error) throw error;
+  if (updated !== true) {
     return { ok: false, code: "conflict", message: "Status zmienił się w międzyczasie. Odśwież stronę." };
   }
-
-  const { error: historyError } = await supabase.from("status_changes").insert({
-    application_id: id,
-    from_status: current.status,
-    to_status: to,
-    is_revert: transition.kind === "revert",
-  });
-  if (historyError) throw historyError;
-
   return { ok: true, status: to };
 }
 
@@ -144,7 +136,8 @@ export async function listApplications(supabase: SupabaseClient): Promise<Applic
   return sortApplications(data);
 }
 
-export type UpdateApplicationResult = { ok: true; changed: number } | { ok: false; code: "not_found"; message: string };
+export type UpdateApplicationResult =
+  { ok: true; changed: number } | { ok: false; code: "not_found" | "conflict"; message: string };
 
 // Edits leave a trace: one field_changes row per changed field (PRD FR-003, FR-012).
 // A quoted-rate change can carry an optional note explaining why; it lands on the notes timeline.
@@ -156,33 +149,35 @@ export async function updateApplication(
 ): Promise<UpdateApplicationResult> {
   const { data: current, error: readError } = await supabase
     .from("applications")
-    .select(TRACKED_FIELDS.join(", "))
+    .select([...TRACKED_FIELDS, "updated_at"].join(", "))
     .eq("id", id)
-    .maybeSingle<Record<TrackedField, string | null>>();
+    .maybeSingle<Record<TrackedField | "updated_at", string | null>>();
   if (readError) throw readError;
   if (!current) return { ok: false, code: "not_found", message: "Nie znaleziono aplikacji." };
 
   const changes = diffFields(current, input);
   if (changes.length === 0) return { ok: true, changed: 0 };
 
-  const { error: updateError } = await supabase
-    .from("applications")
-    .update({ ...input, updated_at: new Date().toISOString() })
-    .eq("id", id);
-  if (updateError) throw updateError;
-
-  const { error: logError } = await supabase
-    .from("field_changes")
-    .insert(changes.map((c) => ({ application_id: id, ...c })));
-  if (logError) throw logError;
-
   const rateChange = changes.find((c) => c.field === "quoted_rate");
-  if (rateChange && rateChangeNote) {
-    await addNote(supabase, id, {
-      kind: "comment",
-      body: `Zmiana stawki: ${rateChange.old_value ?? "—"} → ${rateChange.new_value ?? "—"}. ${rateChangeNote}`,
-      noted_at: new Date().toISOString(),
-    });
+  const noteBody =
+    rateChange && rateChangeNote
+      ? `Zmiana stawki: ${rateChange.old_value ?? "—"} → ${rateChange.new_value ?? "—"}. ${rateChangeNote}`
+      : null;
+
+  // One transaction: fields, their change-log rows and the optional note are saved together.
+  // The update is guarded by updated_at, so a concurrent edit is not silently overwritten.
+  const { data: updated, error } = await supabase
+    .rpc("update_application", {
+      p_application_id: id,
+      p_expected_updated_at: current.updated_at,
+      p_fields: input,
+      p_changes: changes,
+      p_note_body: noteBody,
+    })
+    .overrideTypes<boolean, { merge: false }>();
+  if (error) throw error;
+  if (updated !== true) {
+    return { ok: false, code: "conflict", message: "Aplikacja zmieniła się w międzyczasie. Odśwież stronę." };
   }
   return { ok: true, changed: changes.length };
 }
