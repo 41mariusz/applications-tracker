@@ -2,8 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.26.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-09-29T16:16:38.661Z",
-  "lessonId": "m1l3",
+  "lastApplied": "2026-09-30T18:47:19.918Z",
+  "lessonId": "m1l4",
   "course": "10xdevs4",
   "tool": "claude-code",
   "files": {
@@ -110,6 +110,24 @@
         "contentHashes": {
           "SKILL.md": "15fac153374b8a11318e85d1d6d7bf466558e83998d796541930387b2bbd70ce",
           "references/health-check-schema.md": "6c7115da83ef2a4a396a9b703d94395a0904748bb586a6e182f2018fcbfedfe6"
+        }
+      },
+      "10x-agents-md": {
+        "files": ["SKILL.md"],
+        "contentHashes": {
+          "SKILL.md": "7f37d82f743aab6e6c86eb773ba403380e8764b97a31f259b1297e7e57c8652e"
+        }
+      },
+      "10x-rule-review": {
+        "files": ["SKILL.md"],
+        "contentHashes": {
+          "SKILL.md": "a086bd7cb3ca9fcccf73c578101dbabfd1fa6374d54b4a21007cfbd2d4a048e2"
+        }
+      },
+      "10x-lesson": {
+        "files": ["SKILL.md"],
+        "contentHashes": {
+          "SKILL.md": "7190637b96f7956e07aadf57ce0262156da8d19fd9730def7261224b4b4c1bc3"
         }
       }
     },
@@ -278,6 +296,45 @@
       },
       "installedReleaseId": "r-d1f9bce872e7d91757645310e888811d078b3fea9992467260294498106ccf12",
       "installedManifestHash": "b6bb453e3356ab8804d39712908ca55c920ba8221c1e64041976d19f1ef57832"
+    },
+    "m1l4": {
+      "appliedAt": "2026-09-30T18:47:19.918Z",
+      "skills": {
+        "10x-idea-check": {
+          "files": ["SKILL.md", "references/examples.md"]
+        },
+        "10x-init": {
+          "files": ["SKILL.md"]
+        },
+        "10x-tech-stack-selector": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-stack-assess": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-bootstrapper": {
+          "files": [
+            "references/bootstrapper-config.yaml",
+            "references/handoff-consumer.md",
+            "references/post-scaffold-verification.md",
+            "references/pre-scaffold-verification.md"
+          ]
+        },
+        "10x-health-check": {
+          "files": ["references/health-check-schema.md"]
+        },
+        "10x-agents-md": {
+          "files": ["SKILL.md"]
+        },
+        "10x-rule-review": {
+          "files": ["SKILL.md"]
+        },
+        "10x-lesson": {
+          "files": ["SKILL.md"]
+        }
+      },
+      "prompts": [],
+      "configs": []
     }
   },
   "managedRules": {
