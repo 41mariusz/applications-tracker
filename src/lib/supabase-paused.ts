@@ -12,6 +12,8 @@ export function withPauseDetection(baseFetch: Fetch = fetch): Fetch {
   return async (input, init) => {
     const response = await baseFetch(input, init);
     if (response.status !== PROJECT_PAUSED_STATUS) return response;
+    // Release the original (HTML) body; the replacement below carries the error.
+    await response.body?.cancel();
     // Auth reads `error_code`, PostgREST passes the parsed body through as the error object.
     const body = { code: PROJECT_PAUSED_CODE, error_code: PROJECT_PAUSED_CODE, message: "Supabase project is paused" };
     return new Response(JSON.stringify(body), {

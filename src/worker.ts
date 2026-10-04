@@ -33,6 +33,8 @@ async function ping(env: KeepaliveEnv): Promise<void> {
   } catch (error) {
     // eslint-disable-next-line no-console -- shows in Workers observability
     console.error("keepalive: ping failed", error);
+    // Re-throw so the run shows as failed in the Cloudflare cron history.
+    throw error;
   }
 }
 

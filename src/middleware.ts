@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase";
 import { isProjectPaused } from "@/lib/supabase-paused";
 
 const PROTECTED_ROUTES = ["/dashboard", "/applications", "/cv"];
+const PAUSED_PASSTHROUGH = ["/paused", "/api/health", "/api/auth/signout"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createClient(context.request.headers, context.cookies);
@@ -15,8 +16,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.user = user ?? null;
 
     // A paused project is not a sign-out: explain it instead (the page and its assets stay reachable).
+    // Health reports the pause in its own shape, and sign-out must still clear the cookies.
     const { pathname } = context.url;
-    if (isProjectPaused(error) && pathname !== "/paused" && !pathname.startsWith("/_astro/")) {
+    if (isProjectPaused(error) && !PAUSED_PASSTHROUGH.includes(pathname) && !pathname.startsWith("/_astro/")) {
       if (pathname.startsWith("/api/")) {
         return Response.json({ error: "database_paused" }, { status: 503, headers: { "Cache-Control": "no-store" } });
       }

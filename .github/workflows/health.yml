@@ -6,6 +6,9 @@ on:
     - cron: "23 7 * * *"
   workflow_dispatch:
 
+# The probe never uses the GitHub token.
+permissions: {}
+
 jobs:
   probe:
     runs-on: ubuntu-latest
