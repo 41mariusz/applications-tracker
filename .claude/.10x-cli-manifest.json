@@ -2,8 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.26.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-10-04T15:19:15.012Z",
-  "lessonId": "m2l3",
+  "lastApplied": "2026-10-04T15:25:10.453Z",
+  "lessonId": "m2l4",
   "course": "10xdevs4",
   "tool": "claude-code",
   "files": {
@@ -207,6 +207,30 @@
         "contentHashes": {
           "SKILL.md": "c56679dbdfb771743030de19ec2a4c75b4df3fcb77f5d1d2133a79921c6fc50f",
           "references/progress-format.md": "01259753af620e2bfcaa04fb34d732d2efcb6fc172f8cf062f24870fe2248642"
+        }
+      },
+      "10x-frame": {
+        "files": ["SKILL.md"],
+        "contentHashes": {
+          "SKILL.md": "8c69da975cfa24b1cd80b8d2dafa68703bbd2938d7de11d4bcaf55fcd0a1c0b4"
+        }
+      },
+      "10x-research": {
+        "files": [
+          "SKILL.md",
+          "references/research-document.md",
+          "references/task-orchestration.md",
+          "scripts/metadata-guard.mjs",
+          "scripts/prose-json-check.mjs",
+          "scripts/prose-json-check.test.mjs"
+        ],
+        "contentHashes": {
+          "SKILL.md": "57b4b1fe3f70015365f337a2a26fa240a0adba0bc0c41609dabf865b108d4383",
+          "references/research-document.md": "5603e342c74a3af421ab800a9ff134c4a60b6697a2e39a49384a2781059b9c91",
+          "references/task-orchestration.md": "9279b3d73779c763ca740b09a521155a71369ed4787ca2c85b13be175d5c3dc6",
+          "scripts/metadata-guard.mjs": "a6c567ca15c93fe614d6a484602bb318272da3b38f1098b755335ee4da7fab68",
+          "scripts/prose-json-check.mjs": "44696db6a11664a0369f723dd6c3b379f36dc9774385bddedbb178420aea95cf",
+          "scripts/prose-json-check.test.mjs": "873ce640fd679720da65ee145dde13cf354ed664fcfff25a3f11bc5cc6324d51"
         }
       }
     },
@@ -612,6 +636,84 @@
         },
         "10x-impl-review": {
           "files": ["SKILL.md", "references/progress-format.md"]
+        }
+      },
+      "prompts": [
+        "m1l5-1-plan-integration.md",
+        "m1l5-2-constrain-approach.md",
+        "m1l5-3-extend-prerequisites.md",
+        "m1l5-4-store-plan.md"
+      ],
+      "configs": []
+    },
+    "m2l4": {
+      "appliedAt": "2026-10-04T15:25:10.453Z",
+      "skills": {
+        "10x-idea-check": {
+          "files": ["SKILL.md", "references/examples.md"]
+        },
+        "10x-init": {
+          "files": ["SKILL.md"]
+        },
+        "10x-tech-stack-selector": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-stack-assess": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-bootstrapper": {
+          "files": [
+            "references/bootstrapper-config.yaml",
+            "references/handoff-consumer.md",
+            "references/post-scaffold-verification.md",
+            "references/pre-scaffold-verification.md"
+          ]
+        },
+        "10x-health-check": {
+          "files": ["references/health-check-schema.md"]
+        },
+        "10x-lesson": {
+          "files": ["SKILL.md"]
+        },
+        "10x-new": {
+          "files": ["references/change-md.md"]
+        },
+        "10x-plan": {
+          "files": [
+            "references/plan-persistence.md",
+            "references/progress-format.md",
+            "references/task-orchestration.md",
+            "scripts/metadata-guard.mjs",
+            "scripts/metadata-guard.test.mjs"
+          ]
+        },
+        "10x-plan-review": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-implement": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-archive": {
+          "files": ["references/archive-sha.md"]
+        },
+        "10x-status": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-impl-review": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-frame": {
+          "files": ["SKILL.md"]
+        },
+        "10x-research": {
+          "files": [
+            "SKILL.md",
+            "references/research-document.md",
+            "references/task-orchestration.md",
+            "scripts/metadata-guard.mjs",
+            "scripts/prose-json-check.mjs",
+            "scripts/prose-json-check.test.mjs"
+          ]
         }
       },
       "prompts": [
