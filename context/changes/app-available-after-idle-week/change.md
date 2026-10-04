@@ -1,7 +1,7 @@
 ---
 change_id: app-available-after-idle-week
 title: Keep the app working after a week without use
-status: implementing
+status: implemented
 created: 2026-10-04
 updated: 2026-10-04
 archived_at: null

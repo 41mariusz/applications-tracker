@@ -337,11 +337,11 @@ New table and functions only; existing data untouched. The migration is additive
 
 #### Automated
 
-- [x] 3.1 Pause-detection tests pass for the three stubbed 540 paths and the non-pause errors: `npm test`
-- [x] 3.2 Lint and type check pass: `npm run lint && npx astro check`
-- [x] 3.3 Smoke test still passes (normal sign-in and flows unaffected): `npm run build && npm run smoke`
+- [x] 3.1 Pause-detection tests pass for the three stubbed 540 paths and the non-pause errors: `npm test` — 10525ed
+- [x] 3.2 Lint and type check pass: `npm run lint && npx astro check` — 10525ed
+- [x] 3.3 Smoke test still passes (normal sign-in and flows unaffected): `npm run build && npm run smoke` — 10525ed
 
 #### Manual
 
-- [ ] 3.4 `/paused` reads well on a phone (360 px) and on desktop
+- [x] 3.4 `/paused` reads well on a phone (360 px) and on desktop
 - [ ] 3.5 Optional live check (causes a few minutes of downtime): pause the project in the Supabase dashboard, confirm a signed-in page and sign-in both land on `/paused`, `/api/health` returns 503 `paused`, and a manual run of the health workflow fails and emails the owner; then restore the project and confirm `/api/health` returns 200 again
