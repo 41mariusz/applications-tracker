@@ -2,8 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.26.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-09-30T19:02:46.473Z",
-  "lessonId": "m2l2",
+  "lastApplied": "2026-10-04T15:19:15.012Z",
+  "lessonId": "m2l3",
   "course": "10xdevs4",
   "tool": "claude-code",
   "files": {
@@ -56,11 +56,11 @@
         "contentHashes": {
           "SKILL.md": "70d6217bf119c88a69a9a8c86c19b650a1779b7ad3bc459ee15336de78580bec",
           "references/agent-friendly-criteria.md": "04e0cd99f1e64dd6dffe37a68844ddd8efb593057584afbe0fed308724eb0cad",
-          "references/decision-flow.md": "8f88998ae05601eb52d8d7038af4310a7b558d8c14ac091668e148b06de4fffd",
+          "references/decision-flow.md": "6d4cbb39cef8008194bb4b17fdab2b613efb1ce8ebb5d0e7d523ac942d142c45",
           "references/eval-cases.md": "1bd474bd52bfb7a7efd5fa9a4f50f31f1a123f6acd6d0b5f2e9fd310b32fb920",
           "references/handoff-schema.md": "157c5b8546b32c115b4e4ad05e29546bc6adda2a3739e30148bf391c9de167b2",
           "references/residual-interview.md": "6b2b3f2b5975745e7c68e26748e7c2aaf4300de00e415f7c712fb8fac0272d95",
-          "references/starter-registry.yaml": "620a9b26b308f697b56cc0ef9a589c545c0d3054dd8fff49fd02b4f5dbd49b17"
+          "references/starter-registry.yaml": "e5659c5e0fafe3383cea18103cc13292504dd333579c2dd52001f37502554bf1"
         }
       },
       "10x-stack-assess": {
@@ -76,11 +76,11 @@
         "contentHashes": {
           "SKILL.md": "694bfd569dd93a7d9d42f0d039ae1514c77351da84a03ae69d26f6cfe143141c",
           "references/agent-friendly-criteria.md": "04e0cd99f1e64dd6dffe37a68844ddd8efb593057584afbe0fed308724eb0cad",
-          "references/decision-flow.md": "8f88998ae05601eb52d8d7038af4310a7b558d8c14ac091668e148b06de4fffd",
+          "references/decision-flow.md": "6d4cbb39cef8008194bb4b17fdab2b613efb1ce8ebb5d0e7d523ac942d142c45",
           "references/eval-cases.md": "1bd474bd52bfb7a7efd5fa9a4f50f31f1a123f6acd6d0b5f2e9fd310b32fb920",
           "references/handoff-schema.md": "157c5b8546b32c115b4e4ad05e29546bc6adda2a3739e30148bf391c9de167b2",
           "references/residual-interview.md": "6b2b3f2b5975745e7c68e26748e7c2aaf4300de00e415f7c712fb8fac0272d95",
-          "references/starter-registry.yaml": "620a9b26b308f697b56cc0ef9a589c545c0d3054dd8fff49fd02b4f5dbd49b17"
+          "references/starter-registry.yaml": "e5659c5e0fafe3383cea18103cc13292504dd333579c2dd52001f37502554bf1"
         }
       },
       "10x-bootstrapper": {
@@ -96,8 +96,8 @@
         ],
         "contentHashes": {
           "SKILL.md": "e55be33fa4cb65f9b8b5580212b4ba382f1916de10deae277762734dadf2f710",
-          "references/bootstrapper-config.yaml": "49c89560aed35e2eb694592f0cb90ab41f425d1effc4b94682bd601b024842c1",
-          "references/handoff-consumer.md": "3029b1ffdff09f85b840cfcc97a5ed50cabb6a6b8b0e6465032792227184917b",
+          "references/bootstrapper-config.yaml": "e328ec20a69b53547feb3c3919704fc889eb33c739278b5e165eb743bab205e1",
+          "references/handoff-consumer.md": "43fde1a2166bf3e6337dc3345e49163deb853821949859bf8bd148a60369232d",
           "references/post-scaffold-verification.md": "9b2915667ff937c8630d9d58e45e6643169078e428cc7c2b7cb721d7ab9ec666",
           "references/pre-scaffold-verification.md": "8154ab886d22d21cdd23c1cc26069644932b6155cc1bee614ec6991306695708",
           "references/refusal-protocol.md": "a4a5cb111659ab24dc88d9587d158f37896bbac618ec645c622ce680a685a8f1",
@@ -199,6 +199,13 @@
         "files": ["SKILL.md", "references/progress-format.md"],
         "contentHashes": {
           "SKILL.md": "0bb7ad6de4e5114fe81ff5e49e7573879d7a833e52aab9e1ab58d0b013c16abe",
+          "references/progress-format.md": "01259753af620e2bfcaa04fb34d732d2efcb6fc172f8cf062f24870fe2248642"
+        }
+      },
+      "10x-impl-review": {
+        "files": ["SKILL.md", "references/progress-format.md"],
+        "contentHashes": {
+          "SKILL.md": "c56679dbdfb771743030de19ec2a4c75b4df3fcb77f5d1d2133a79921c6fc50f",
           "references/progress-format.md": "01259753af620e2bfcaa04fb34d732d2efcb6fc172f8cf062f24870fe2248642"
         }
       }
@@ -539,6 +546,71 @@
           "files": ["SKILL.md", "references/archive-sha.md"]
         },
         "10x-status": {
+          "files": ["SKILL.md", "references/progress-format.md"]
+        }
+      },
+      "prompts": [
+        "m1l5-1-plan-integration.md",
+        "m1l5-2-constrain-approach.md",
+        "m1l5-3-extend-prerequisites.md",
+        "m1l5-4-store-plan.md"
+      ],
+      "configs": []
+    },
+    "m2l3": {
+      "appliedAt": "2026-10-04T15:19:15.012Z",
+      "skills": {
+        "10x-idea-check": {
+          "files": ["SKILL.md", "references/examples.md"]
+        },
+        "10x-init": {
+          "files": ["SKILL.md"]
+        },
+        "10x-tech-stack-selector": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-stack-assess": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-bootstrapper": {
+          "files": [
+            "references/bootstrapper-config.yaml",
+            "references/handoff-consumer.md",
+            "references/post-scaffold-verification.md",
+            "references/pre-scaffold-verification.md"
+          ]
+        },
+        "10x-health-check": {
+          "files": ["references/health-check-schema.md"]
+        },
+        "10x-lesson": {
+          "files": ["SKILL.md"]
+        },
+        "10x-new": {
+          "files": ["references/change-md.md"]
+        },
+        "10x-plan": {
+          "files": [
+            "references/plan-persistence.md",
+            "references/progress-format.md",
+            "references/task-orchestration.md",
+            "scripts/metadata-guard.mjs",
+            "scripts/metadata-guard.test.mjs"
+          ]
+        },
+        "10x-plan-review": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-implement": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-archive": {
+          "files": ["references/archive-sha.md"]
+        },
+        "10x-status": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-impl-review": {
           "files": ["SKILL.md", "references/progress-format.md"]
         }
       },
