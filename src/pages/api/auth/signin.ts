@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
+import { isProjectPaused } from "@/lib/supabase-paused";
 
 export const POST: APIRoute = async (context) => {
   const form = await context.request.formData();
@@ -11,6 +12,10 @@ export const POST: APIRoute = async (context) => {
     return context.redirect(`/auth/signin?error=${encodeURIComponent("Supabase nie jest skonfigurowany.")}`);
   }
   const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (isProjectPaused(error)) {
+    return context.redirect("/paused");
+  }
 
   if (error) {
     // Supabase messages are English and too specific; one message avoids revealing which part was wrong.

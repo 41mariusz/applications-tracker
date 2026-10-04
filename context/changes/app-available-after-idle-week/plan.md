@@ -315,31 +315,31 @@ New table and functions only; existing data untouched. The migration is additive
 #### Manual
 
 - [x] 1.6 Cloud migration applied before pushing: `npx supabase db push` reports the keepalive migration as applied — d2bf69e
-- [ ] 1.7 After deploy, the Cloudflare dashboard (Worker → Settings → Triggers) lists the `0 */6 * * *` cron
+- [x] 1.7 After deploy, the Cloudflare dashboard (Worker → Settings → Triggers) lists the `0 */6 * * *` cron
 - [ ] 1.8 Within 6 hours of deploy, `keepalive.pinged_at` in the cloud database has advanced past the migration time (check in the Supabase dashboard or via the Phase 2 health check), and Workers logs show the ping
 
 ### Phase 2: Health check and daily external probe
 
 #### Automated
 
-- [x] 2.1 Health rule unit tests pass, including the 24 h boundary: `npm test`
-- [x] 2.2 Lint and type check pass: `npm run lint && npx astro check`
-- [x] 2.3 Smoke test passes with the new health check: `npm run build && npm run smoke`
-- [ ] 2.4 CI is green on the pushed commit (all three jobs)
+- [x] 2.1 Health rule unit tests pass, including the 24 h boundary: `npm test` — bb88c7e
+- [x] 2.2 Lint and type check pass: `npm run lint && npx astro check` — bb88c7e
+- [x] 2.3 Smoke test passes with the new health check: `npm run build && npm run smoke` — bb88c7e
+- [x] 2.4 CI is green on the pushed commit (all three jobs) — bb88c7e
 
 #### Manual
 
-- [ ] 2.5 `curl -i https://applications-tracker.41mariusz.workers.dev/api/health` returns 200 with a recent `pingedAt`
-- [ ] 2.6 Running the health workflow manually (Actions → Health → Run workflow) succeeds
-- [ ] 2.7 GitHub notification settings for the owner have email enabled for failed Actions workflows
+- [x] 2.5 `curl -i https://applications-tracker.41mariusz.workers.dev/api/health` returns 200 with a recent `pingedAt`
+- [x] 2.6 Running the health workflow manually (Actions → Health → Run workflow) succeeds
+- [x] 2.7 GitHub notification settings for the owner have email enabled for failed Actions workflows
 
 ### Phase 3: Clear message when the database is paused
 
 #### Automated
 
-- [ ] 3.1 Pause-detection tests pass for the three stubbed 540 paths and the non-pause errors: `npm test`
-- [ ] 3.2 Lint and type check pass: `npm run lint && npx astro check`
-- [ ] 3.3 Smoke test still passes (normal sign-in and flows unaffected): `npm run build && npm run smoke`
+- [x] 3.1 Pause-detection tests pass for the three stubbed 540 paths and the non-pause errors: `npm test`
+- [x] 3.2 Lint and type check pass: `npm run lint && npx astro check`
+- [x] 3.3 Smoke test still passes (normal sign-in and flows unaffected): `npm run build && npm run smoke`
 
 #### Manual
 

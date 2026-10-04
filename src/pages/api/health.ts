@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
 import { evaluateHealth, type HealthOutcome } from "@/lib/domain/keepalive";
 import { getKeepaliveStatus } from "@/lib/services/keepalive";
+import { isProjectPaused } from "@/lib/supabase-paused";
 
 export const prerender = false;
 
@@ -16,6 +17,7 @@ export const GET: APIRoute = async (context) => {
       pingedAt = await getKeepaliveStatus(supabase);
       outcome = "ok";
     } catch (e) {
+      if (isProjectPaused(e)) outcome = "paused";
       // eslint-disable-next-line no-console -- server-side log for a failed health read
       console.error("health: keepalive_status failed", e);
     }

@@ -1,0 +1,40 @@
+---
+import Layout from "@/layouts/Layout.astro";
+
+// Public page shown when Supabase answers HTTP 540 (free-tier project paused after inactivity).
+Astro.response.headers.set("Cache-Control", "no-store");
+---
+
+<Layout title="Baza danych uśpiona">
+  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl sm:p-8">
+      <h1 class="mb-4 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-center text-2xl font-bold text-transparent">
+        Baza danych jest uśpiona
+      </h1>
+      <div class="space-y-3 text-sm leading-relaxed text-white/80">
+        <p>
+          Darmowy projekt Supabase został wstrzymany po okresie bez aktywności, dlatego aplikacja nie może teraz
+          odczytać Twoich danych. Dane są bezpieczne.
+        </p>
+        <p>
+          Aby go wznowić, wybierz projekt w
+          <a
+            href="https://supabase.com/dashboard/projects"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-medium break-words text-purple-200 underline hover:text-white"
+          >
+            panelu projektów Supabase
+          </a>
+          i kliknij „Restore project”. Przywracanie trwa zwykle kilka minut.
+        </p>
+      </div>
+      <a
+        href="/dashboard"
+        class="mt-6 block w-full rounded-lg bg-purple-600 px-4 py-2 text-center font-medium text-white transition-colors hover:bg-purple-500"
+      >
+        Spróbuj ponownie
+      </a>
+    </div>
+  </div>
+</Layout>

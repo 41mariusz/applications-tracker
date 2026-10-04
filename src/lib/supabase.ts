@@ -1,12 +1,15 @@
 import { createServerClient, parseCookieHeader } from "@supabase/ssr";
 import type { AstroCookies } from "astro";
 import { SUPABASE_URL, SUPABASE_KEY } from "astro:env/server";
+import { withPauseDetection } from "@/lib/supabase-paused";
 
 export function createClient(requestHeaders: Headers, cookies: AstroCookies) {
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     return null;
   }
   return createServerClient(SUPABASE_URL, SUPABASE_KEY, {
+    // Makes a paused project (HTTP 540) recognisable by isProjectPaused().
+    global: { fetch: withPauseDetection() },
     cookies: {
       getAll() {
         return parseCookieHeader(requestHeaders.get("Cookie") ?? "");
