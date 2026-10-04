@@ -46,6 +46,7 @@ Full server-side rendering (`output: "server"` in astro.config.mjs). All pages a
 - **Business rules live in `src/lib/domain/`** as pure functions with Vitest tests: `status.ts` (allowed transitions, list ordering), `search.ts` (search + status filter), `notes.ts`, `changes.ts` (field diff, merged history), `cv.ts` (file checks, SHA-256, grouping). Put new rules there, not in components or routes.
 - **Supabase access lives in `src/lib/services/`** (`applications.ts`, `notes.ts`, `cv.ts`).
 - **CV files**: private bucket `cvs`, path `<user_id>/<sha256>.<ext>`, unique `(user_id, sha256)` in `cv_files` — identical content is stored once. Served only through `GET /api/cv/[id]` (inline; `?download=1` for attachment). Preview renders in the browser (`cv-render.ts`: pdf.js, docx-preview), loaded on demand.
+- **Keepalive**: `wrangler.jsonc` `main` is the custom entry `src/worker.ts` — it serves Astro via `@astrojs/cloudflare/handler` and adds a `scheduled` handler (cron `0 */6 * * *`) that calls `keepalive_ping()` so Supabase is not paused when idle. Table `keepalive` (one row) has RLS with no policies and no anon/authenticated grants on purpose: access only through `keepalive_ping()` / `keepalive_status()` (`src/lib/services/keepalive.ts`).
 - UI text is Polish; code, comments and docs are English. Dates display in `Europe/Warsaw` (`src/lib/format.ts`).
 
 ### Key conventions

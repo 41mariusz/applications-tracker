@@ -3,7 +3,7 @@ project: Applications Tracker
 version: 1
 status: draft
 created: 2026-09-30
-updated: 2026-09-30
+updated: 2026-10-04
 prd_version: —
 main_goal: quality
 top_blocker: external
@@ -43,14 +43,14 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 
 ## At a glance
 
-| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status   |
-| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | -------- |
-| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready    |
-| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | ready    |
-| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | proposed |
-| S-03 | safe-rollback-after-migration | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready    |
-| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | ready    |
-| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed |
+| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status      |
+| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ----------- |
+| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready       |
+| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | in-progress |
+| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | proposed    |
+| S-03 | safe-rollback-after-migration | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready       |
+| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | ready       |
+| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed    |
 
 ## Streams
 
@@ -105,7 +105,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - What is the database provider's current inactivity-pause policy for free projects (period, and what counts as activity)? — Owner: user. Block: no.
   - Keep the free plan with a keep-alive, or move to a paid database plan? — Owner: user. Block: no.
 - **Risk:** Highest-impact risk in the register and the north star; the risk in the fix is a keep-alive that silently stops running — it needs its own failure signal.
-- **Status:** ready
+- **Status:** in-progress
 
 ### S-02: A 5 MB CV uploads in production
 
