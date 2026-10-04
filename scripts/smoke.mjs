@@ -33,6 +33,34 @@ async function createUser(userEmail = email) {
   });
   return { status: response.status, location: "", body: "" };
 }
+// Fresh heartbeat first: a long-running local Supabase may hold a ping older than 24 h.
+async function pingKeepalive() {
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/keepalive_ping`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: "{}",
+  });
+  return { status: response.ok ? 200 : response.status, location: "", body: await response.text() };
+}
+
+// Health check is public: no session cookies.
+async function health() {
+  const response = await fetch(`${BASE_URL}/api/health`);
+  const body = await response.text();
+  let pingedAt = null;
+  try {
+    pingedAt = JSON.parse(body).pingedAt;
+  } catch {
+    // not JSON — the bodyIncludes check fails below
+  }
+  const parsable = typeof pingedAt === "string" && !Number.isNaN(Date.parse(pingedAt));
+  return { status: response.status, location: "", body: parsable ? body : `unparsable pingedAt: ${body}` };
+}
+
 const jar = new Map();
 
 function cookieHeader() {
@@ -112,6 +140,8 @@ function changeStatus(form) {
 }
 
 const steps = [
+  ["keepalive heartbeat is written", pingKeepalive, { status: 200 }],
+  ["health check reports ok without a session", health, { status: 200, bodyIncludes: '"status":"ok"' }],
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   ["signup page is gone", () => request("/auth/signup"), { status: 404 }],

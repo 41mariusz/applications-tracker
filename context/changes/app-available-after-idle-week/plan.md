@@ -306,15 +306,15 @@ New table and functions only; existing data untouched. The migration is additive
 
 #### Automated
 
-- [x] 1.1 Database tests pass, including the new keepalive tests: `npx supabase test db`
-- [x] 1.2 Unit tests pass: `npm test`
-- [x] 1.3 Lint passes: `npm run lint`
-- [x] 1.4 Type check passes: `npx astro check`
-- [x] 1.5 Production build succeeds and the built Worker still serves the app (smoke test passes against `npm run preview`): `npm run build && npm run smoke`
+- [x] 1.1 Database tests pass, including the new keepalive tests: `npx supabase test db` — d2bf69e
+- [x] 1.2 Unit tests pass: `npm test` — d2bf69e
+- [x] 1.3 Lint passes: `npm run lint` — d2bf69e
+- [x] 1.4 Type check passes: `npx astro check` — d2bf69e
+- [x] 1.5 Production build succeeds and the built Worker still serves the app (smoke test passes against `npm run preview`): `npm run build && npm run smoke` — d2bf69e
 
 #### Manual
 
-- [x] 1.6 Cloud migration applied before pushing: `npx supabase db push` reports the keepalive migration as applied
+- [x] 1.6 Cloud migration applied before pushing: `npx supabase db push` reports the keepalive migration as applied — d2bf69e
 - [ ] 1.7 After deploy, the Cloudflare dashboard (Worker → Settings → Triggers) lists the `0 */6 * * *` cron
 - [ ] 1.8 Within 6 hours of deploy, `keepalive.pinged_at` in the cloud database has advanced past the migration time (check in the Supabase dashboard or via the Phase 2 health check), and Workers logs show the ping
 
@@ -322,9 +322,9 @@ New table and functions only; existing data untouched. The migration is additive
 
 #### Automated
 
-- [ ] 2.1 Health rule unit tests pass, including the 24 h boundary: `npm test`
-- [ ] 2.2 Lint and type check pass: `npm run lint && npx astro check`
-- [ ] 2.3 Smoke test passes with the new health check: `npm run build && npm run smoke`
+- [x] 2.1 Health rule unit tests pass, including the 24 h boundary: `npm test`
+- [x] 2.2 Lint and type check pass: `npm run lint && npx astro check`
+- [x] 2.3 Smoke test passes with the new health check: `npm run build && npm run smoke`
 - [ ] 2.4 CI is green on the pushed commit (all three jobs)
 
 #### Manual

@@ -1,0 +1,14 @@
+name: Health
+
+# Daily probe of production: a non-2xx /api/health fails the run, and GitHub emails the owner.
+on:
+  schedule:
+    - cron: "23 7 * * *"
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production /api/health
+        run: curl --fail-with-body --retry 2 --silent --show-error https://applications-tracker.41mariusz.workers.dev/api/health
