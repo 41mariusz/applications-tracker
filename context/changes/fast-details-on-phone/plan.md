@@ -331,20 +331,20 @@ No database changes. Visual change limited to the details view; other pages unch
 
 #### Automated
 
-- [x] 1.1 Lint and type check pass: `npm run lint && npx astro check`
-- [x] 1.2 Unit tests pass: `npm test`
-- [x] 1.3 Production build succeeds: `npm run build`
+- [x] 1.1 Lint and type check pass: `npm run lint && npx astro check` — a14192f
+- [x] 1.2 Unit tests pass: `npm test` — a14192f
+- [x] 1.3 Production build succeeds: `npm run build` — a14192f
 
 #### Manual
 
-- [x] 1.4 None — no visible change is expected in this phase
+- [x] 1.4 None — no visible change is expected in this phase — a14192f
 
 ### Phase 2: Token values = today's look
 
 #### Automated
 
-- [ ] 2.1 Lint, type check and build pass: `npm run lint && npx astro check && npm run build`
-- [ ] 2.2 Before/after screenshots of `/dashboard`, `/cv` and `/auth/signin` at 1280 px and 360 px (headless Chromium against a local preview) differ by at most 0.1 % of pixels
+- [x] 2.1 Lint, type check and build pass: `npm run lint && npx astro check && npm run build`
+- [x] 2.2 Before/after screenshots of `/dashboard`, `/cv` and `/auth/signin` at 1280 px and 360 px (headless Chromium against a local preview) differ by at most 0.1 % of pixels
 
 #### Manual
 

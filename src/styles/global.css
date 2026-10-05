@@ -3,73 +3,60 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
+/*
+ * One dark theme (no light mode): token values reproduce the app's literal classes as of 2026-10-05.
+ * Role -> token -> value -> replaced literal(s) is on record in context/changes/fast-details-on-phone/tokens.md.
+ * `.dark` shares the same values so nothing can switch to the stock shadcn greys.
+ */
+:root,
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  --radius: 0.625rem;
+  /* Page: navy cosmic background (bg-cosmic stops), white text. */
+  --background: #0a0e1a;
+  --background-raised: #0f1529;
+  --foreground: oklch(1 0 0);
+  /* Panel surface: bg-white/5 over the navy. */
+  --card: oklch(1 0 0 / 5%);
+  --card-foreground: oklch(1 0 0);
+  /* Floating surfaces and native options must be opaque: white 5% mixed into the navy. */
+  --popover: #161a25;
+  --popover-foreground: oklch(1 0 0);
+  /* Primary action: bg-purple-600 text-white. */
+  --primary: oklch(55.8% 0.288 302.321);
+  --primary-foreground: oklch(1 0 0);
+  /* Chips: status pill bg-purple-500/30; selected chip bg-purple-500/40. */
+  --secondary: oklch(62.7% 0.265 303.9 / 30%);
+  --secondary-foreground: oklch(1 0 0);
+  --accent: oklch(62.7% 0.265 303.9 / 40%);
+  --accent-foreground: oklch(1 0 0);
+  /* Raised surface / input fill / hover: bg-white/10. */
+  --muted: oklch(1 0 0 / 10%);
+  /* Secondary text in two steps: text-blue-100/60 (labels, timestamps) and /70 (supporting text). */
+  --muted-foreground: oklch(93.2% 0.032 255.585 / 60%);
+  --supporting-foreground: oklch(93.2% 0.032 255.585 / 70%);
+  /* Links: text-purple-300 (--primary is too dark for text on navy). */
+  --link: oklch(82.7% 0.119 306.383);
+  /* Errors as text on dark: text-red-300. */
+  --destructive: oklch(80.8% 0.114 19.571);
+  /* Revert hint: text-amber-300. */
+  --warning: oklch(87.9% 0.169 91.605);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --input: oklch(1 0 0 / 20%);
+  /* Focus: ring-purple-400. */
+  --ring: oklch(71.4% 0.203 305.504);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar: #161a25;
+  --sidebar-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(55.8% 0.288 302.321);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(62.7% 0.265 303.9 / 40%);
+  --sidebar-accent-foreground: oklch(1 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: oklch(71.4% 0.203 305.504);
 }
 
 @theme inline {
@@ -89,9 +76,12 @@
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-supporting-foreground: var(--supporting-foreground);
+  --color-link: var(--link);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -111,7 +101,7 @@
 }
 
 @utility bg-cosmic {
-  background-image: linear-gradient(to bottom, #0a0e1a, #0f1529, #0a0e1a);
+  background-image: linear-gradient(to bottom, var(--background), var(--background-raised), var(--background));
 }
 
 @layer base {
