@@ -259,7 +259,7 @@ None. No schema or stored-data change.
 #### Automated
 
 - [ ] 3.1 The CI `smoke` job on the PR runs `npx playwright test` and passes (setup, seed, call-phone-search)
-- [x] 3.2 `npm run lint` and Prettier (lint-staged) pass on the changed files
+- [x] 3.2 `npm run lint` and Prettier (lint-staged) pass on the changed files — 9ee6339
 
 #### Manual
 

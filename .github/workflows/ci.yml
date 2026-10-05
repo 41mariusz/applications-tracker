@@ -72,9 +72,11 @@ jobs:
         env:
           E2E_USERNAME: e2e@example.com
           E2E_PASSWORD: e2e-local-password
-          # The smoke preview above still holds 4321; Playwright builds and starts its own server here.
-          E2E_PORT: 4322
         run: |
+          # Astro 7 runs one preview server per project, whatever the port: stop the smoke preview,
+          # then Playwright builds and starts its own (CLOUDFLARE_ENV=e2e) on 4321.
+          npx astro preview stop
+          for i in $(seq 1 30); do curl -s -o /dev/null http://localhost:4321/ || break; sleep 1; done
           source supabase.env
           E2E_SUPABASE_URL="$API_URL" E2E_SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" npx playwright test
       - if: failure()

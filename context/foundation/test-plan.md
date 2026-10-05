@@ -140,7 +140,7 @@ the relevant rollout phase ships; before that, the sub-section reads
 - **Sign-in through the UI**: the form is a React island — retry fill + submit inside `expect(...).toPass()` (input typed before hydration is lost), as in `tests/e2e/auth.setup.ts`.
 - **Run locally**: local Supabase running; secrets in gitignored `.env.e2e` (`E2E_USERNAME`, `E2E_PASSWORD`, `E2E_SUPABASE_URL`, `E2E_SUPABASE_SERVICE_ROLE_KEY`) and `.dev.vars.e2e` (Worker env, `CLOUDFLARE_ENV=e2e`) — never `.env`. `npx playwright test tests/e2e/<name>.spec.ts`; commands and ports in `context/foundation/test-stack.md`.
 - **Prove it protects**: break the behaviour the risk targets, confirm the spec goes red on the risk's assertion, revert; check no test data is left after both runs.
-- **CI**: the `smoke` job runs `npx playwright test` against a fresh build on port 4322 with a local-only test user; on failure the HTML report is uploaded as the `playwright-report` artifact.
+- **CI**: the `smoke` job stops the smoke preview (Astro 7 runs one preview per project), then runs `npx playwright test` against a fresh build with a local-only test user; on failure the HTML report is uploaded as the `playwright-report` artifact.
 
 ### 6.4 Adding a smoke step (HTTP)
 
