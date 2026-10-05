@@ -316,7 +316,7 @@ New table and functions only; existing data untouched. The migration is additive
 
 - [x] 1.6 Cloud migration applied before pushing: `npx supabase db push` reports the keepalive migration as applied — d2bf69e
 - [x] 1.7 After deploy, the Cloudflare dashboard (Worker → Settings → Triggers) lists the `0 */6 * * *` cron
-- [ ] 1.8 Within 6 hours of deploy, `keepalive.pinged_at` in the cloud database has advanced past the migration time (check in the Supabase dashboard or via the Phase 2 health check), and Workers logs show the ping
+- [x] 1.8 Within 6 hours of deploy, `keepalive.pinged_at` in the cloud database has advanced past the migration time (check in the Supabase dashboard or via the Phase 2 health check), and Workers logs show the ping
 
 ### Phase 2: Health check and daily external probe
 
