@@ -12,6 +12,7 @@ const password = "Smoke-Test-Passw0rd!";
 const company = `Smoke Corp ${Date.now()}`;
 let applicationId = "";
 let noteId = "";
+let activeNoteId = "";
 const agreement = `Agreed rate ${Date.now()}`;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -147,6 +148,74 @@ function changeStatus(form) {
   return request(`/api/applications/${applicationId}/status`, { method: "POST", form });
 }
 
+// List order on a clean account: eight applications, one per stage (two in "sent"), compared with the PRD order.
+const orderTag = `Order ${Date.now()}`;
+const CLOSED = ["rejected", "withdrawn"];
+
+async function checkListOrder() {
+  const plan = [
+    ["accepted", "accepted"],
+    ["offer", "offer"],
+    ["interviews", "interviews"],
+    ["hr_contact", "hr_contact"],
+    ["sent-noted", "sent"],
+    ["sent-other", "sent"],
+    ["rejected", "rejected"],
+    ["withdrawn", "withdrawn"],
+  ];
+  const companyById = new Map();
+  const idByLabel = new Map();
+  for (const [label] of plan) {
+    const name = `${orderTag} [${label}]`;
+    const created = await request("/api/applications", { method: "POST", form: { company: name, position: "Dev" } });
+    if (created.status !== 201) return { ...created, body: `create ${label} failed: ${created.body}` };
+    const { id } = JSON.parse(created.body);
+    companyById.set(id, name);
+    idByLabel.set(label, id);
+  }
+  // New applications start at "sent"; closed ones are closed from there, the rejected one first.
+  for (const [label, status] of plan) {
+    if (status === "sent") continue;
+    const moved = await request(`/api/applications/${idByLabel.get(label)}/status`, {
+      method: "POST",
+      form: { status },
+    });
+    if (moved.status !== 200) return { ...moved, body: `move ${label} failed: ${moved.body}` };
+  }
+  // A note makes the older "sent" application the most recently active one in its stage.
+  const noted = await request(`/api/applications/${idByLabel.get("sent-noted")}/notes`, {
+    method: "POST",
+    form: { kind: "comment", body: "follow-up", noted_at: new Date().toISOString() },
+  });
+  if (noted.status !== 201) return { ...noted, body: `note failed: ${noted.body}` };
+
+  const page = await request("/dashboard");
+  const order = [];
+  const missingStrike = [];
+  for (const card of page.body.split("<li ").slice(1)) {
+    const id = card.match(/href="\/applications\/([0-9a-f-]{36})"/)?.[1];
+    if (!companyById.has(id)) continue;
+    order.push(companyById.get(id));
+    const status = card.match(/data-status="([a-z_]+)"/)?.[1];
+    if (CLOSED.includes(status) && !card.includes("line-through")) missingStrike.push(companyById.get(id));
+  }
+  const strike = missingStrike.length ? ` | not crossed out: ${missingStrike.join(", ")}` : "";
+  return { status: page.status, location: page.location, body: order.join(" > ") + strike };
+}
+
+const expectedOrder = [
+  "accepted",
+  "offer",
+  "interviews",
+  "hr_contact",
+  "sent-noted",
+  "sent-other",
+  "withdrawn",
+  "rejected",
+]
+  .map((label) => `${orderTag} [${label}]`)
+  .join(" > ");
+
 const steps = [
   ["keepalive heartbeat is written", pingKeepalive, { status: 200 }],
   ["health check reports ok without a session", health, { status: 200, bodyIncludes: '"status":"ok"' }],
@@ -219,6 +288,29 @@ const steps = [
   ],
   [
     "confirmed revert is accepted",
+    () => changeStatus({ status: "offer", confirm: "true" }),
+    { status: 200, bodyIncludes: "offer" },
+  ],
+  ["status cannot be set to the one it already has", () => changeStatus({ status: "offer" }), { status: 400 }],
+  ["an offer can be accepted", () => changeStatus({ status: "accepted" }), { status: 200, bodyIncludes: "accepted" }],
+  [
+    "moving from one final status to another needs confirmation",
+    () => changeStatus({ status: "withdrawn" }),
+    { status: 409, bodyIncludes: "requiresConfirmation" },
+  ],
+  ["confirmation must be explicit", () => changeStatus({ status: "withdrawn", confirm: "false" }), { status: 400 }],
+  [
+    "confirmed move between final statuses is accepted",
+    () => changeStatus({ status: "withdrawn", confirm: "true" }),
+    { status: 200, bodyIncludes: "withdrawn" },
+  ],
+  [
+    "history marks the accepted → withdrawn move as a revert",
+    details,
+    { status: 200, bodyIncludes: 'Zaakceptowana → Wycofana<span class="text-warning"> (cofnięcie)' },
+  ],
+  [
+    "a withdrawn application can be reopened with confirmation",
     () => changeStatus({ status: "offer", confirm: "true" }),
     { status: 200, bodyIncludes: "offer" },
   ],
@@ -360,6 +452,18 @@ const steps = [
     () => request("/api/auth/signin", { method: "POST", form: { email, password, next: "//evil.com" } }),
     { status: 302, location: "/dashboard" },
   ],
+  [
+    "a note that stays active is added",
+    async () => {
+      const result = await request(`/api/applications/${applicationId}/notes`, {
+        method: "POST",
+        form: { kind: "comment", body: `Active note ${Date.now()}`, noted_at: new Date().toISOString() },
+      });
+      if (result.status === 201) activeNoteId = JSON.parse(result.body).id;
+      return result;
+    },
+    { status: 201 },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   ["CV library requires sign-in", () => request("/cv"), { status: 302, location: "/auth/signin" }],
@@ -404,11 +508,22 @@ const steps = [
   [
     "second user cannot edit the first user's note",
     () =>
-      request(`/api/notes/${noteId}`, {
+      request(`/api/notes/${activeNoteId}`, {
         method: "PATCH",
         form: { kind: "comment", body: "intrusion", noted_at: new Date().toISOString() },
       }),
     { status: 404 },
+  ],
+  [
+    "second user cannot remove the first user's note",
+    () => request(`/api/notes/${activeNoteId}`, { method: "DELETE" }),
+    { status: 404 },
+  ],
+  ["second user cannot change the first user's status", () => changeStatus({ status: "accepted" }), { status: 404 }],
+  [
+    "list puts stages in order of importance, most recent activity first, closed ones last",
+    checkListOrder,
+    { status: 200, bodyIncludes: expectedOrder },
   ],
 ];
 
@@ -425,6 +540,7 @@ for (const [name, run, expected] of steps) {
   if (!ok) {
     failed++;
     console.log(`      expected ${expected.status} ${expected.location ?? ""} ${expected.bodyIncludes ?? ""}`);
+    console.log(`      actual body: ${actual.body.slice(0, 300)}`);
   }
 }
 

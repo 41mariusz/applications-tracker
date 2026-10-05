@@ -470,24 +470,24 @@ Record how to test a status-rule change, the decided rules, and the accepted dat
 
 #### Automated
 
-- [x] 2.1 Database tests pass: `npx supabase test db`
-- [x] 2.2 Both pgTAP files run in CI's smoke job without workflow changes
+- [x] 2.1 Database tests pass: `npx supabase test db` — aec5e03
+- [x] 2.2 Both pgTAP files run in CI's smoke job without workflow changes — aec5e03
 
 #### Manual
 
-- [x] 2.3 Removing the add_note activity bump turns the assertion red; reset
+- [x] 2.3 Removing the add_note activity bump turns the assertion red; reset — aec5e03
 
 ### Phase 3: Smoke HTTP — transition kinds, revert trace, list order, isolation
 
 #### Automated
 
-- [ ] 3.1 Smoke passes locally against a production preview on local Supabase
-- [ ] 3.2 Lint passes: `npm run lint`
+- [x] 3.1 Smoke passes locally against a production preview on local Supabase
+- [x] 3.2 Lint passes: `npm run lint`
 
 #### Manual
 
-- [ ] 3.3 Breaking the stage rank turns the ordering step red; reverted
-- [ ] 3.4 The note-edit isolation step targets an active note
+- [x] 3.3 Breaking the stage rank turns the ordering step red; reverted
+- [x] 3.4 The note-edit isolation step targets an active note
 
 ### Phase 4: E2E — revert confirmation in a browser
 
