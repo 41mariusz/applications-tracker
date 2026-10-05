@@ -26,19 +26,29 @@ async function attach(applicationId: string, cvFileId: string): Promise<string |
   return data.error ?? "Nie udało się podpiąć CV.";
 }
 
+// How long the "already in the library" message stays readable before the page refreshes.
+const REUSED_MESSAGE_MS = 3000;
+
 export default function CvPanel({ applicationId, current, library }: Props) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
-  async function run(action: () => Promise<string | null>) {
+  // reloadDelayMs is read after the action, so the action can decide whether a message needs reading time.
+  async function run(action: () => Promise<string | null>, reloadDelayMs: () => number = () => 0) {
     setPending(true);
     setError(null);
     try {
       const failure = await action();
       if (failure) setError(failure);
-      else window.location.reload();
+      else {
+        // A delay leaves time to read an informational message before the page refreshes.
+        setTimeout(() => {
+          window.location.reload();
+        }, reloadDelayMs());
+        return;
+      }
     } catch {
       setError("Brak połączenia. Spróbuj ponownie.");
     }
@@ -60,16 +70,23 @@ export default function CvPanel({ applicationId, current, library }: Props) {
       setError(check.message);
       return;
     }
-    void run(async () => {
-      const body = new FormData();
-      body.set("file", file);
-      const response = await fetch("/api/cv", { method: "POST", body });
-      const data = (await response.json()) as { file?: CvFile; reused?: boolean; error?: string };
-      if (!response.ok || !data.file) return data.error ?? "Nie udało się wgrać pliku.";
-      // The same file was already in the library: nothing new was stored.
-      if (data.reused) setMessage(`Ten plik jest już w bibliotece jako „${data.file.file_name}” — użyto istniejącego.`);
-      return attach(applicationId, data.file.id);
-    });
+    let reused = false;
+    void run(
+      async () => {
+        const body = new FormData();
+        body.set("file", file);
+        const response = await fetch("/api/cv", { method: "POST", body });
+        const data = (await response.json()) as { file?: CvFile; reused?: boolean; error?: string };
+        if (!response.ok || !data.file) return data.error ?? "Nie udało się wgrać pliku.";
+        // The same file was already in the library: nothing new was stored.
+        if (data.reused) {
+          reused = true;
+          setMessage(`Ten plik jest już w bibliotece jako „${data.file.file_name}” — użyto istniejącego.`);
+        }
+        return attach(applicationId, data.file.id);
+      },
+      () => (reused ? REUSED_MESSAGE_MS : 0),
+    );
   }
 
   const others = library.filter((f) => f.id !== current?.id);
