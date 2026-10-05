@@ -481,26 +481,26 @@ Record how to test a status-rule change, the decided rules, and the accepted dat
 
 #### Automated
 
-- [x] 3.1 Smoke passes locally against a production preview on local Supabase
-- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.1 Smoke passes locally against a production preview on local Supabase — 3ec326d
+- [x] 3.2 Lint passes: `npm run lint` — 3ec326d
 
 #### Manual
 
-- [x] 3.3 Breaking the stage rank turns the ordering step red; reverted
-- [x] 3.4 The note-edit isolation step targets an active note
+- [x] 3.3 Breaking the stage rank turns the ordering step red; reverted — 3ec326d
+- [x] 3.4 The note-edit isolation step targets an active note — 3ec326d
 
 ### Phase 4: E2E — revert confirmation in a browser
 
 #### Automated
 
-- [ ] 4.1 E2E passes locally: status-revert spec
-- [ ] 4.2 Full E2E suite passes
-- [ ] 4.3 Lint passes: `npm run lint`
+- [x] 4.1 E2E passes locally: status-revert spec
+- [x] 4.2 Full E2E suite passes
+- [x] 4.3 Lint passes: `npm run lint`
 
 #### Manual
 
-- [ ] 4.4 Bypassing window.confirm makes the spec fail; reverted
-- [ ] 4.5 No [E2E] applications remain after passing and failing runs
+- [x] 4.4 Bypassing window.confirm makes the spec fail; reverted
+- [x] 4.5 No [E2E] applications remain after passing and failing runs
 
 ### Phase 5: Documentation and test-plan close-out
 
