@@ -72,6 +72,11 @@ export default function StatusControl({ applicationId, status }: Props) {
           ))}
         </NativeSelectOptGroup>
       </NativeSelect>
+      {pending && (
+        <p className="text-muted-foreground text-xs" role="status">
+          Zapisywanie…
+        </p>
+      )}
       {error && <p className="text-destructive max-w-48 text-right text-xs">{error}</p>}
     </div>
   );

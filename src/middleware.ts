@@ -35,7 +35,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   if (PROTECTED_ROUTES.some((route) => context.url.pathname.startsWith(route))) {
     if (!context.locals.user) {
-      return context.redirect("/auth/signin");
+      // Remember where the user was going, so sign-in can return there (checked by safeNextPath).
+      const next = encodeURIComponent(context.url.pathname + context.url.search);
+      return context.redirect(`/auth/signin?next=${next}`);
     }
   }
 

@@ -155,13 +155,18 @@ function NoteForm({ initial, submitLabel, onSubmit, onCancel }: NoteFormProps) {
 function NoteItem({ note }: { note: Note }) {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [removing, setRemoving] = useState(false);
   const removed = note.deleted_at !== null;
 
   async function remove() {
     if (!window.confirm("Usunąć notatkę? Zostanie na osi czasu jako przekreślona.")) return;
+    setRemoving(true);
+    setError(null);
     const result = await send(`/api/notes/${note.id}`, "DELETE");
-    if (result) setError(result.form ?? "Nie udało się usunąć notatki.");
-    else window.location.reload();
+    if (result) {
+      setError(result.form ?? "Nie udało się usunąć notatki.");
+      setRemoving(false);
+    } else window.location.reload();
   }
 
   if (editing) {
@@ -201,6 +206,7 @@ function NoteItem({ note }: { note: Note }) {
             <Button
               type="button"
               variant="link"
+              disabled={removing}
               onClick={() => {
                 setEditing(true);
               }}
@@ -211,10 +217,11 @@ function NoteItem({ note }: { note: Note }) {
             <Button
               type="button"
               variant="link"
+              disabled={removing}
               onClick={() => void remove()}
               className={cn(textActionClass, "text-xs")}
             >
-              Usuń
+              {removing ? "Usuwanie…" : "Usuń"}
             </Button>
           </span>
         )}
@@ -223,7 +230,9 @@ function NoteItem({ note }: { note: Note }) {
       {error && <p className="text-destructive mt-1 text-xs">{error}</p>}
       {note.revisions.length > 0 && (
         <details className="text-muted-foreground mt-2 text-xs">
-          <summary className="cursor-pointer">Poprzednie wersje ({note.revisions.length})</summary>
+          <summary className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none focus-visible:ring-2">
+            Poprzednie wersje ({note.revisions.length})
+          </summary>
           <ul className="mt-2 space-y-2">
             {note.revisions.map((r) => (
               <li key={r.id} className="border-input border-l pl-3">

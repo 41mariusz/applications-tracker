@@ -77,6 +77,12 @@ function storeCookies(response) {
   }
 }
 
+// A visitor without a session: no cookies sent or stored.
+async function anonymous(path) {
+  const response = await fetch(BASE_URL + path, { redirect: "manual" });
+  return { status: response.status, location: response.headers.get("location") ?? "", body: await response.text() };
+}
+
 async function request(path, { method = "GET", form } = {}) {
   const response = await fetch(BASE_URL + path, {
     method,
@@ -329,6 +335,30 @@ const steps = [
     "CV can also be downloaded",
     () => request(`/api/cv/${cvId}?download=1`),
     { status: 200, bodyIncludes: "%PDF", disposition: "attachment" },
+  ],
+  [
+    "malformed application link is not found",
+    () => request("/applications/abc"),
+    { status: 404, bodyIncludes: "Nie znaleziono" },
+  ],
+  [
+    "application link sends an anonymous visitor to sign-in with a return path",
+    () => anonymous(`/applications/${applicationId}`),
+    { status: 302, location: `/auth/signin?next=%2Fapplications%2F${applicationId}` },
+  ],
+  [
+    "signin returns to the requested application",
+    () =>
+      request("/api/auth/signin", {
+        method: "POST",
+        form: { email, password, next: `/applications/${applicationId}` },
+      }),
+    { status: 302, location: `/applications/${applicationId}` },
+  ],
+  [
+    "signin refuses a return path to another site",
+    () => request("/api/auth/signin", { method: "POST", form: { email, password, next: "//evil.com" } }),
+    { status: 302, location: "/dashboard" },
   ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],

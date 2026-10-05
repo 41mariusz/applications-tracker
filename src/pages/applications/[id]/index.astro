@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { listCvFiles } from "@/lib/services/cv";
 import type { CvFile } from "@/types";
 import { createClient } from "@/lib/supabase";
+import { isUuid } from "@/lib/domain/ids";
 import { latestActiveNote } from "@/lib/domain/notes";
 import { FIELD_LABELS, mergeHistory, type HistoryField } from "@/lib/domain/changes";
 import { isClosed } from "@/lib/domain/status";
@@ -18,19 +19,24 @@ import { getApplicationDetails, type ApplicationDetails } from "@/lib/services/n
 import { EMPLOYMENT_TYPE_LABELS, NOTE_KIND_LABELS, STATUS_LABELS, WORK_MODE_LABELS } from "@/types";
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
+const id = Astro.params.id;
 let details: ApplicationDetails | null = null;
 let cvLibrary: CvFile[] = [];
 let loadError: string | null = null;
-if (supabase && Astro.params.id) {
+// A malformed id cannot name an application: "not found" without asking the database.
+if (supabase && isUuid(id)) {
   try {
-    [details, cvLibrary] = await Promise.all([getApplicationDetails(supabase, Astro.params.id), listCvFiles(supabase)]);
+    [details, cvLibrary] = await Promise.all([getApplicationDetails(supabase, id), listCvFiles(supabase)]);
   } catch (e) {
     // eslint-disable-next-line no-console -- server-side log for failed reads
     console.error("getApplicationDetails failed", e);
     loadError = "Nie udało się wczytać aplikacji.";
   }
 }
-if (!details && !loadError) {
+// Unknown, foreign or malformed id → 404; a failed read → 500.
+if (loadError) {
+  Astro.response.status = 500;
+} else if (!details) {
   Astro.response.status = 404;
 }
 
@@ -50,9 +56,13 @@ const latest = details ? latestActiveNote(details.notes) : null;
 const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_phone.replace(/[^\d+]/g, "")}` : null;
 // Inline text links: link variant without the button box.
 const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-normal");
+// Plain underlined links (phone, posting URL) with the same token focus ring as buttons.
+const plainLinkClass = "text-link focus-visible:ring-ring rounded-sm underline outline-none focus-visible:ring-2";
 ---
 
-<Layout title={application ? `${application.company} — ${application.position}` : "Aplikacja"}>
+<Layout
+  title={application ? `${application.company} — ${application.position}` : loadError ? "Aplikacja" : "Nie znaleziono"}
+>
   <div class="bg-cosmic min-h-screen p-4 scheme-dark sm:p-8">
     <Topbar />
     <div class="text-foreground mx-auto max-w-2xl space-y-4">
@@ -66,9 +76,13 @@ const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-norma
         </Alert>
       )}
       {!details && !loadError && (
-        <p class="bg-card text-supporting-foreground rounded-xl border p-6 text-center">
-          Nie znaleziono tej aplikacji.
-        </p>
+        <div class="bg-card rounded-xl border p-6 text-center" data-testid="not-found">
+          <h1 class="text-lg font-semibold">Nie znaleziono</h1>
+          <p class="text-supporting-foreground mt-1">Tej aplikacji nie ma albo link jest nieprawidłowy.</p>
+          <a href="/dashboard" class:list={cn(buttonVariants({ size: "sm" }), "mt-4")}>
+            Wróć do listy
+          </a>
+        </div>
       )}
 
       {details && application && (
@@ -112,7 +126,7 @@ const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-norma
                 {phoneHref && (
                   <>
                     {application.hr_contact_name && " · "}
-                    <a href={phoneHref} class="text-link underline">
+                    <a href={phoneHref} class:list={plainLinkClass}>
                       {application.hr_contact_phone}
                     </a>
                   </>
@@ -123,7 +137,7 @@ const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-norma
 
           <NotesPanel applicationId={application.id} notes={details.notes} client:load />
 
-          <CvPanel applicationId={application.id} current={currentCv} library={cvLibrary} client:visible />
+          <CvPanel applicationId={application.id} current={currentCv} library={cvLibrary} client:idle />
 
           <section class="bg-card rounded-xl border p-4 text-sm">
             <div class="mb-2 flex items-center justify-between">
@@ -140,7 +154,7 @@ const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-norma
                     href={application.posting_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-link underline"
+                    class:list={[plainLinkClass, "focus-visible:ring-inset"]}
                   >
                     {application.posting_url}
                   </a>

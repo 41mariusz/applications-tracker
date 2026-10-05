@@ -348,30 +348,30 @@ No database changes. Visual change limited to the details view; other pages unch
 
 #### Manual
 
-- [x] 2.3 Owner confirms on production that the dashboard, CV library and sign-in look unchanged after deploy
+- [x] 2.3 Owner confirms on production that the dashboard, CV library and sign-in look unchanged after deploy — e63d95a
 
 ### Phase 3: Details view on tokens and components
 
 #### Automated
 
-- [x] 3.1 Hardcoded-value scan reports 0 hits in the 6 view files: `grep -cE '<scan regex from /10x-ui>' <files>` (the Phase 5 script once it exists)
-- [x] 3.2 Lint, type check, unit tests pass: `npm run lint && npx astro check && npm test`
-- [x] 3.3 Smoke test passes (details, notes, status and CV flows unchanged): `npm run build && npm run smoke`
-- [x] 3.4 At 360 px the details page has no horizontal scroll (`document.documentElement.scrollWidth <= 360` in headless Chromium, with a long company name and a long URL in a note)
+- [x] 3.1 Hardcoded-value scan reports 0 hits in the 6 view files: `grep -cE '<scan regex from /10x-ui>' <files>` (the Phase 5 script once it exists) — e63d95a
+- [x] 3.2 Lint, type check, unit tests pass: `npm run lint && npx astro check && npm test` — e63d95a
+- [x] 3.3 Smoke test passes (details, notes, status and CV flows unchanged): `npm run build && npm run smoke` — e63d95a
+- [x] 3.4 At 360 px the details page has no horizontal scroll (`document.documentElement.scrollWidth <= 360` in headless Chromium, with a long company name and a long URL in a note) — e63d95a
 
 #### Manual
 
-- [ ] 3.5 On a phone the details page reads at least as clearly as before; call-critical info is still first
+- [x] 3.5 On a phone the details page reads at least as clearly as before; call-critical info is still first
 
 ### Phase 4: Entry and the 7 states
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass, including `safeNextPath`: `npm test`
-- [ ] 4.2 Lint and type check pass: `npm run lint && npx astro check`
-- [ ] 4.3 Smoke test passes, including the 404 and return-path steps: `npm run build && npm run smoke`
-- [ ] 4.4 Kitchen sink screenshots at 1280 px and 360 px saved to `context/changes/fast-details-on-phone/screenshots/`, with hover and focus-visible triggered by the screenshot script
-- [ ] 4.5 `/dev/ui` returns 404 in the production build (`npm run preview`)
+- [x] 4.1 Unit tests pass, including `safeNextPath`: `npm test`
+- [x] 4.2 Lint and type check pass: `npm run lint && npx astro check`
+- [x] 4.3 Smoke test passes, including the 404 and return-path steps: `npm run build && npm run smoke`
+- [x] 4.4 Kitchen sink screenshots at 1280 px and 360 px saved to `context/changes/fast-details-on-phone/screenshots/`, with hover and focus-visible triggered by the screenshot script
+- [x] 4.5 `/dev/ui` returns 404 in the production build (`npm run preview`)
 
 #### Manual
 

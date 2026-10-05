@@ -182,7 +182,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
             disabled={pending}
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={handleUpload}
-            className="text-supporting-foreground file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-1.5"
+            className="text-supporting-foreground focus-visible:ring-ring file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 block w-full rounded-lg text-xs outline-none file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-1.5 focus-visible:ring-2"
           />
         </div>
       </div>

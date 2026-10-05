@@ -1,0 +1,23 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Card } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+// Any unknown path (a mistyped or stale link) lands here with HTTP 404.
+Astro.response.status = 404;
+---
+
+<Layout title="Nie znaleziono">
+  <div class="bg-cosmic text-foreground flex min-h-screen items-center justify-center p-4 scheme-dark">
+    <Card className="bg-muted w-full max-w-md gap-4 rounded-2xl p-6 text-center shadow-none backdrop-blur-xl sm:p-8">
+      <h1 class="text-2xl font-bold">Nie znaleziono</h1>
+      <p class="text-supporting-foreground text-sm leading-relaxed">
+        Ta strona nie istnieje albo link jest nieprawidłowy.
+      </p>
+      <a href="/dashboard" class:list={cn(buttonVariants(), "w-full rounded-lg")}>
+        Wróć do listy aplikacji
+      </a>
+    </Card>
+  </div>
+</Layout>

@@ -1,0 +1,344 @@
+---
+// Kitchen sink for the details view (/applications/[id]): its components in the 7 states side by side.
+// Dev only (404 in a production build) and not linked from the app. Islands render statically (no hydration);
+// hover and focus-visible are forced by the screenshot script on elements marked data-ks="hover-target" /
+// data-ks="focus-target". Token classes only.
+import Layout from "@/layouts/Layout.astro";
+import NotFound from "@/pages/404.astro";
+import StatusControl from "@/components/applications/StatusControl";
+import NotesPanel from "@/components/applications/NotesPanel";
+import CvPanel from "@/components/applications/CvPanel";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
+import type { CvFile, Note } from "@/types";
+
+// Production builds answer 404 with the regular not-found page.
+const enabled = import.meta.env.DEV;
+if (!enabled) {
+  Astro.response.status = 404;
+}
+
+const STATES = ["default", "hover", "focus-visible", "disabled", "error", "empty", "loading"] as const;
+
+const buttonVariantsShown = ["default", "outline", "secondary", "ghost", "link", "destructive"] as const;
+
+const appId = "00000000-0000-4000-8000-000000000001";
+const sampleNotes: Note[] = [
+  {
+    id: "00000000-0000-4000-8000-000000000011",
+    application_id: appId,
+    kind: "phone_call",
+    body: "Stawka 24k B2B zaakceptowana, start od 1 grudnia. Link: https://example.com/a/very/long/url/that/should/break/inside/the/card",
+    noted_at: "2026-10-04T10:15:00.000Z",
+    created_at: "2026-10-04T10:20:00.000Z",
+    updated_at: "2026-10-04T12:00:00.000Z",
+    deleted_at: null,
+    revisions: [
+      {
+        id: "00000000-0000-4000-8000-000000000021",
+        note_id: "00000000-0000-4000-8000-000000000011",
+        previous_kind: "phone_call",
+        previous_body: "Stawka 22k B2B.",
+        previous_noted_at: "2026-10-04T10:15:00.000Z",
+        changed_at: "2026-10-04T12:00:00.000Z",
+      },
+    ],
+  },
+  {
+    id: "00000000-0000-4000-8000-000000000012",
+    application_id: appId,
+    kind: "comment",
+    body: "Notatka usunięta — zostaje przekreślona na osi czasu.",
+    noted_at: "2026-10-02T08:00:00.000Z",
+    created_at: "2026-10-02T08:00:00.000Z",
+    updated_at: "2026-10-03T08:00:00.000Z",
+    deleted_at: "2026-10-03T08:00:00.000Z",
+    revisions: [],
+  },
+];
+const sampleCv: CvFile = {
+  id: "00000000-0000-4000-8000-000000000031",
+  file_name: "CV Anna Kowalska — senior frontend developer, wersja angielska.pdf",
+  mime_type: "application/pdf",
+  size_bytes: 248_000,
+  created_at: "2026-09-30T09:00:00.000Z",
+};
+const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032", file_name: "CV Anna.docx" };
+---
+
+{enabled ? (
+  <Layout title="Kitchen sink">
+    <div class="bg-cosmic text-foreground min-h-screen p-4 scheme-dark sm:p-8">
+      <div class="mx-auto max-w-5xl space-y-6">
+        <header>
+          <h1 class="text-xl font-bold">Kitchen sink — szczegóły aplikacji</h1>
+          <p class="text-muted-foreground text-sm">
+            Stany: {STATES.join(" · ")}. „N/A” = stan nie dotyczy komponentu (powód obok).
+          </p>
+        </header>
+
+        {/* Buttons: one row per variant, columns = states. */}
+        <Card className="gap-3 rounded-xl p-4 shadow-none" data-ks="section-buttons">
+          <h2 class="font-semibold">Button</h2>
+          {buttonVariantsShown.map((variant) => (
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+              <span class="text-muted-foreground w-20">{variant}</span>
+              <Button variant={variant} size="sm">
+                Default
+              </Button>
+              <Button variant={variant} size="sm" data-ks="hover-target">
+                Hover
+              </Button>
+              <Button variant={variant} size="sm" data-ks="focus-target">
+                Focus
+              </Button>
+              <Button variant={variant} size="sm" disabled>
+                Disabled
+              </Button>
+              <Button variant={variant} size="sm" disabled>
+                Zapisywanie…
+              </Button>
+            </div>
+          ))}
+          <p class="text-muted-foreground text-xs">error / empty: N/A — błąd pokazuje Alert lub tekst pod polem.</p>
+        </Card>
+
+        {/* Chips: status pill (Badge / select pill) and note-kind chips. */}
+        <Card className="gap-3 rounded-xl p-4 shadow-none" data-ks="section-chips">
+          <h2 class="font-semibold">Badge / chipy</h2>
+          <div class="flex flex-wrap items-center gap-3 text-xs">
+            <Badge variant="secondary">Kontakt HR</Badge>
+            <Badge variant="outline">Odrzucona</Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              role="radio"
+              aria-checked="true"
+              className="border-link bg-accent hover:bg-accent text-foreground hover:text-foreground h-auto rounded-full px-3 py-1 text-xs font-normal shadow-none"
+            >
+              Rozmowa (wybrany)
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              role="radio"
+              aria-checked="false"
+              className="border-input bg-card hover:bg-muted text-foreground hover:text-foreground h-auto rounded-full px-3 py-1 text-xs font-normal shadow-none"
+            >
+              Komentarz
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              data-ks="hover-target"
+              className="border-input bg-card hover:bg-muted text-foreground hover:text-foreground h-auto rounded-full px-3 py-1 text-xs font-normal shadow-none"
+            >
+              Hover
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              data-ks="focus-target"
+              className="border-input bg-card hover:bg-muted text-foreground hover:text-foreground h-auto rounded-full px-3 py-1 text-xs font-normal shadow-none"
+            >
+              Focus
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              className="border-input bg-card text-foreground h-auto rounded-full px-3 py-1 text-xs font-normal shadow-none"
+            >
+              Disabled
+            </Button>
+          </div>
+          <p class="text-muted-foreground text-xs">error / empty / loading: N/A — chip zawsze ma wartość.</p>
+        </Card>
+
+        {/* Fields: Input, Textarea, NativeSelect, Label. */}
+        <Card className="gap-4 rounded-xl p-4 shadow-none" data-ks="section-fields">
+          <h2 class="font-semibold">Input / Textarea / NativeSelect / Label</h2>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div class="space-y-1">
+              <Label htmlFor="ks-input-default">Default</Label>
+              <Input id="ks-input-default" defaultValue="Acme sp. z o.o." className="bg-muted" />
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-input-focus">Focus</Label>
+              <Input
+                id="ks-input-focus"
+                defaultValue="Fokus z klawiatury"
+                className="bg-muted"
+                data-ks="focus-target"
+              />
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-input-disabled">Disabled</Label>
+              <Input id="ks-input-disabled" defaultValue="Zablokowane" disabled className="bg-muted" />
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-input-error">Error</Label>
+              <Input id="ks-input-error" defaultValue="" aria-invalid="true" className="bg-muted" />
+              <p class="text-destructive text-xs">Podaj nazwę firmy</p>
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-input-empty">Empty</Label>
+              <Input id="ks-input-empty" placeholder="Co zostało ustalone?" className="bg-muted" />
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-datetime">Kiedy</Label>
+              <Input
+                id="ks-datetime"
+                type="datetime-local"
+                defaultValue="2026-10-05T10:30"
+                className="bg-muted w-auto"
+              />
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-textarea">Textarea</Label>
+              <Textarea id="ks-textarea" rows={3} placeholder="Co zostało ustalone?" className="bg-muted" />
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-textarea-focus">Textarea focus</Label>
+              <Textarea
+                id="ks-textarea-focus"
+                rows={3}
+                defaultValue="Ustalenia z rozmowy"
+                className="bg-muted"
+                data-ks="focus-target"
+              />
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-textarea-error">Textarea error</Label>
+              <Textarea id="ks-textarea-error" rows={3} aria-invalid="true" className="bg-muted" />
+              <p class="text-destructive text-xs">Treść notatki nie może być pusta</p>
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-select">NativeSelect</Label>
+              <NativeSelect id="ks-select" defaultValue="" wrapperClassName="w-full" className="bg-muted">
+                <NativeSelectOption value="" disabled>
+                  —
+                </NativeSelectOption>
+                <NativeSelectOption value="a">CV Anna.pdf (240 KB)</NativeSelectOption>
+              </NativeSelect>
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-select-focus">NativeSelect focus</Label>
+              <NativeSelect
+                id="ks-select-focus"
+                defaultValue=""
+                wrapperClassName="w-full"
+                className="bg-muted"
+                data-ks="focus-target"
+              >
+                <NativeSelectOption value="" disabled>
+                  —
+                </NativeSelectOption>
+              </NativeSelect>
+            </div>
+            <div class="space-y-1">
+              <Label htmlFor="ks-select-disabled">NativeSelect disabled</Label>
+              <NativeSelect
+                id="ks-select-disabled"
+                defaultValue=""
+                disabled
+                wrapperClassName="w-full"
+                className="bg-muted"
+              >
+                <NativeSelectOption value="" disabled>
+                  —
+                </NativeSelectOption>
+              </NativeSelect>
+            </div>
+          </div>
+          <p class="text-muted-foreground text-xs">
+            hover: N/A — pola nie zmieniają wyglądu po najechaniu. loading: N/A — w trakcie zapisu pole jest disabled.
+          </p>
+        </Card>
+
+        {/* Card, Alert, empty and loading texts. */}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+            <h2 class="font-semibold">Card</h2>
+            <p class="text-supporting-foreground">Panel (bg-card) z tekstem pomocniczym.</p>
+            <p class="text-muted-foreground text-xs">Etykieta / znacznik czasu (muted).</p>
+            <p class="text-warning text-xs">(cofnięcie) — warning</p>
+            <a
+              href="#ks-link"
+              class="text-link focus-visible:ring-ring rounded-sm underline outline-none focus-visible:ring-2"
+              data-ks="focus-target"
+            >
+              Link (focus)
+            </a>
+          </Card>
+          <div class="space-y-3">
+            <Alert variant="destructive">
+              <AlertDescription>Nie udało się wczytać aplikacji.</AlertDescription>
+            </Alert>
+            <Alert variant="destructive">
+              <AlertDescription>Brak połączenia. Spróbuj ponownie.</AlertDescription>
+            </Alert>
+          </div>
+          <Card className="gap-2 rounded-xl p-4 text-sm shadow-none" data-ks="section-empty">
+            <h2 class="font-semibold">Empty</h2>
+            <p class="text-muted-foreground">Brak notatek.</p>
+            <p class="text-muted-foreground">Nie dołączono CV.</p>
+            <p class="text-muted-foreground">Bez zmian od dodania (5.10.2026, 10:30).</p>
+            <p>—</p>
+          </Card>
+          <Card className="gap-2 rounded-xl p-4 text-sm shadow-none" data-ks="section-loading">
+            <h2 class="font-semibold">Loading</h2>
+            <p class="text-muted-foreground text-xs">Zapisywanie…</p>
+            <p class="text-muted-foreground text-xs">Usuwanie…</p>
+            <p class="text-muted-foreground text-xs">Wczytywanie podglądu…</p>
+          </Card>
+        </div>
+
+        {/* Islands with sample props (static render; interaction states need the live page). */}
+        <section class="space-y-4" data-ks="section-islands">
+          <h2 class="font-semibold">Wyspy (render statyczny)</h2>
+          <Card className="flex-row flex-wrap items-start gap-6 rounded-xl p-4 shadow-none">
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">StatusControl — w toku</p>
+              <StatusControl applicationId={appId} status="hr_contact" />
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">StatusControl — zamknięta</p>
+              <StatusControl applicationId="00000000-0000-4000-8000-000000000002" status="rejected" />
+            </div>
+            <p class="text-muted-foreground max-w-xs text-xs">
+              Stan „Zapisywanie…” i błąd zmiany statusu pojawiają się tylko po interakcji (stan wewnętrzny) — ten sam
+              tekst co w sekcji Loading / Alert.
+            </p>
+          </Card>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">NotesPanel — z notatkami (edytowana, usunięta)</p>
+              <NotesPanel applicationId={appId} notes={sampleNotes} />
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">NotesPanel — pusty</p>
+              <NotesPanel applicationId="00000000-0000-4000-8000-000000000003" notes={[]} />
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">CvPanel — z bieżącym CV i biblioteką</p>
+              <CvPanel applicationId={appId} current={sampleCv} library={[sampleCv, otherCv]} />
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">CvPanel — bez CV, pusta biblioteka</p>
+              <CvPanel applicationId="00000000-0000-4000-8000-000000000004" current={null} library={[]} />
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </Layout>
+) : (
+  <NotFound />
+)}
