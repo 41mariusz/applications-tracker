@@ -361,29 +361,29 @@ No database changes. Visual change limited to the details view; other pages unch
 
 #### Manual
 
-- [x] 3.5 On a phone the details page reads at least as clearly as before; call-critical info is still first
+- [x] 3.5 On a phone the details page reads at least as clearly as before; call-critical info is still first — 3efc183
 
 ### Phase 4: Entry and the 7 states
 
 #### Automated
 
-- [x] 4.1 Unit tests pass, including `safeNextPath`: `npm test`
-- [x] 4.2 Lint and type check pass: `npm run lint && npx astro check`
-- [x] 4.3 Smoke test passes, including the 404 and return-path steps: `npm run build && npm run smoke`
-- [x] 4.4 Kitchen sink screenshots at 1280 px and 360 px saved to `context/changes/fast-details-on-phone/screenshots/`, with hover and focus-visible triggered by the screenshot script
-- [x] 4.5 `/dev/ui` returns 404 in the production build (`npm run preview`)
+- [x] 4.1 Unit tests pass, including `safeNextPath`: `npm test` — 3efc183
+- [x] 4.2 Lint and type check pass: `npm run lint && npx astro check` — 3efc183
+- [x] 4.3 Smoke test passes, including the 404 and return-path steps: `npm run build && npm run smoke` — 3efc183
+- [x] 4.4 Kitchen sink screenshots at 1280 px and 360 px saved to `context/changes/fast-details-on-phone/screenshots/`, with hover and focus-visible triggered by the screenshot script — 3efc183
+- [x] 4.5 `/dev/ui` returns 404 in the production build (`npm run preview`) — 3efc183
 
 #### Manual
 
-- [ ] 4.6 Owner reviews the kitchen sink screenshots: every one of the 7 states is visible or marked N/A with a reason
-- [ ] 4.7 On production, a mistyped application link shows "Nie znaleziono"; signing in from an application link opens that application
-- [ ] 4.8 Keyboard focus is visible on every control of the details page (desktop browser, Tab through the page)
+- [x] 4.6 Owner reviews the kitchen sink screenshots: every one of the 7 states is visible or marked N/A with a reason
+- [x] 4.7 On production, a mistyped application link shows "Nie znaleziono"; signing in from an application link opens that application
+- [x] 4.8 Keyboard focus is visible on every control of the details page (desktop browser, Tab through the page)
 
 ### Phase 5: Guard — rule and check
 
 #### Automated
 
-- [ ] 5.1 `npm run lint` passes, and fails when a literal such as `text-purple-300` is temporarily added to `Topbar.astro` (deliberate-break check)
+- [x] 5.1 `npm run lint` passes, and fails when a literal such as `text-purple-300` is temporarily added to `Topbar.astro` (deliberate-break check)
 - [ ] 5.2 CI is green on the pushed commit
 
 #### Manual
