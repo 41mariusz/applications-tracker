@@ -9,11 +9,17 @@ import { deleteApplication } from "./support/local-admin";
 test.describe("risk #1: phone search during a call", () => {
   const createdIds: string[] = [];
 
-  test.afterEach(async ({ request }) => {
-    // Remove whatever was created first, then require both offers (the match and the decoy).
+  test.afterEach(async ({ request }, testInfo) => {
+    // Remove whatever was created, each delete independently: one failure must not strand the others.
     const ids = createdIds.splice(0);
-    for (const id of ids) await deleteApplication(request, id);
-    expect(ids, "both applications created by the test must be cleaned up").toHaveLength(2);
+    const results = await Promise.allSettled(ids.map((id) => deleteApplication(request, id)));
+    const failed = results.flatMap((r, i) => (r.status === "rejected" ? [`${ids[i]}: ${String(r.reason)}`] : []));
+    expect(failed, "every application created by the test must be deleted").toEqual([]);
+    // Both offers (the match and the decoy) only exist when the body got past setup; a failed test
+    // keeps its own error instead of gaining this one.
+    if (testInfo.status === testInfo.expectedStatus) {
+      expect(ids, "both applications created by the test must be cleaned up").toHaveLength(2);
+    }
   });
 
   test("a number typed key by key as 48 without + keeps the offer stored with dashes listed and shows the call info", async ({
