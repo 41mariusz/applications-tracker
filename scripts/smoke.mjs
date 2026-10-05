@@ -112,6 +112,8 @@ async function upload(path, fileName, type, content) {
 }
 
 const cvContent = `%PDF-1.4 smoke CV ${Date.now()}`;
+// Over the 5 MB CV limit: the server must refuse it before parsing the body.
+const oversizedCv = new Uint8Array(5 * 1024 * 1024 + 100 * 1024).fill(0x20);
 let cvId = "";
 
 const hrContact = { hr_contact_name: "Anna Łukasik", hr_contact_phone: "+48 600 100 200" };
@@ -285,6 +287,11 @@ const steps = [
     "a non-CV file is rejected",
     () => upload("/api/cv", "photo.png", "image/png", "not a cv"),
     { status: 400, bodyIncludes: "PDF i DOCX" },
+  ],
+  [
+    "an oversized CV is refused before parsing",
+    () => upload("/api/cv", "big CV.pdf", "application/pdf", oversizedCv),
+    { status: 413, bodyIncludes: "za duży" },
   ],
   [
     "CV is uploaded to the library",

@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createClient } from "@/lib/supabase";
 import { uploadCv } from "@/lib/services/cv";
+import { CV_TOO_LARGE_MESSAGE, isUploadRequestTooLarge } from "@/lib/domain/cv";
 
 export const prerender = false;
 
@@ -9,6 +10,10 @@ export const POST: APIRoute = async (context) => {
   const user = context.locals.user;
   if (!user) {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
+  }
+  // Refuse an oversized body before parsing it: no CPU is spent on a file that would be rejected anyway.
+  if (isUploadRequestTooLarge(context.request.headers.get("content-length"))) {
+    return Response.json({ error: CV_TOO_LARGE_MESSAGE }, { status: 413 });
   }
   const file = (await context.request.formData()).get("file");
   if (!(file instanceof File)) {

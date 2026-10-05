@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useState } from "react";
 import { Download, Eye, EyeOff, FileText } from "lucide-react";
-import { formatFileSize } from "@/lib/domain/cv";
+import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { CvFile } from "@/types";
@@ -54,6 +54,12 @@ export default function CvPanel({ applicationId, current, library }: Props) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
+    // Same rule as the server: a file that would be refused is not sent at all.
+    const check = checkCvFile(file);
+    if (!check.ok) {
+      setError(check.message);
+      return;
+    }
     void run(async () => {
       const body = new FormData();
       body.set("file", file);

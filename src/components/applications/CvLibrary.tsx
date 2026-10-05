@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useState } from "react";
 import { ChevronDown, ChevronRight, Download, Eye, EyeOff, FileText } from "lucide-react";
-import { formatFileSize } from "@/lib/domain/cv";
+import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
 import { isClosed } from "@/lib/domain/status";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -106,9 +106,15 @@ function UploadToLibrary() {
   const [pending, setPending] = useState(false);
 
   async function upload(file: File) {
-    setPending(true);
     setError(null);
     setMessage(null);
+    // Same rule as the server: a file that would be refused is not sent at all.
+    const check = checkCvFile(file);
+    if (!check.ok) {
+      setError(check.message);
+      return;
+    }
+    setPending(true);
     try {
       const body = new FormData();
       body.set("file", file);

@@ -1,6 +1,17 @@
 // CV rules (PRD FR-013). Pure functions — no I/O except hashing bytes already in memory.
 
 export const MAX_CV_BYTES = 5 * 1024 * 1024;
+export const CV_TOO_LARGE_MESSAGE = "Plik jest za duży (maksymalnie 5 MB).";
+
+// A multipart request is larger than the file it carries (boundary, part headers), hence the margin.
+export const MAX_CV_REQUEST_BYTES = MAX_CV_BYTES + 64 * 1024;
+
+// Lets the upload route refuse an oversized body before parsing it. A missing or malformed
+// Content-Length (e.g. a chunked request) is let through to the post-parse file check.
+export function isUploadRequestTooLarge(contentLength: string | null): boolean {
+  if (contentLength === null || !/^\d+$/.test(contentLength)) return false;
+  return Number(contentLength) > MAX_CV_REQUEST_BYTES;
+}
 
 export const CV_TYPES = {
   "application/pdf": "pdf",
@@ -13,7 +24,7 @@ export type CvCheck = { ok: true; mimeType: CvMimeType; extension: string } | { 
 // Browsers sometimes send an empty or generic type for .docx, so the extension is a fallback.
 export function checkCvFile(file: { name: string; type: string; size: number }): CvCheck {
   if (file.size === 0) return { ok: false, message: "Plik jest pusty." };
-  if (file.size > MAX_CV_BYTES) return { ok: false, message: "Plik jest za duży (maksymalnie 5 MB)." };
+  if (file.size > MAX_CV_BYTES) return { ok: false, message: CV_TOO_LARGE_MESSAGE };
   const byType = (Object.keys(CV_TYPES) as CvMimeType[]).find((t) => t === file.type);
   const extension = file.name.toLowerCase().split(".").pop() ?? "";
   const byExtension = (Object.keys(CV_TYPES) as CvMimeType[]).find((t) => CV_TYPES[t] === extension);

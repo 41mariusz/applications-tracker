@@ -3,7 +3,7 @@ project: Applications Tracker
 version: 1
 status: draft
 created: 2026-09-30
-updated: 2026-10-04
+updated: 2026-10-05
 prd_version: —
 main_goal: quality
 top_blocker: external
@@ -47,7 +47,7 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 | ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ----------- |
 | F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready       |
 | S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | in-progress |
-| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | proposed    |
+| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | in-progress |
 | S-03 | safe-rollback-after-migration | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready       |
 | S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | ready       |
 | S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed    |
@@ -118,7 +118,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Does a 5 MB upload actually exceed the free-plan CPU limit in production, or is it within burst tolerance? — Owner: user. Block: no.
 - **Risk:** Follows F-01 so the test result is observable; if it fails, the choice is between a paid hosting plan and moving the hashing work, which changes where file checks happen.
-- **Status:** proposed
+- **Status:** in-progress
 
 ### S-03: Rolling back after a migration is safe
 

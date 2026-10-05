@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { checkCvFile, cvStoragePath, formatFileSize, groupByCv, MAX_CV_BYTES, sha256Hex } from "@/lib/domain/cv";
+import {
+  checkCvFile,
+  cvStoragePath,
+  formatFileSize,
+  groupByCv,
+  isUploadRequestTooLarge,
+  MAX_CV_BYTES,
+  MAX_CV_REQUEST_BYTES,
+  sha256Hex,
+} from "@/lib/domain/cv";
 
 const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
@@ -27,6 +36,20 @@ describe("checkCvFile", () => {
     expect(checkCvFile({ name: "cv.pdf", type: "application/pdf", size: 0 }).ok).toBe(false);
     expect(checkCvFile({ name: "cv.pdf", type: "application/pdf", size: MAX_CV_BYTES + 1 }).ok).toBe(false);
     expect(checkCvFile({ name: "cv.pdf", type: "application/pdf", size: MAX_CV_BYTES }).ok).toBe(true);
+  });
+});
+
+describe("isUploadRequestTooLarge", () => {
+  it("allows a request up to the limit and refuses one byte more", () => {
+    expect(MAX_CV_REQUEST_BYTES).toBe(MAX_CV_BYTES + 64 * 1024);
+    expect(isUploadRequestTooLarge(String(MAX_CV_REQUEST_BYTES))).toBe(false);
+    expect(isUploadRequestTooLarge(String(MAX_CV_REQUEST_BYTES + 1))).toBe(true);
+  });
+
+  it("lets a missing or malformed Content-Length through to the file check", () => {
+    expect(isUploadRequestTooLarge(null)).toBe(false);
+    expect(isUploadRequestTooLarge("")).toBe(false);
+    expect(isUploadRequestTooLarge("abc")).toBe(false);
   });
 });
 
