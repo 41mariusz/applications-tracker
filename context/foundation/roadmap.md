@@ -46,7 +46,7 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 | ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status      |
 | ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ----------- |
 | F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready       |
-| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | in-progress |
+| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done        |
 | S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | in-progress |
 | S-03 | safe-rollback-after-migration | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready       |
 | S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | ready       |
@@ -105,7 +105,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
   - What is the database provider's current inactivity-pause policy for free projects (period, and what counts as activity)? — Owner: user. Block: no.
   - Keep the free plan with a keep-alive, or move to a paid database plan? — Owner: user. Block: no.
 - **Risk:** Highest-impact risk in the register and the north star; the risk in the fix is a keep-alive that silently stops running — it needs its own failure signal.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-02: A 5 MB CV uploads in production
 
@@ -185,3 +185,5 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Milestone History
 
 ## Done
+
+- **S-01: user can open the app and search their applications after a week or more without using it** — Archived 2026-10-05 → `context/archive/2026-10-04-app-available-after-idle-week/`. Lesson: —.
