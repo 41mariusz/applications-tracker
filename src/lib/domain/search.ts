@@ -37,15 +37,30 @@ export function normalizePhone(value: string): string {
 const PHONE_QUERY = /^[\d\s+\-().]+$/;
 const MIN_PHONE_DIGITS = 3;
 
+// How a number being typed can be read: the national digits after a "+48"/"0048" prefix, and —
+// when "48" is typed without "+" — also the full digits, since 48 may be the start of the number.
+// A beginning of "0048" ("0", "00", "004") has no national digits yet.
+function phoneQueryReadings(query: string): { national: string; full: string | null } {
+  if (query.startsWith("+48")) return { national: query.slice(3).replace(/\D/g, ""), full: null };
+  if (query.startsWith("0048")) return { national: query.slice(4).replace(/\D/g, ""), full: null };
+  const digits = query.replace(/\D/g, "");
+  if (!query.startsWith("+") && "0048".startsWith(digits)) return { national: "", full: null };
+  if (!query.startsWith("+") && digits.startsWith("48")) return { national: digits.slice(2), full: digits };
+  return { national: digits, full: null };
+}
+
 export function matchesQuery(item: Searchable, query: string): boolean {
   const q = query.trim();
   if (!q) return true;
   const phone = item.hr_contact_phone ? normalizePhone(item.hr_contact_phone) : "";
 
-  // A query made only of phone characters is one phone number, however it is spaced.
+  // A query made only of phone characters is one phone number, however it is spaced. While it has
+  // fewer than 3 national digits ("+48", "0048", "48 6") it is not a search yet: during a call the
+  // offer must stay on the list at every keystroke, so everything matches.
   if (PHONE_QUERY.test(q)) {
-    const digits = normalizePhone(q);
-    if (digits.length >= MIN_PHONE_DIGITS && phone.includes(digits)) return true;
+    const { national, full } = phoneQueryReadings(q);
+    if (national.length < MIN_PHONE_DIGITS) return true;
+    if (phone.includes(national) || (full !== null && phone.includes(full))) return true;
   }
 
   const haystack = normalizeText([item.company, item.position, item.hr_contact_name ?? ""].join(" "));
