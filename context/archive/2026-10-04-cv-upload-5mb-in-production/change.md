@@ -1,10 +1,10 @@
 ---
 change_id: cv-upload-5mb-in-production
 title: Verify and fix 5 MB CV upload in production
-status: impl_reviewed
+status: archived
 created: 2026-10-04
 updated: 2026-10-05
-archived_at: null
+archived_at: 2026-10-05T09:52:41Z
 ---
 
 ## Notes

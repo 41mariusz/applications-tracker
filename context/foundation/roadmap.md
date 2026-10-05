@@ -43,14 +43,14 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 
 ## At a glance
 
-| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status      |
-| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ----------- |
-| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready       |
-| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done        |
-| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | in-progress |
-| S-03 | safe-rollback-after-migration | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready       |
-| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | ready       |
-| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed    |
+| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status   |
+| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | -------- |
+| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready    |
+| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done     |
+| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done     |
+| S-03 | safe-rollback-after-migration | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready    |
+| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | ready    |
+| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed |
 
 ## Streams
 
@@ -118,7 +118,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Does a 5 MB upload actually exceed the free-plan CPU limit in production, or is it within burst tolerance? — Owner: user. Block: no.
 - **Risk:** Follows F-01 so the test result is observable; if it fails, the choice is between a paid hosting plan and moving the hashing work, which changes where file checks happen.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-03: Rolling back after a migration is safe
 
@@ -187,3 +187,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 - **S-01: user can open the app and search their applications after a week or more without using it** — Archived 2026-10-05 → `context/archive/2026-10-04-app-available-after-idle-week/`. Lesson: —.
+- **S-02: user can attach a CV of up to 5 MB to an application in production without an error** — Archived 2026-10-05 → `context/archive/2026-10-04-cv-upload-5mb-in-production/`. Lesson: —.
