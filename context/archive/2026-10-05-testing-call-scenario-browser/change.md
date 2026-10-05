@@ -1,10 +1,10 @@
 ---
 change_id: testing-call-scenario-browser
 title: Test the call scenario in a real browser (phone search, sign-in)
-status: impl_reviewed
+status: archived
 created: 2026-10-05
 updated: 2026-10-05
-archived_at: null
+archived_at: 2026-10-05T14:48:28Z
 ---
 
 ## Notes
