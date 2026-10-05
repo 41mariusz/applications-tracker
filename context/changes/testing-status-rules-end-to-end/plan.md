@@ -506,8 +506,8 @@ Record how to test a status-rule change, the decided rules, and the accepted dat
 
 #### Automated
 
-- [x] 5.1 Prettier check passes on the edited docs
+- [x] 5.1 Prettier check passes on the edited docs — ffc4206
 
 #### Manual
 
-- [x] 5.2 §6.5 lets someone add a transition test without reading this plan
+- [x] 5.2 §6.5 lets someone add a transition test without reading this plan — ffc4206
