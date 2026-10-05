@@ -1,4 +1,5 @@
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useId, useState, useSyncExternalStore } from "react";
+import { Check } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -64,6 +65,10 @@ function NoteForm({ initial, submitLabel, onSubmit, onCancel }: NoteFormProps) {
   const notedAt = edited ?? (inBrowser ? toLocalInputValue(initial.noted_at ?? openedAt) : "");
   const [errors, setErrors] = useState<Errors>({});
   const [pending, setPending] = useState(false);
+  // Error ids built with useId: submitLabel contains spaces, which would break aria-describedby.
+  const errorId = useId();
+  const bodyErrorId = `${errorId}-body`;
+  const notedErrorId = `${errorId}-noted`;
 
   async function submit() {
     setPending(true);
@@ -95,9 +100,10 @@ function NoteForm({ initial, submitLabel, onSubmit, onCancel }: NoteFormProps) {
             }}
             className={cn(
               "text-foreground hover:text-foreground h-auto rounded-full px-3 py-1 text-xs font-normal shadow-none",
-              kind === k ? "border-link bg-accent hover:bg-accent" : "border-input bg-card hover:bg-muted",
+              kind === k ? "border-link bg-accent hover:bg-accent font-medium" : "border-input bg-card hover:bg-muted",
             )}
           >
+            {kind === k && <Check className="size-3.5" aria-hidden="true" />}
             {NOTE_KIND_LABELS[k]}
           </Button>
         ))}
@@ -115,8 +121,14 @@ function NoteForm({ initial, submitLabel, onSubmit, onCancel }: NoteFormProps) {
             setBody(e.target.value);
           }}
           className="bg-muted"
+          aria-invalid={errors.body ? true : undefined}
+          aria-describedby={errors.body ? bodyErrorId : undefined}
         />
-        {errors.body && <p className="text-destructive mt-1 text-xs">{errors.body}</p>}
+        {errors.body && (
+          <p id={bodyErrorId} role="alert" className="text-destructive mt-1 text-xs">
+            {errors.body}
+          </p>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-3">
         <Label className="text-supporting-foreground text-xs font-normal" htmlFor={`noted-${submitLabel}`}>
@@ -130,8 +142,14 @@ function NoteForm({ initial, submitLabel, onSubmit, onCancel }: NoteFormProps) {
             setNotedAt(e.target.value);
           }}
           className="bg-muted w-auto"
+          aria-invalid={errors.noted_at ? true : undefined}
+          aria-describedby={errors.noted_at ? notedErrorId : undefined}
         />
-        {errors.noted_at && <p className="text-destructive text-xs">{errors.noted_at}</p>}
+        {errors.noted_at && (
+          <p id={notedErrorId} role="alert" className="text-destructive text-xs">
+            {errors.noted_at}
+          </p>
+        )}
       </div>
       {errors.form && (
         <Alert variant="destructive">
@@ -190,7 +208,7 @@ function NoteItem({ note }: { note: Note }) {
 
   return (
     <li
-      className={cn("bg-muted rounded-xl border p-4", removed && "opacity-50")}
+      className={cn("bg-muted rounded-xl border p-4", removed && "opacity-70")}
       data-note-id={note.id}
       data-removed={removed ? "true" : undefined}
     >
@@ -227,7 +245,11 @@ function NoteItem({ note }: { note: Note }) {
         )}
       </div>
       <p className={cn("break-words whitespace-pre-wrap", removed && "line-through")}>{note.body}</p>
-      {error && <p className="text-destructive mt-1 text-xs">{error}</p>}
+      {error && (
+        <p role="alert" className="text-destructive mt-1 text-xs">
+          {error}
+        </p>
+      )}
       {note.revisions.length > 0 && (
         <details className="text-muted-foreground mt-2 text-xs">
           <summary className="focus-visible:ring-ring cursor-pointer rounded-sm outline-none focus-visible:ring-2">

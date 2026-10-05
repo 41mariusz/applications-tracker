@@ -77,7 +77,11 @@ export default function StatusControl({ applicationId, status }: Props) {
           Zapisywanie…
         </p>
       )}
-      {error && <p className="text-destructive max-w-48 text-right text-xs">{error}</p>}
+      {error && (
+        <p role="alert" className="text-destructive max-w-48 text-right text-xs">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

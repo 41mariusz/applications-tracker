@@ -88,7 +88,9 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
           <h2 class="font-semibold">Button</h2>
           {buttonVariantsShown.map((variant) => (
             <div class="flex flex-wrap items-center gap-3 text-xs">
-              <span class="text-muted-foreground w-20">{variant}</span>
+              <span class="text-muted-foreground w-20">
+                {variant === "destructive" ? "destructive — nie używać (patrz CLAUDE.md)" : variant}
+              </span>
               <Button variant={variant} size="sm">
                 Default
               </Button>

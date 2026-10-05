@@ -188,7 +188,11 @@ export default function CvPanel({ applicationId, current, library }: Props) {
       </div>
       {pending && !message && <p className="text-muted-foreground mt-2 text-xs">Zapisywanie…</p>}
       {message && <p className="text-supporting-foreground mt-2 text-xs">{message}</p>}
-      {error && <p className="text-destructive mt-2 text-xs">{error}</p>}
+      {error && (
+        <p role="alert" className="text-destructive mt-2 text-xs">
+          {error}
+        </p>
+      )}
     </section>
   );
 }

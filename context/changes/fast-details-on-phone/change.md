@@ -1,7 +1,7 @@
 ---
 change_id: fast-details-on-phone
 title: Application details readable and fast on a phone during a call
-status: implemented
+status: impl_reviewed
 created: 2026-10-05
 updated: 2026-10-05
 archived_at: null
@@ -21,3 +21,5 @@ Adaptation 2026-10-05 (Phase 1): `color-scheme: dark` was not set globally — `
 Phase 2 gate note (2026-10-05): pixel diff before/after — /dashboard, /cv, /auth/signin at 1280 px: 0.0000 %; /auth/signin at 360 px: 0.0000 %; /dashboard and /cv at 360 px: 4.24 %, entirely in x = 360–375 px (pages are 376 px wide because the Topbar overflows — charge C4, fixed in Phase 3), where the canvas changed from white (255,255,255) to the token navy (10,14,26). The visible viewport (0–359 px) is identical. Accepted by the owner as meeting 2.2.
 
 Phase 3 notes (2026-10-05): `StatusControl` is also rendered on `/dashboard`, so its pill there now uses `NativeSelect` (component chevron instead of the "▾" glyph) — a small, consistent change outside the one view, accepted as part of migrating this shared island (like `Topbar`). `ui/button.tsx` `link` variant now uses `text-link`; `ui/native-select.tsx` gained an optional `wrapperClassName`. 360 px check: details page `scrollWidth = 360` with a long company name and a long URL in a note. Pre-existing: `/dashboard` overflows at 360 px with a very long company name (not migrated here — follow-up for the dashboard change).
+
+Impl-review fixes (2026-10-05): Radix comes only from the umbrella `radix-ui` package (what the current shadcn registry generates; `Slot.Root` in `ui/button.tsx` and `ui/badge.tsx`, `Label` in `ui/label.tsx`); `@radix-ui/react-slot` was removed from `package.json` — the `@radix-ui/*` entries in the lockfile are transitive dependencies of `radix-ui`.
