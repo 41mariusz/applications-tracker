@@ -20,6 +20,8 @@ Roadmap: S-02 `cv-upload-5mb-in-production` (milestone M-1). Risk register: "CV 
 - A real ~5 MB PDF has been uploaded in production; its CPU time and outcome are recorded in `research.md`, together with the confirmed Workers plan.
 - If the decision rule fired, the account is on Workers Paid and a repeated 5 MB upload ends `ok`; otherwise Phase 3 is recorded as skipped with the measurement that justified it.
 
+**Outcome (2026-10-05):** the rule fired (Workers Free, 16–25 ms CPU per 5 MiB upload, all `ok`), and the owner chose to **stay on Workers Free** — an explicit override of the rule, accepted as a risk; revisit at the first `exceededCpu`. Phase 3 was therefore skipped. Details: `research.md` → Follow-up 2026-10-05.
+
 **Decision rule (agreed):** if the account is on Workers **Free** and the production 5 MB upload ends with error 1102 / outcome `exceededCpu`, **or** uses **more than 10 ms CPU**, switch to **Workers Paid**. In every other case, no plan change.
 
 ### Key Discoveries:
@@ -155,6 +157,8 @@ Resolve the two open facts from research and apply the decision rule.
 
 If Phase 2's rule fired, move the account to Workers Paid and verify; otherwise mark this phase skipped with the Phase 2 evidence.
 
+> Note 2026-10-05: the rule fired, but the owner overrode it and stayed on Workers Free. Rows 3.1/3.2 are ticked as "skipped — owner override", not as an upgrade.
+
 ### Changes Required:
 
 #### 1. Plan upgrade
@@ -239,20 +243,20 @@ No database changes. Phase 3 is a billing change and is reversible by downgradin
 
 #### Automated
 
-- [x] 2.1 The Observability query returns the production `POST /api/cv` invocation with content-length ≥ 4.5 MB and its CPU time and outcome
+- [x] 2.1 The Observability query returns the production `POST /api/cv` invocation with content-length ≥ 4.5 MB and its CPU time and outcome — fdef60b
 
 #### Manual
 
-- [x] 2.2 Owner confirms the Workers plan shown in the Cloudflare dashboard
-- [x] 2.3 Owner confirms the ~5 MB upload result in the UI (success, or the error shown)
-- [x] 2.4 `research.md` records plan, CPU ms, outcome and the decision ("Paid" or "no change")
+- [x] 2.2 Owner confirms the Workers plan shown in the Cloudflare dashboard — fdef60b
+- [x] 2.3 Owner confirms the ~5 MB upload result in the UI (success, or the error shown) — fdef60b
+- [x] 2.4 `research.md` records plan, CPU ms, outcome and the decision ("Paid" or "no change") — fdef60b
 
 ### Phase 3: Switch to Workers Paid (only if the decision rule fired)
 
 #### Automated
 
-- [x] 3.1 A repeated production ~5 MB upload shows outcome `ok` in the Observability query (or: phase recorded as skipped with the Phase 2 numbers)
+- [x] 3.1 A repeated production ~5 MB upload shows outcome `ok` in the Observability query (or: phase recorded as skipped with the Phase 2 numbers) — fdef60b
 
 #### Manual
 
-- [x] 3.2 Owner confirms the Cloudflare dashboard shows Workers Paid (or: skip confirmed by owner)
+- [x] 3.2 Owner confirms the Cloudflare dashboard shows Workers Paid (or: skip confirmed by owner) — fdef60b

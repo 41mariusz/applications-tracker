@@ -54,7 +54,7 @@ The best match for the co-location preference (Postgres and object storage on th
 
 ### Devil's Advocate — Weaknesses
 
-1. **10 ms CPU per request on the free plan.** CV upload parses a multipart body of up to 5 MB and computes SHA-256 on the server (`src/lib/domain/cv.ts:27`); a large file can exceed the limit and return a 503. Tests so far used small files.
+1. **10 ms CPU per request on the free plan.** CV upload parses a multipart body of up to 5 MB and computes SHA-256 on the server (`src/lib/domain/cv.ts:27`); a large file can exceed the limit (error 1102). Measured 2026-10-05: 5 MiB uploads use 16–25 ms CPU and all succeeded so far; the owner stays on Free (see the risk register).
 2. **Split between edge and a single-region database.** The Worker runs near the user; Supabase sits in one region. Pages that make several sequential Supabase calls pay the round trip each time — this matters for the PRD's "< 10 s during a call".
 3. **Rollback reverts code, not data.** `wrangler rollback` restores the previous Worker version, but an applied migration stays — old code then runs against the new schema.
 4. **50 subrequests per request on the free plan.** Every Supabase call is a subrequest; today's pages are far below it, but a feature that loops over records could hit it silently.

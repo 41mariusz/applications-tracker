@@ -50,6 +50,14 @@ describe("isUploadRequestTooLarge", () => {
     expect(isUploadRequestTooLarge(null)).toBe(false);
     expect(isUploadRequestTooLarge("")).toBe(false);
     expect(isUploadRequestTooLarge("abc")).toBe(false);
+    // Two Content-Length headers arrive comma-joined; the post-parse file check still applies.
+    expect(isUploadRequestTooLarge("10, 10")).toBe(false);
+  });
+
+  it("reads leading zeros and very long numbers by value", () => {
+    expect(isUploadRequestTooLarge("0005")).toBe(false);
+    expect(isUploadRequestTooLarge("0" + String(MAX_CV_REQUEST_BYTES + 1))).toBe(true);
+    expect(isUploadRequestTooLarge("9".repeat(400))).toBe(true);
   });
 });
 

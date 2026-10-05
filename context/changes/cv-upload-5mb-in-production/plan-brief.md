@@ -13,7 +13,7 @@ The server parses the whole multipart body before checking the 5 MB limit, and t
 
 ## Desired End State
 
-Oversized files are refused immediately in the browser and before parsing on the server. A real ~5 MB upload has been measured in production, and the account is on Workers Paid if — and only if — the agreed decision rule required it.
+Oversized files are refused immediately in the browser and before parsing on the server. A real ~5 MB upload has been measured in production. **Outcome (2026-10-05):** the decision rule fired (16–25 ms CPU on Workers Free), and the owner overrode it to stay on Free, accepting the risk until the first `exceededCpu`.
 
 ## Key Decisions Made
 
@@ -22,6 +22,7 @@ Oversized files are refused immediately in the browser and before parsing on the
 | Workers plan     | Assumed Free; owner confirms in the dashboard in Phase 2                               | Not readable with the current API token.                                                          | Research + Plan |
 | Decision rule    | Free **and** (error 1102 / `exceededCpu` **or** CPU > 10 ms on the 5 MB upload) → Paid | Fixed in advance so the measurement selects the outcome mechanically.                             | Plan            |
 | Fix if needed    | Workers Paid ($5/month)                                                                | Also covers `/dashboard` (111–201 ms CPU), no code risk, keeps server-side SHA-256 deduplication. | Plan            |
+| Outcome          | Stay on Workers Free (owner override of the fired rule)                                | Measured 16–25 ms CPU, all uploads ok; owner accepts the risk until the first `exceededCpu`.      | Implementation  |
 | Early size check | Browser (`checkCvFile`) and server (`Content-Length` > 5 MB + 64 KiB → 413)            | Immediate Polish feedback and no CPU spent on oversized requests.                                 | Plan            |
 | Sequencing       | S-02 now, before F-01                                                                  | Measurement uses Cloudflare Observability directly; alerting stays F-01's job.                    | Plan            |
 | Browser upload   | Not done                                                                               | Would drop the server-side check that the stored name equals the content hash.                    | Research + Plan |
@@ -56,4 +57,4 @@ Browser `checkCvFile` → (refuse) or `POST /api/cv` → `isUploadRequestTooLarg
 
 - A > 5 MB file gets an immediate Polish message instead of a slow failure.
 - A real ~5 MB CV uploads successfully in production, with the measurement on record.
-- The Workers plan matches what the measurement requires, documented in infrastructure.md.
+- The Workers plan decision is documented in infrastructure.md (owner stayed on Free despite the rule, with a clear trigger to revisit).

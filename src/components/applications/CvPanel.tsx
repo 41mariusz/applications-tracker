@@ -39,6 +39,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
   async function run(action: () => Promise<string | null>, reloadDelayMs: () => number = () => 0) {
     setPending(true);
     setError(null);
+    setMessage(null);
     try {
       const failure = await action();
       if (failure) setError(failure);
@@ -67,6 +68,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
     // Same rule as the server: a file that would be refused is not sent at all.
     const check = checkCvFile(file);
     if (!check.ok) {
+      setMessage(null);
       setError(check.message);
       return;
     }
@@ -78,12 +80,13 @@ export default function CvPanel({ applicationId, current, library }: Props) {
         const response = await fetch("/api/cv", { method: "POST", body });
         const data = (await response.json()) as { file?: CvFile; reused?: boolean; error?: string };
         if (!response.ok || !data.file) return data.error ?? "Nie udało się wgrać pliku.";
-        // The same file was already in the library: nothing new was stored.
-        if (data.reused) {
+        const failure = await attach(applicationId, data.file.id);
+        // The same file was already in the library: nothing new was stored. Said only once attached.
+        if (!failure && data.reused) {
           reused = true;
           setMessage(`Ten plik jest już w bibliotece jako „${data.file.file_name}” — użyto istniejącego.`);
         }
-        return attach(applicationId, data.file.id);
+        return failure;
       },
       () => (reused ? REUSED_MESSAGE_MS : 0),
     );
@@ -137,7 +140,13 @@ export default function CvPanel({ applicationId, current, library }: Props) {
             <label htmlFor={`cv-library-${applicationId}`} className="mb-1 block text-xs text-blue-100/70">
               {current ? "Zmień na CV z biblioteki" : "Wybierz z biblioteki"}
             </label>
-            <select id={`cv-library-${applicationId}`} value="" onChange={handleSelect} className={selectClass}>
+            <select
+              id={`cv-library-${applicationId}`}
+              value=""
+              disabled={pending}
+              onChange={handleSelect}
+              className={selectClass}
+            >
               <option value="" disabled className="text-black">
                 —
               </option>
@@ -156,13 +165,14 @@ export default function CvPanel({ applicationId, current, library }: Props) {
           <input
             id={`cv-upload-${applicationId}`}
             type="file"
+            disabled={pending}
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={handleUpload}
             className="block w-full text-xs text-blue-100/80 file:mr-3 file:rounded-lg file:border-0 file:bg-purple-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-purple-500"
           />
         </div>
       </div>
-      {pending && <p className="mt-2 text-xs text-blue-100/60">Zapisywanie…</p>}
+      {pending && !message && <p className="mt-2 text-xs text-blue-100/60">Zapisywanie…</p>}
       {message && <p className="mt-2 text-xs text-blue-100/70">{message}</p>}
       {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
     </section>
