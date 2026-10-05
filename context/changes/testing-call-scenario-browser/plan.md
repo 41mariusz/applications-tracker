@@ -252,16 +252,16 @@ None. No schema or stored-data change.
 
 #### Manual
 
-- [ ] 2.5 The Playwright trace/HTML report for the call spec shows the keystrokes and the list staying populated
+- [x] 2.5 The Playwright trace/HTML report for the call spec shows the keystrokes and the list staying populated — 3a6a046
 
 ### Phase 3: E2E in CI and test-plan update
 
 #### Automated
 
-- [ ] 3.1 The CI `smoke` job on the PR runs `npx playwright test` and passes (setup, seed, call-phone-search)
+- [x] 3.1 The CI `smoke` job on the PR runs `npx playwright test` and passes (setup, seed, call-phone-search) — 62ceec5
 - [x] 3.2 `npm run lint` and Prettier (lint-staged) pass on the changed files — 9ee6339
 
 #### Manual
 
-- [ ] 3.3 On a deliberately broken commit (e.g. the call spec expecting a wrong rate), the CI run fails at the E2E step and the Playwright report artifact is attached; the commit is then dropped
-- [ ] 3.4 `test-plan.md` §6.3 is enough for writing the next E2E test without reading this plan
+- [x] 3.3 On a deliberately broken commit (e.g. the call spec expecting a wrong rate), the CI run fails at the E2E step and the Playwright report artifact is attached; the commit is then dropped — 62ceec5
+- [x] 3.4 `test-plan.md` §6.3 is enough for writing the next E2E test without reading this plan — 62ceec5
