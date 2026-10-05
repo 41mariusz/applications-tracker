@@ -19,6 +19,7 @@ pnpm-debug.log*
 
 # cloudflare
 .dev.vars
+.dev.vars.*
 .wrangler/
 
 # macOS-specific files
@@ -26,3 +27,14 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# E2E (Playwright) — local test user credentials, never committed
+.env.e2e
+
+# Playwright
+playwright/.auth/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.playwright-cli/
