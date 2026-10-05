@@ -5,7 +5,7 @@
 
 /*
  * One dark theme (no light mode): token values reproduce the app's literal classes as of 2026-10-05.
- * Role -> token -> value -> replaced literal(s) is on record in context/changes/fast-details-on-phone/tokens.md.
+ * Role -> token -> value -> replaced literal(s) is on record in context/archive/2026-10-05-fast-details-on-phone/tokens.md.
  * `.dark` shares the same values so nothing can switch to the stock shadcn greys.
  */
 :root,
