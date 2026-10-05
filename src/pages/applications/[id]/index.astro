@@ -4,6 +4,9 @@ import Topbar from "@/components/Topbar.astro";
 import StatusControl from "@/components/applications/StatusControl";
 import NotesPanel from "@/components/applications/NotesPanel";
 import CvPanel from "@/components/applications/CvPanel";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { listCvFiles } from "@/lib/services/cv";
 import type { CvFile } from "@/types";
 import { createClient } from "@/lib/supabase";
@@ -45,19 +48,25 @@ function displayValue(field: HistoryField, value: string | null): string {
 }
 const latest = details ? latestActiveNote(details.notes) : null;
 const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_phone.replace(/[^\d+]/g, "")}` : null;
+// Inline text links: link variant without the button box.
+const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-normal");
 ---
 
 <Layout title={application ? `${application.company} — ${application.position}` : "Aplikacja"}>
-  <div class="bg-cosmic min-h-screen p-4 sm:p-8">
+  <div class="bg-cosmic min-h-screen p-4 scheme-dark sm:p-8">
     <Topbar />
-    <div class="mx-auto max-w-2xl space-y-4 text-white">
-      <a href="/dashboard" class="text-sm text-purple-300 hover:underline">
+    <div class="text-foreground mx-auto max-w-2xl space-y-4">
+      <a href="/dashboard" class:list={linkClass}>
         ← Moje aplikacje
       </a>
 
-      {loadError && <p class="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{loadError}</p>}
+      {loadError && (
+        <Alert variant="destructive">
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      )}
       {!details && !loadError && (
-        <p class="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-blue-100/70">
+        <p class="bg-card text-supporting-foreground rounded-xl border p-6 text-center">
           Nie znaleziono tej aplikacji.
         </p>
       )}
@@ -65,48 +74,45 @@ const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_
       {details && application && (
         <>
           {/* What is needed during a call comes first (PRD FR-006). */}
-          <section
-            class="rounded-2xl border border-white/10 bg-white/10 p-5 backdrop-blur-xl"
-            data-testid="call-summary"
-          >
+          <section class="bg-muted rounded-2xl border p-5 backdrop-blur-xl" data-testid="call-summary">
             <div class="flex flex-wrap items-start justify-between gap-3">
-              <div class:list={[isClosed(application.status) && "line-through opacity-60"]}>
-                <h1 class="text-xl font-bold">{application.company}</h1>
-                <p class="text-blue-100/70">{application.position}</p>
+              <div class:list={["min-w-0", isClosed(application.status) && "line-through opacity-60"]}>
+                <h1 class="text-xl font-bold break-words">{application.company}</h1>
+                <p class="text-supporting-foreground break-words">{application.position}</p>
               </div>
               <StatusControl applicationId={application.id} status={application.status} client:load />
             </div>
             <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt class="text-blue-100/60">Widełki</dt>
+                <dt class="text-muted-foreground">Widełki</dt>
                 <dd class="text-base font-semibold">{application.salary_range ?? "—"}</dd>
               </div>
               <div>
-                <dt class="text-blue-100/60">Moja stawka</dt>
+                <dt class="text-muted-foreground">Moja stawka</dt>
                 <dd class="text-base font-semibold">{application.quoted_rate ?? "—"}</dd>
               </div>
             </dl>
-            <div class="mt-4 rounded-lg bg-white/5 p-3 text-sm">
-              <p class="text-blue-100/60">Ostatnie ustalenie</p>
+            <div class="bg-card mt-4 rounded-lg p-3 text-sm">
+              <p class="text-muted-foreground">Ostatnie ustalenie</p>
               {latest ? (
                 <>
-                  <p class="mt-1 whitespace-pre-wrap">{latest.body}</p>
-                  <p class="mt-1 text-xs text-blue-100/50">
+                  <p class="mt-1 break-words whitespace-pre-wrap">{latest.body}</p>
+                  <p class="mt-1 text-xs text-muted-foreground">
                     {NOTE_KIND_LABELS[latest.kind]} · {formatDateTime(latest.noted_at)}
                   </p>
                 </>
               ) : (
-                <p class="mt-1 text-blue-100/50">Brak notatek.</p>
+                <p class="mt-1 text-muted-foreground">Brak notatek.</p>
               )}
             </div>
             {(application.hr_contact_name ?? phoneHref) && (
-              <p class="mt-3 text-sm">
-                <span class="text-blue-100/60">HR: </span>
+              <p class="mt-3 text-sm break-words">
+                <span class="text-muted-foreground">HR: </span>
                 {application.hr_contact_name}
                 {phoneHref && (
                   <>
                     {application.hr_contact_name && " · "}
-                    <a href={phoneHref} class="text-purple-300 underline">
+                    <a href={phoneHref} class="text-link underline">
                       {application.hr_contact_phone}
                     </a>
                   </>
@@ -119,22 +125,22 @@ const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_
 
           <CvPanel applicationId={application.id} current={currentCv} library={cvLibrary} client:visible />
 
-          <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
+          <section class="bg-card rounded-xl border p-4 text-sm">
             <div class="mb-2 flex items-center justify-between">
               <h2 class="font-semibold">Szczegóły</h2>
-              <a href={`/applications/${application.id}/edit`} class="text-purple-300 hover:underline">
+              <a href={`/applications/${application.id}/edit`} class:list={linkClass}>
                 Edytuj
               </a>
             </div>
             <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
-              <dt class="text-blue-100/60">Ogłoszenie</dt>
+              <dt class="text-muted-foreground">Ogłoszenie</dt>
               <dd class="truncate">
                 {application.posting_url ? (
                   <a
                     href={application.posting_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="text-purple-300 underline"
+                    class="text-link underline"
                   >
                     {application.posting_url}
                   </a>
@@ -142,28 +148,28 @@ const phoneHref = application?.hr_contact_phone ? `tel:${application.hr_contact_
                   "—"
                 )}
               </dd>
-              <dt class="text-blue-100/60">Aplikowano</dt>
+              <dt class="text-muted-foreground">Aplikowano</dt>
               <dd>{application.applied_on ? formatDate(application.applied_on) : "—"}</dd>
-              <dt class="text-blue-100/60">Forma</dt>
+              <dt class="text-muted-foreground">Forma</dt>
               <dd>{application.employment_type ? EMPLOYMENT_TYPE_LABELS[application.employment_type] : "—"}</dd>
-              <dt class="text-blue-100/60">Tryb</dt>
+              <dt class="text-muted-foreground">Tryb</dt>
               <dd>{application.work_mode ? WORK_MODE_LABELS[application.work_mode] : "—"}</dd>
             </dl>
           </section>
 
-          <section class="rounded-xl border border-white/10 bg-white/5 p-4 text-sm" data-testid="history">
+          <section class="bg-card rounded-xl border p-4 text-sm" data-testid="history">
             <h2 class="mb-2 font-semibold">Historia zmian</h2>
             {history.length === 0 ? (
-              <p class="text-blue-100/60">Bez zmian od dodania ({formatDateTime(application.created_at)}).</p>
+              <p class="text-muted-foreground">Bez zmian od dodania ({formatDateTime(application.created_at)}).</p>
             ) : (
               <ul class="space-y-1">
                 {history.map((h) => (
-                  <li>
-                    <span class="text-blue-100/60">{formatDateTime(h.at)}</span> ·{" "}
+                  <li class="break-words">
+                    <span class="text-muted-foreground">{formatDateTime(h.at)}</span> ·{" "}
                     {h.type === "status" ? (
                       <>
                         Status: {STATUS_LABELS[h.from]} → {STATUS_LABELS[h.to]}
-                        {h.is_revert && <span class="text-amber-300"> (cofnięcie)</span>}
+                        {h.is_revert && <span class="text-warning"> (cofnięcie)</span>}
                       </>
                     ) : (
                       <>

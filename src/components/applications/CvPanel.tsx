@@ -1,5 +1,8 @@
 import React, { lazy, Suspense, useState } from "react";
 import { Download, Eye, EyeOff, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -13,9 +16,6 @@ interface Props {
   current: CvFile | null;
   library: CvFile[];
 }
-
-const selectClass =
-  "w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm text-white focus:ring-2 focus:ring-purple-400 focus:outline-none";
 
 async function attach(applicationId: string, cvFileId: string): Promise<string | null> {
   const body = new FormData();
@@ -95,86 +95,100 @@ export default function CvPanel({ applicationId, current, library }: Props) {
   const others = library.filter((f) => f.id !== current?.id);
 
   return (
-    <section className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm" data-testid="cv-panel">
+    <section className="bg-card rounded-xl border p-4 text-sm" data-testid="cv-panel">
       <h2 className="mb-2 font-semibold">CV</h2>
       {current ? (
         <>
           <p className="flex flex-wrap items-center gap-2">
-            <FileText className="size-4 text-purple-300" />
-            <span data-testid="cv-current">{current.file_name}</span>
-            <span className="text-xs text-blue-100/50">{formatFileSize(current.size_bytes)}</span>
+            <FileText className="text-link size-4" />
+            <span data-testid="cv-current" className="min-w-0 break-words">
+              {current.file_name}
+            </span>
+            <span className="text-muted-foreground text-xs">{formatFileSize(current.size_bytes)}</span>
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
-            <button
+            <Button
               type="button"
+              size="sm"
               onClick={() => {
                 setPreviewOpen(!previewOpen);
               }}
               aria-expanded={previewOpen}
-              className="inline-flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium hover:bg-purple-500"
+              className="h-auto gap-1 rounded-lg px-3 py-1.5 text-xs has-[>svg]:px-3"
             >
               {previewOpen ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
               {previewOpen ? "Ukryj podgląd" : "Podgląd"}
-            </button>
-            <a
-              href={`/api/cv/${current.id}?download=1`}
-              className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-xs hover:bg-white/10"
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-input hover:bg-muted hover:text-foreground h-auto gap-1 rounded-lg bg-transparent px-3 py-1.5 text-xs font-normal shadow-none has-[>svg]:px-3"
             >
-              <Download className="size-3.5" />
-              Pobierz
-            </a>
+              <a href={`/api/cv/${current.id}?download=1`}>
+                <Download className="size-3.5" />
+                Pobierz
+              </a>
+            </Button>
           </div>
           {previewOpen && (
-            <Suspense fallback={<p className="mt-3 text-xs text-blue-100/60">Wczytywanie podglądu…</p>}>
+            <Suspense fallback={<p className="text-muted-foreground mt-3 text-xs">Wczytywanie podglądu…</p>}>
               <CvPreview cvId={current.id} mimeType={current.mime_type} />
             </Suspense>
           )}
         </>
       ) : (
-        <p className="text-blue-100/60">Nie dołączono CV.</p>
+        <p className="text-muted-foreground">Nie dołączono CV.</p>
       )}
 
       <div className={cn("mt-3 grid gap-3 sm:grid-cols-2", pending && "pointer-events-none opacity-60")}>
         {others.length > 0 && (
-          <div>
-            <label htmlFor={`cv-library-${applicationId}`} className="mb-1 block text-xs text-blue-100/70">
+          <div className="min-w-0">
+            <Label
+              htmlFor={`cv-library-${applicationId}`}
+              className="text-supporting-foreground mb-1 block text-xs font-normal"
+            >
               {current ? "Zmień na CV z biblioteki" : "Wybierz z biblioteki"}
-            </label>
-            <select
+            </Label>
+            <NativeSelect
               id={`cv-library-${applicationId}`}
               value=""
               disabled={pending}
               onChange={handleSelect}
-              className={selectClass}
+              wrapperClassName="w-full"
+              className="bg-muted"
             >
-              <option value="" disabled className="text-black">
+              <NativeSelectOption value="" disabled>
                 —
-              </option>
+              </NativeSelectOption>
               {others.map((f) => (
-                <option key={f.id} value={f.id} className="text-black">
+                <NativeSelectOption key={f.id} value={f.id}>
                   {f.file_name} ({formatFileSize(f.size_bytes)}, {formatDateTime(f.created_at)})
-                </option>
+                </NativeSelectOption>
               ))}
-            </select>
+            </NativeSelect>
           </div>
         )}
-        <div>
-          <label htmlFor={`cv-upload-${applicationId}`} className="mb-1 block text-xs text-blue-100/70">
+        <div className="min-w-0">
+          <Label
+            htmlFor={`cv-upload-${applicationId}`}
+            className="text-supporting-foreground mb-1 block text-xs font-normal"
+          >
             Wgraj nowe (PDF lub DOCX, do 5 MB)
-          </label>
+          </Label>
           <input
             id={`cv-upload-${applicationId}`}
             type="file"
             disabled={pending}
             accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             onChange={handleUpload}
-            className="block w-full text-xs text-blue-100/80 file:mr-3 file:rounded-lg file:border-0 file:bg-purple-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-purple-500"
+            className="text-supporting-foreground file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-1.5"
           />
         </div>
       </div>
-      {pending && !message && <p className="mt-2 text-xs text-blue-100/60">Zapisywanie…</p>}
-      {message && <p className="mt-2 text-xs text-blue-100/70">{message}</p>}
-      {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
+      {pending && !message && <p className="text-muted-foreground mt-2 text-xs">Zapisywanie…</p>}
+      {message && <p className="text-supporting-foreground mt-2 text-xs">{message}</p>}
+      {error && <p className="text-destructive mt-2 text-xs">{error}</p>}
     </section>
   );
 }

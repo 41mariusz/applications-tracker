@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
 import { allowedTargets, isTerminal } from "@/lib/domain/status";
 import { STATUS_LABELS, type ApplicationStatus } from "@/types";
 
@@ -48,28 +50,29 @@ export default function StatusControl({ applicationId, status }: Props) {
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <label className="sr-only" htmlFor={`status-${applicationId}`}>
+      <Label className="sr-only" htmlFor={`status-${applicationId}`}>
         Zmień status
-      </label>
-      <select
+      </Label>
+      {/* Status pill: the select's chevron replaces the former "▾" in the label. */}
+      <NativeSelect
         id={`status-${applicationId}`}
         value=""
         disabled={pending}
         onChange={handleChange}
-        className="rounded-full border border-white/20 bg-purple-500/30 px-3 py-1 text-xs text-white focus:ring-2 focus:ring-purple-400 focus:outline-none disabled:opacity-60"
+        className="bg-secondary text-secondary-foreground h-auto rounded-full py-1 pr-8 pl-3 text-xs"
       >
-        <option value="" disabled className="text-black">
-          {STATUS_LABELS[status]} ▾
-        </option>
-        <optgroup label={isTerminal(status) ? "Cofnij na (wymaga potwierdzenia)" : "Zmień na"} className="text-black">
+        <NativeSelectOption value="" disabled>
+          {STATUS_LABELS[status]}
+        </NativeSelectOption>
+        <NativeSelectOptGroup label={isTerminal(status) ? "Cofnij na (wymaga potwierdzenia)" : "Zmień na"}>
           {targets.map((t) => (
-            <option key={t.status} value={t.status} className="text-black">
+            <NativeSelectOption key={t.status} value={t.status}>
               {STATUS_LABELS[t.status]}
-            </option>
+            </NativeSelectOption>
           ))}
-        </optgroup>
-      </select>
-      {error && <p className="max-w-48 text-right text-xs text-red-300">{error}</p>}
+        </NativeSelectOptGroup>
+      </NativeSelect>
+      {error && <p className="text-destructive max-w-48 text-right text-xs">{error}</p>}
     </div>
   );
 }

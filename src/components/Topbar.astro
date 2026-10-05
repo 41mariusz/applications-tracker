@@ -1,20 +1,25 @@
 ---
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
 const { user } = Astro.locals;
+// Inline text links: link variant without the button box.
+const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-normal");
 ---
 
-<div class="mb-4 flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80">
+<div class="bg-card text-supporting-foreground mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-xl border px-4 py-2 text-sm">
   {user ? (
     <>
-      <span class="text-blue-100/70">{user.email}</span>
-      <div class="flex items-center gap-3">
-        <a href="/dashboard" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+      <span class="min-w-0 break-all">{user.email}</span>
+      <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <a href="/dashboard" class:list={linkClass}>
           Moje aplikacje
         </a>
-        <a href="/cv" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+        <a href="/cv" class:list={linkClass}>
           Biblioteka CV
         </a>
         <form method="POST" action="/api/auth/signout">
-          <button type="submit" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+          <button type="submit" class:list={linkClass}>
             Wyloguj
           </button>
         </form>
@@ -22,9 +27,9 @@ const { user } = Astro.locals;
     </>
   ) : (
     <>
-      <span class="text-blue-100/70">Applications Tracker</span>
+      <span>Applications Tracker</span>
       <div class="flex gap-3">
-        <a href="/auth/signin" class="text-purple-300 transition-colors hover:text-purple-100 hover:underline">
+        <a href="/auth/signin" class:list={linkClass}>
           Zaloguj się
         </a>
       </div>

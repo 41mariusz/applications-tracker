@@ -343,21 +343,21 @@ No database changes. Visual change limited to the details view; other pages unch
 
 #### Automated
 
-- [x] 2.1 Lint, type check and build pass: `npm run lint && npx astro check && npm run build`
-- [x] 2.2 Before/after screenshots of `/dashboard`, `/cv` and `/auth/signin` at 1280 px and 360 px (headless Chromium against a local preview) differ by at most 0.1 % of pixels
+- [x] 2.1 Lint, type check and build pass: `npm run lint && npx astro check && npm run build` — 0dda353
+- [x] 2.2 Before/after screenshots of `/dashboard`, `/cv` and `/auth/signin` at 1280 px and 360 px (headless Chromium against a local preview) differ by at most 0.1 % of pixels — 0dda353
 
 #### Manual
 
-- [ ] 2.3 Owner confirms on production that the dashboard, CV library and sign-in look unchanged after deploy
+- [x] 2.3 Owner confirms on production that the dashboard, CV library and sign-in look unchanged after deploy
 
 ### Phase 3: Details view on tokens and components
 
 #### Automated
 
-- [ ] 3.1 Hardcoded-value scan reports 0 hits in the 6 view files: `grep -cE '<scan regex from /10x-ui>' <files>` (the Phase 5 script once it exists)
-- [ ] 3.2 Lint, type check, unit tests pass: `npm run lint && npx astro check && npm test`
-- [ ] 3.3 Smoke test passes (details, notes, status and CV flows unchanged): `npm run build && npm run smoke`
-- [ ] 3.4 At 360 px the details page has no horizontal scroll (`document.documentElement.scrollWidth <= 360` in headless Chromium, with a long company name and a long URL in a note)
+- [x] 3.1 Hardcoded-value scan reports 0 hits in the 6 view files: `grep -cE '<scan regex from /10x-ui>' <files>` (the Phase 5 script once it exists)
+- [x] 3.2 Lint, type check, unit tests pass: `npm run lint && npx astro check && npm test`
+- [x] 3.3 Smoke test passes (details, notes, status and CV flows unchanged): `npm run build && npm run smoke`
+- [x] 3.4 At 360 px the details page has no horizontal scroll (`document.documentElement.scrollWidth <= 360` in headless Chromium, with a long company name and a long URL in a note)
 
 #### Manual
 
