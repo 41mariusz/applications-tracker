@@ -6,7 +6,7 @@
 -- that timestamp (no bump).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(46);
+select plan(47);
 
 -- Two users; act as the first one through RLS.
 insert into auth.users (id, email) values
@@ -251,6 +251,13 @@ select is(
 
 -- Another user: the owner's rows are invisible, so the trace functions write nothing.
 -- updated_at is now() for the owner's application, so update_application would match if visible.
+-- The note id is read while still the owner: as the other user RLS would turn it into NULL.
+select set_config(
+  'test.owner_note_id',
+  (select id::text from public.notes where body = 'Zmiana stawki: 22k → 24k.'),
+  true
+);
+select isnt(current_setting('test.owner_note_id', true), null, 'the owner''s note id is known before switching users');
 set local request.jwt.claims = '{"sub": "22222222-2222-2222-2222-222222222222", "role": "authenticated"}';
 select throws_ok(
   $$ select public.add_note('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'comment', 'Cudza notatka', now()) $$,
@@ -260,7 +267,7 @@ select throws_ok(
 );
 select ok(
   not public.edit_note(
-    (select id from public.notes where body = 'Zmiana stawki: 22k → 24k.'), 'comment', 'Cudza edycja', now()),
+    current_setting('test.owner_note_id')::uuid, 'comment', 'Cudza edycja', now()),
   'another user cannot edit the owner''s note'
 );
 select ok(
@@ -276,9 +283,9 @@ select ok(
   not public.set_application_cv('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'cccccccc-0000-0000-0000-000000000003'),
   'another user cannot attach a CV to the owner''s application'
 );
-select is((select count(*)::int from public.status_changes), 0, 'another user sees no status_changes');
-select is((select count(*)::int from public.field_changes), 0, 'another user sees no field_changes');
-select is((select count(*)::int from public.note_revisions), 0, 'another user sees no note_revisions');
+select is((select count(*)::int from public.status_changes), 0, 'RLS hides the owner''s status_changes from another user');
+select is((select count(*)::int from public.field_changes), 0, 'RLS hides the owner''s field_changes from another user');
+select is((select count(*)::int from public.note_revisions), 0, 'RLS hides the owner''s note_revisions from another user');
 
 -- Back as the owner: the other user's calls left no trace and no change.
 set local request.jwt.claims = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';

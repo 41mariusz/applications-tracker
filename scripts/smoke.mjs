@@ -148,7 +148,9 @@ function changeStatus(form) {
   return request(`/api/applications/${applicationId}/status`, { method: "POST", form });
 }
 
-// List order on a clean account: eight applications, one per stage (two in "sent"), compared with the PRD order.
+// List order on a clean account, compared with the PRD order. Three "sent" applications with the note on the
+// middle one, and two closed pairs closed in opposite orders, so neither creation order (either way) nor a fixed
+// order between Rejected and Withdrawn can pass for "most recent activity first".
 const orderTag = `Order ${Date.now()}`;
 const CLOSED = ["rejected", "withdrawn"];
 
@@ -158,10 +160,13 @@ async function checkListOrder() {
     ["offer", "offer"],
     ["interviews", "interviews"],
     ["hr_contact", "hr_contact"],
+    ["sent-oldest", "sent"],
     ["sent-noted", "sent"],
-    ["sent-other", "sent"],
-    ["rejected", "rejected"],
-    ["withdrawn", "withdrawn"],
+    ["sent-newest", "sent"],
+    ["rejected-1", "rejected"],
+    ["withdrawn-1", "withdrawn"],
+    ["withdrawn-2", "withdrawn"],
+    ["rejected-2", "rejected"],
   ];
   const companyById = new Map();
   const idByLabel = new Map();
@@ -173,7 +178,8 @@ async function checkListOrder() {
     companyById.set(id, name);
     idByLabel.set(label, id);
   }
-  // New applications start at "sent"; closed ones are closed from there, the rejected one first.
+  // New applications start at "sent"; closed ones are closed from there in list order:
+  // rejected-1, withdrawn-1, withdrawn-2, rejected-2 (the later one is the more recently active).
   for (const [label, status] of plan) {
     if (status === "sent") continue;
     const moved = await request(`/api/applications/${idByLabel.get(label)}/status`, {
@@ -182,7 +188,7 @@ async function checkListOrder() {
     });
     if (moved.status !== 200) return { ...moved, body: `move ${label} failed: ${moved.body}` };
   }
-  // A note makes the older "sent" application the most recently active one in its stage.
+  // A note makes the middle "sent" application the most recently active one in its stage.
   const noted = await request(`/api/applications/${idByLabel.get("sent-noted")}/notes`, {
     method: "POST",
     form: { kind: "comment", body: "follow-up", noted_at: new Date().toISOString() },
@@ -209,9 +215,12 @@ const expectedOrder = [
   "interviews",
   "hr_contact",
   "sent-noted",
-  "sent-other",
-  "withdrawn",
-  "rejected",
+  "sent-newest",
+  "sent-oldest",
+  "rejected-2",
+  "withdrawn-2",
+  "withdrawn-1",
+  "rejected-1",
 ]
   .map((label) => `${orderTag} [${label}]`)
   .join(" > ");
@@ -284,7 +293,7 @@ const steps = [
   [
     "reverting a closed application needs confirmation",
     () => changeStatus({ status: "offer" }),
-    { status: 409, bodyIncludes: "requiresConfirmation" },
+    { status: 409, bodyIncludes: '"requiresConfirmation":true' },
   ],
   [
     "confirmed revert is accepted",
@@ -296,7 +305,7 @@ const steps = [
   [
     "moving from one final status to another needs confirmation",
     () => changeStatus({ status: "withdrawn" }),
-    { status: 409, bodyIncludes: "requiresConfirmation" },
+    { status: 409, bodyIncludes: '"requiresConfirmation":true' },
   ],
   ["confirmation must be explicit", () => changeStatus({ status: "withdrawn", confirm: "false" }), { status: 400 }],
   [
@@ -523,7 +532,7 @@ const steps = [
   [
     "list puts stages in order of importance, most recent activity first, closed ones last",
     checkListOrder,
-    { status: 200, bodyIncludes: expectedOrder },
+    { status: 200, bodyIncludes: expectedOrder, bodyExcludes: "not crossed out" },
   ],
 ];
 

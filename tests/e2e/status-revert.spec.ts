@@ -40,10 +40,17 @@ test.describe("risk #3: reverting a terminal status in the browser", () => {
     const closed = await page.request.post(statusRoute, { headers: { Origin: origin }, form: { status: "rejected" } });
     await expect(closed).toBeOK();
 
-    // Every POST the page itself makes to the status route from here on (attached after the setup POSTs).
+    // Every POST the page itself makes to the status route from here on (attached after the setup POSTs),
+    // and separately any that failed — e.g. one cut off by a reload, which a later check could otherwise miss.
     const posts: string[] = [];
+    const failedPosts: string[] = [];
+    const isStatusPost = (req: { method(): string; url(): string }) =>
+      req.method() === "POST" && new URL(req.url()).pathname === statusRoute;
     page.on("request", (req) => {
-      if (req.method() === "POST" && new URL(req.url()).pathname === statusRoute) posts.push(req.url());
+      if (isStatusPost(req)) posts.push(req.url());
+    });
+    page.on("requestfailed", (req) => {
+      if (isStatusPost(req)) failedPosts.push(req.url());
     });
 
     await page.goto(`/applications/${id}`);
@@ -84,6 +91,7 @@ test.describe("risk #3: reverting a terminal status in the browser", () => {
     // The reload also gives any stray request time to surface before the check below.
     await page.reload();
     expect(posts, "cancelling the dialog sends nothing to the status route").toEqual([]);
+    expect(failedPosts, "cancelling the dialog starts no request, not even one cut off by the reload").toEqual([]);
     await expect(currentStatus).toHaveText("Odrzucona");
     await expect(history).toContainText("Wysłana → Odrzucona");
     await expect(history).not.toContainText("(cofnięcie)");
@@ -108,5 +116,6 @@ test.describe("risk #3: reverting a terminal status in the browser", () => {
     await expect(revert).toContainText("(cofnięcie)");
     await expect(currentStatus).toHaveText("Oferta");
     expect(posts, "accepting sends exactly one status change").toHaveLength(1);
+    expect(failedPosts, "no status request failed").toEqual([]);
   });
 });
