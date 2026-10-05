@@ -245,10 +245,10 @@ None. No schema or stored-data change.
 
 #### Automated
 
-- [x] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes against local Supabase
-- [x] 2.2 With Phase 1's rule change temporarily reverted, the spec fails at the first `48 5xx` keystroke (red check recorded, revert undone)
-- [x] 2.3 `npx playwright test` (setup + seed + call) passes
-- [x] 2.4 `npm run lint` passes
+- [x] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes against local Supabase — 3a6a046
+- [x] 2.2 With Phase 1's rule change temporarily reverted, the spec fails at the first `48 5xx` keystroke (red check recorded, revert undone) — 3a6a046
+- [x] 2.3 `npx playwright test` (setup + seed + call) passes — 3a6a046
+- [x] 2.4 `npm run lint` passes — 3a6a046
 
 #### Manual
 
@@ -259,7 +259,7 @@ None. No schema or stored-data change.
 #### Automated
 
 - [ ] 3.1 The CI `smoke` job on the PR runs `npx playwright test` and passes (setup, seed, call-phone-search)
-- [ ] 3.2 `npm run lint` and Prettier (lint-staged) pass on the changed files
+- [x] 3.2 `npm run lint` and Prettier (lint-staged) pass on the changed files
 
 #### Manual
 
