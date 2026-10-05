@@ -94,6 +94,8 @@ describe("matchesQuery — phone formats during a call", () => {
     "0048 600 100 200",
     "48 600 100 200",
     "48600100200",
+    "00 48 600 100 200",
+    "(0048) 600 100 200",
   ];
   const withPhone = (phone: string) => app("Acme", "Developer", null, phone);
 
@@ -125,7 +127,15 @@ describe("matchesQuery — phone formats during a call", () => {
     expect(matchesQuery(noPhone, "+48 600")).toBe(false);
   });
 
-  it("reads 48 typed without + both as the country code and as part of the number", () => {
+  // Accepted trade-off (impl review F1): a short digit-only query cannot be told apart from the
+  // start of a number being typed, so it shows everything even when meant as text.
+  it("shows everything for a short digit-only query, also one meant as text", () => {
+    expect(matchesQuery(app("Firma 12", "Developer", null, null), "12")).toBe(true);
+    expect(matchesQuery(acme, "12")).toBe(true);
+    expect(matchesQuery(withPhone("700 800 900"), "485")).toBe(true);
+  });
+
+  it("reads 48 typed without + as the country code, so a number containing every typed digit is found too", () => {
     expect(matchesQuery(withPhone("600 100 200"), "48 600")).toBe(true);
     expect(matchesQuery(withPhone("500 486 001"), "486001")).toBe(true);
     expect(matchesQuery(withPhone("700 800 900"), "48 600")).toBe(false);

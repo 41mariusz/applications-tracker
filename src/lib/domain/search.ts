@@ -37,16 +37,15 @@ export function normalizePhone(value: string): string {
 const PHONE_QUERY = /^[\d\s+\-().]+$/;
 const MIN_PHONE_DIGITS = 3;
 
-// How a number being typed can be read: the national digits after a "+48"/"0048" prefix, and —
-// when "48" is typed without "+" — also the full digits, since 48 may be the start of the number.
-// A beginning of "0048" ("0", "00", "004") has no national digits yet.
-function phoneQueryReadings(query: string): { national: string; full: string | null } {
-  if (query.startsWith("+48")) return { national: query.slice(3).replace(/\D/g, ""), full: null };
-  if (query.startsWith("0048")) return { national: query.slice(4).replace(/\D/g, ""), full: null };
-  const digits = query.replace(/\D/g, "");
-  if (!query.startsWith("+") && "0048".startsWith(digits)) return { national: "", full: null };
-  if (!query.startsWith("+") && digits.startsWith("48")) return { national: digits.slice(2), full: digits };
-  return { national: digits, full: null };
+// The national digits of a number being typed, however it is spaced or bracketed: whatever follows
+// a "+48", "0048" or "48" country code. A beginning of the code ("+4", "00", "004") has none yet.
+// A number containing all typed digits ("486001") also contains the national ones, so they suffice.
+function nationalDigits(query: string): string {
+  const compact = query.replace(/[^\d+]/g, "");
+  const digits = compact.replace(/\D/g, "");
+  const code = compact.startsWith("+") ? "48" : digits.startsWith("00") ? "0048" : "48";
+  if (code.startsWith(digits)) return "";
+  return digits.startsWith(code) ? digits.slice(code.length) : digits;
 }
 
 export function matchesQuery(item: Searchable, query: string): boolean {
@@ -58,9 +57,9 @@ export function matchesQuery(item: Searchable, query: string): boolean {
   // fewer than 3 national digits ("+48", "0048", "48 6") it is not a search yet: during a call the
   // offer must stay on the list at every keystroke, so everything matches.
   if (PHONE_QUERY.test(q)) {
-    const { national, full } = phoneQueryReadings(q);
+    const national = nationalDigits(q);
     if (national.length < MIN_PHONE_DIGITS) return true;
-    if (phone.includes(national) || (full !== null && phone.includes(full))) return true;
+    if (phone.includes(national)) return true;
   }
 
   const haystack = normalizeText([item.company, item.position, item.hr_contact_name ?? ""].join(" "));
