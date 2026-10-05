@@ -54,9 +54,10 @@ describe("matchesQuery", () => {
     },
   );
 
-  it("does not match phones on too few digits or a different number", () => {
-    expect(matchesQuery(acme, "60")).toBe(false);
+  it("does not match a different number or an application without a phone", () => {
     expect(matchesQuery(acme, "700 100 200")).toBe(false);
+    expect(matchesQuery(acme, "+48 700")).toBe(false);
+    expect(matchesQuery(acme, "48 700 1")).toBe(false);
     expect(matchesQuery(noPhone, "600")).toBe(false);
   });
 
@@ -67,6 +68,77 @@ describe("matchesQuery", () => {
 
   it("treats an empty query as matching everything", () => {
     expect(matchesQuery(noPhone, "   ")).toBe(true);
+  });
+});
+
+// PRD FR-005: phone search matches regardless of formatting (spaces, country prefix), and during
+// a call the offer must not disappear while the number is being typed. Expected values come from
+// FR-005 and the change plan (testing-call-scenario-browser), not from normalizePhone.
+describe("matchesQuery — phone formats during a call", () => {
+  const storedFormats = [
+    "600 100 200",
+    "600-100-200",
+    "600100200",
+    "+48 600 100 200",
+    "+48600100200",
+    "0048 600 100 200",
+    "48600100200",
+    "(+48) 600 100 200",
+  ];
+  const typedFormats = [
+    "600 100 200",
+    "600-100-200",
+    "600100200",
+    "+48 600 100 200",
+    "+48600100200",
+    "0048 600 100 200",
+    "48 600 100 200",
+    "48600100200",
+    "00 48 600 100 200",
+    "(0048) 600 100 200",
+  ];
+  const withPhone = (phone: string) => app("Acme", "Developer", null, phone);
+
+  it.each(storedFormats.flatMap((stored) => typedFormats.map((typed) => [stored, typed])))(
+    "finds the number stored as %s when typed as %s",
+    (stored, typed) => {
+      expect(matchesQuery(withPhone(stored), typed)).toBe(true);
+    },
+  );
+
+  it.each(typedFormats)("keeps the offer on the list at every keystroke of %s", (typed) => {
+    const offer = withPhone("600-100-200");
+    for (let end = 1; end <= typed.length; end++) {
+      expect(matchesQuery(offer, typed.slice(0, end)), `after typing "${typed.slice(0, end)}"`).toBe(true);
+    }
+  });
+
+  it.each(["+48", "+48 6", "+48 60", "0048", "004", "00", "48", "48 60", "60"])(
+    "treats %s as not a search yet and shows every application",
+    (typed) => {
+      expect(matchesQuery(noPhone, typed)).toBe(true);
+      expect(matchesQuery(withPhone("700 800 900"), typed)).toBe(true);
+    },
+  );
+
+  it("searches once three national digits are typed", () => {
+    expect(matchesQuery(withPhone("600 100 200"), "+48 600")).toBe(true);
+    expect(matchesQuery(withPhone("700 800 900"), "+48 600")).toBe(false);
+    expect(matchesQuery(noPhone, "+48 600")).toBe(false);
+  });
+
+  // Accepted trade-off (impl review F1): a short digit-only query cannot be told apart from the
+  // start of a number being typed, so it shows everything even when meant as text.
+  it("shows everything for a short digit-only query, also one meant as text", () => {
+    expect(matchesQuery(app("Firma 12", "Developer", null, null), "12")).toBe(true);
+    expect(matchesQuery(acme, "12")).toBe(true);
+    expect(matchesQuery(withPhone("700 800 900"), "485")).toBe(true);
+  });
+
+  it("reads 48 typed without + as the country code, so a number containing every typed digit is found too", () => {
+    expect(matchesQuery(withPhone("600 100 200"), "48 600")).toBe(true);
+    expect(matchesQuery(withPhone("500 486 001"), "486001")).toBe(true);
+    expect(matchesQuery(withPhone("700 800 900"), "48 600")).toBe(false);
   });
 });
 

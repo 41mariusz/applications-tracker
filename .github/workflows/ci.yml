@@ -55,6 +55,37 @@ jobs:
           for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4321/ && break; sleep 1; done
           source supabase.env
           BASE_URL=http://localhost:4321 SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" npm run smoke
+      - name: Prepare E2E (Worker env, test user, browser)
+        env:
+          E2E_USERNAME: e2e@example.com
+          E2E_PASSWORD: e2e-local-password
+        run: |
+          source supabase.env
+          # The e2e build reads .dev.vars.e2e (CLOUDFLARE_ENV=e2e); only the local stack, never the service-role key.
+          printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .dev.vars.e2e
+          # No sign-up in the app: the user exists only in this local Supabase, created through the admin API.
+          curl -sf -o /dev/null -X POST "$API_URL/auth/v1/admin/users" \
+            -H "apikey: $SERVICE_ROLE_KEY" -H "Authorization: Bearer $SERVICE_ROLE_KEY" -H "Content-Type: application/json" \
+            -d "{\"email\":\"$E2E_USERNAME\",\"password\":\"$E2E_PASSWORD\",\"email_confirm\":true}"
+          npx playwright install --with-deps chromium
+      - name: E2E in a browser (Playwright, production build)
+        env:
+          E2E_USERNAME: e2e@example.com
+          E2E_PASSWORD: e2e-local-password
+        run: |
+          # Astro 7 runs one preview server per project, whatever the port: stop the smoke preview,
+          # then Playwright builds and starts its own (CLOUDFLARE_ENV=e2e) on 4321.
+          npx astro preview stop
+          for i in $(seq 1 30); do curl -s --max-time 2 -o /dev/null http://localhost:4321/ || break; sleep 1; done
+          if curl -s --max-time 2 -o /dev/null http://localhost:4321/; then echo "::error title=Port busy::4321 still answers after astro preview stop"; exit 1; fi
+          source supabase.env
+          E2E_SUPABASE_URL="$API_URL" E2E_SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" npx playwright test
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
       - if: always()
         run: supabase stop --no-backup
 
