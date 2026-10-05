@@ -232,23 +232,23 @@ None. No schema or stored-data change.
 
 #### Automated
 
-- [x] 1.1 Before the rule change, the new matrix fails only on the `48`-without-"+" prefixes and the "not a search yet" cases (red run recorded)
-- [x] 1.2 `npm test` passes
-- [x] 1.3 `npm run lint` passes
-- [x] 1.4 `npx astro check` passes
+- [x] 1.1 Before the rule change, the new matrix fails only on the `48`-without-"+" prefixes and the "not a search yet" cases (red run recorded) — 90e36b1
+- [x] 1.2 `npm test` passes — 90e36b1
+- [x] 1.3 `npm run lint` passes — 90e36b1
+- [x] 1.4 `npx astro check` passes — 90e36b1
 
 #### Manual
 
-- [x] 1.5 On local `/dashboard`, typing `+48`, then `004`, shows the full list without "Brak wyników"; typing `48 600 1` for a stored `600-100-200` keeps that offer visible
+- [x] 1.5 On local `/dashboard`, typing `+48`, then `004`, shows the full list without "Brak wyników"; typing `48 600 1` for a stored `600-100-200` keeps that offer visible — 90e36b1
 
 ### Phase 2: Risk #1 E2E — typing key by key
 
 #### Automated
 
-- [ ] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes against local Supabase
-- [ ] 2.2 With Phase 1's rule change temporarily reverted, the spec fails at the first `48 5xx` keystroke (red check recorded, revert undone)
-- [ ] 2.3 `npx playwright test` (setup + seed + call) passes
-- [ ] 2.4 `npm run lint` passes
+- [x] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes against local Supabase
+- [x] 2.2 With Phase 1's rule change temporarily reverted, the spec fails at the first `48 5xx` keystroke (red check recorded, revert undone)
+- [x] 2.3 `npx playwright test` (setup + seed + call) passes
+- [x] 2.4 `npm run lint` passes
 
 #### Manual
 

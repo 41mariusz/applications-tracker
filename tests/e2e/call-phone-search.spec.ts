@@ -1,5 +1,7 @@
 // risk: #1 (test-plan.md) — during an HR call, searching by a phone number typed in another
 // format than stored must show the right application live, with the call info on its page.
+// Typed key by key: the offer must stay on the list at every keystroke, not only at the end
+// (plan: context/changes/testing-call-scenario-browser, Phase 2).
 // Modelled on seed.spec.ts. Real boundaries: auth, routing, SSR list, live filter script, DB.
 import { test, expect } from "@playwright/test";
 import { deleteApplication } from "./support/local-admin";
@@ -14,7 +16,7 @@ test.describe("risk #1: phone search during a call", () => {
     expect(ids, "both applications created by the test must be cleaned up").toHaveLength(2);
   });
 
-  test("a number typed with +48 and spaces finds the offer stored with dashes and shows the call info", async ({
+  test("a number typed key by key as 48 without + keeps the offer stored with dashes listed and shows the call info", async ({
     page,
     baseURL,
   }) => {
@@ -23,9 +25,12 @@ test.describe("risk #1: phone search during a call", () => {
     const digits = String(500_000_000 + Math.floor(Math.random() * 400_000_000));
     const decoyDigits = String(Number(digits) + 1);
     const stored = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-    const typed = `+48 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
-    const company = `[E2E] Call ${digits}`;
-    const decoy = `[E2E] Decoy ${decoyDigits}`;
+    const typed = `48 ${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+    // Labels carry a letters-only tag: search also matches company names, so digits in a label would
+    // let an offer match by name instead of by phone.
+    const tag = Array.from({ length: 8 }, () => String.fromCharCode(97 + Math.floor(Math.random() * 26))).join("");
+    const company = `[E2E] Call ${tag}`;
+    const decoy = `[E2E] Decoy ${tag}`;
     const origin = new URL(baseURL ?? "").origin;
     const create = async (form: Record<string, string>) => {
       const res = await page.request.post("/api/applications", { headers: { Origin: origin }, form });
@@ -47,14 +52,21 @@ test.describe("risk #1: phone search during a call", () => {
     await page.goto("/dashboard");
     await expect(page.getByRole("link", { name: decoy })).toBeVisible();
 
-    // The recruiter calls: the owner types the number as it shows on the phone.
-    await page.getByRole("searchbox", { name: "Szukaj" }).fill(typed);
+    // The recruiter calls: the owner types the number as it is read out, country code without "+".
+    // After every key the offer is still on the list and "nothing found" never shows.
+    const search = page.getByRole("searchbox", { name: "Szukaj" });
+    const offer = page.getByRole("link", { name: company });
+    const nothingFound = page.getByText("Brak wyników");
+    for (const key of typed) {
+      await search.pressSequentially(key);
+      await expect(offer, `after typing "${await search.inputValue()}"`).toBeVisible();
+      await expect(nothingFound).toBeHidden();
+    }
 
-    // Live filter: exactly this offer is left on the list, without a page load.
+    // Live filter: with the whole number typed, exactly this offer is left, without a page load.
+    await expect(search).toHaveValue(typed);
     await expect(page.getByRole("link", { name: decoy })).toBeHidden();
     await expect(page.getByTestId("search-count")).toHaveText("1");
-    const offer = page.getByRole("link", { name: company });
-    await expect(offer).toBeVisible();
 
     // Opening it shows what the call needs: the salary range and the rate quoted earlier.
     await offer.click();
