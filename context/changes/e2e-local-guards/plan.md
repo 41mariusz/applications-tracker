@@ -201,10 +201,10 @@ None.
 
 #### Automated
 
-- [x] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes
-- [x] 2.2 With a temporary `throw` right after the two creates, the spec fails only with that error (no "2 ids" error), and a lookup in local Supabase finds no `[E2E] Call/Decoy` rows afterwards; the throw is reverted
-- [x] 2.3 `npx playwright test` passes and `npm run lint` passes
+- [x] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes — 7475121
+- [x] 2.2 With a temporary `throw` right after the two creates, the spec fails only with that error (no "2 ids" error), and a lookup in local Supabase finds no `[E2E] Call/Decoy` rows afterwards; the throw is reverted — 7475121
+- [x] 2.3 `npx playwright test` passes and `npm run lint` passes — 7475121
 
 #### Manual
 
-- [ ] 2.4 The CI `smoke` job on the PR passes (E2E step green)
+- [x] 2.4 The CI `smoke` job on the PR passes (E2E step green) — 7475121
