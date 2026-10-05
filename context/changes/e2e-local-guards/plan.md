@@ -188,22 +188,22 @@ None.
 
 #### Automated
 
-- [x] 1.1 `npx playwright test` passes with the current local setup
-- [x] 1.2 With `.dev.vars.e2e` temporarily renamed (restored by absolute path), `npx playwright test` stops before the build with the `.dev.vars.e2e` message
-- [x] 1.3 With the allowed cookie ref temporarily changed so `127` is rejected, the `setup` project fails with the cookie message and `playwright/.auth/user.json` is not rewritten; the change is reverted
-- [x] 1.4 `npm run lint` passes and `npx astro check` reports 0 errors
+- [x] 1.1 `npx playwright test` passes with the current local setup — 1a0c9d2
+- [x] 1.2 With `.dev.vars.e2e` temporarily renamed (restored by absolute path), `npx playwright test` stops before the build with the `.dev.vars.e2e` message — 1a0c9d2
+- [x] 1.3 With the allowed cookie ref temporarily changed so `127` is rejected, the `setup` project fails with the cookie message and `playwright/.auth/user.json` is not rewritten; the change is reverted — 1a0c9d2
+- [x] 1.4 `npm run lint` passes and `npx astro check` reports 0 errors — 1a0c9d2
 
 #### Manual
 
-- [x] 1.5 Both error messages are clear enough to fix the setup without reading code
+- [x] 1.5 Both error messages are clear enough to fix the setup without reading code — 1a0c9d2
 
 ### Phase 2: Cleanup that cannot strand rows
 
 #### Automated
 
-- [ ] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes
-- [ ] 2.2 With a temporary `throw` right after the two creates, the spec fails only with that error (no "2 ids" error), and a lookup in local Supabase finds no `[E2E] Call/Decoy` rows afterwards; the throw is reverted
-- [ ] 2.3 `npx playwright test` passes and `npm run lint` passes
+- [x] 2.1 `npx playwright test tests/e2e/call-phone-search.spec.ts` passes
+- [x] 2.2 With a temporary `throw` right after the two creates, the spec fails only with that error (no "2 ids" error), and a lookup in local Supabase finds no `[E2E] Call/Decoy` rows afterwards; the throw is reverted
+- [x] 2.3 `npx playwright test` passes and `npm run lint` passes
 
 #### Manual
 
