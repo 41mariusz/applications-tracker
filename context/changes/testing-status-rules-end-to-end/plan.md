@@ -493,21 +493,21 @@ Record how to test a status-rule change, the decided rules, and the accepted dat
 
 #### Automated
 
-- [x] 4.1 E2E passes locally: status-revert spec
-- [x] 4.2 Full E2E suite passes
-- [x] 4.3 Lint passes: `npm run lint`
+- [x] 4.1 E2E passes locally: status-revert spec — cfbd35a
+- [x] 4.2 Full E2E suite passes — cfbd35a
+- [x] 4.3 Lint passes: `npm run lint` — cfbd35a
 
 #### Manual
 
-- [x] 4.4 Bypassing window.confirm makes the spec fail; reverted
-- [x] 4.5 No [E2E] applications remain after passing and failing runs
+- [x] 4.4 Bypassing window.confirm makes the spec fail; reverted — cfbd35a
+- [x] 4.5 No [E2E] applications remain after passing and failing runs — cfbd35a
 
 ### Phase 5: Documentation and test-plan close-out
 
 #### Automated
 
-- [ ] 5.1 Prettier check passes on the edited docs
+- [x] 5.1 Prettier check passes on the edited docs
 
 #### Manual
 
-- [ ] 5.2 §6.5 lets someone add a transition test without reading this plan
+- [x] 5.2 §6.5 lets someone add a transition test without reading this plan

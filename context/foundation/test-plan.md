@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-10-05 (Phase 1 complete)
+> Last updated: 2026-10-05 (Phase 2 implemented)
 
 ## 1. Strategy
 
@@ -63,14 +63,14 @@ Each row is a discrete rollout phase that will open its own change folder
 via `/10x-new`. Status moves left-to-right through the values below; the
 orchestrator updates Status as artifacts appear on disk.
 
-| #   | Phase name                   | Goal (one line)                                                                                                              | Risks covered | Test types                                  | Status      | Change folder                                    |
-| --- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------- | ----------- | ------------------------------------------------ |
-| 1   | Call scenario in the browser | Prove the owner can sign in, find an offer by a differently formatted phone number and read the call info, in a real browser | #1, #6        | unit (format matrix) + e2e (Playwright)     | complete    | `context/changes/testing-call-scenario-browser/` |
-| 2   | Status rules end to end      | Prove every PRD transition, revert confirmation, trace and list ordering from the PRD, not from the code                     | #3, #4        | unit + integration                          | not started | —                                                |
-| 3   | Safe migrations              | Prove production is migrated before deploy and old code survives the new schema                                              | #2            | CI gate + compatibility smoke               | not started | —                                                |
-| 4   | Quality-gates wiring         | Run the cheap checks automatically while the agent works and keep the e2e floor in CI                                        | cross-cutting | post-edit hook, end-of-turn check, CI gates | not started | —                                                |
+| #   | Phase name                   | Goal (one line)                                                                                                              | Risks covered | Test types                                  | Status        | Change folder                                               |
+| --- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------- | ------------- | ----------------------------------------------------------- |
+| 1   | Call scenario in the browser | Prove the owner can sign in, find an offer by a differently formatted phone number and read the call info, in a real browser | #1, #6        | unit (format matrix) + e2e (Playwright)     | complete      | `context/archive/2026-10-05-testing-call-scenario-browser/` |
+| 2   | Status rules end to end      | Prove every PRD transition, revert confirmation, trace and list ordering from the PRD, not from the code                     | #3, #4        | unit + integration                          | change opened | `context/changes/testing-status-rules-end-to-end/`          |
+| 3   | Safe migrations              | Prove production is migrated before deploy and old code survives the new schema                                              | #2            | CI gate + compatibility smoke               | not started   | —                                                           |
+| 4   | Quality-gates wiring         | Run the cheap checks automatically while the agent works and keep the e2e floor in CI                                        | cross-cutting | post-edit hook, end-of-turn check, CI gates | not started   | —                                                           |
 
-Risk #5 is largely covered today (smoke isolation steps, `safeNextPath` unit tests); Phase 1 and Phase 2 research must list any gap they find rather than open a separate phase.
+Risk #5 is largely covered today (smoke isolation steps, `safeNextPath` unit tests); Phase 1 and Phase 2 research must list any gap they find rather than open a separate phase. Phase 2 closed the gaps it found: the smoke note-edit isolation step now targets an active note (it used to pass because the note was already removed), and a second user is also refused removing that note and changing the first user's status; pgTAP shows another user cannot act through any trace function.
 
 ## 4. Stack
 
@@ -79,7 +79,7 @@ The classic test base for this project. AI-native tools (if any) carry a
 Recommendations in this section must be grounded in local manifests/configs
 plus the MCP/tools actually exposed in the current session.
 
-Test-base profile: **sparse by count, layered in practice** — Vitest configured with 10 test files clustered in `src/lib/domain/` (+1 in `src/lib/`), 2 pgTAP files, and one dependency-free HTTP smoke test (~68 steps) run in CI against the production build; two Playwright browser tests (risks #1, #6) since Phase 1; no component tests.
+Test-base profile: **sparse by count, layered in practice** — Vitest with 9 test files (8 in `src/lib/domain/`, 1 in `src/lib/`), 3 pgTAP files, and one dependency-free HTTP smoke test (~79 steps) run in CI against the production build; three Playwright browser tests (risks #1, #3, #6) since Phase 2; no component tests.
 
 | Layer                     | Tool                                              | Version     | Notes                                               |
 | ------------------------- | ------------------------------------------------- | ----------- | --------------------------------------------------- |
@@ -150,11 +150,20 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.5 Testing a status-rule change
 
-- TBD — see §3 Phase 2 (PRD transition table as the oracle; API + SQL integration).
+- **Oracle**: the PRD (`context/foundation/prd.md` Business Logic, incl. the `Update 2026-10-05` notes), never `status.ts`. The exhaustive 7×7 matrix in `src/lib/domain/status.test.ts` is typed by hand (`F`/`C`/`R`/`-`); a rule change edits the PRD first, then that literal row, then the code.
+- **Where each part is proven**:
+  - transition rule and list order (stage, recency, closed interleave, tie → newer `created_at`, then `id`): unit, `status.test.ts`;
+  - history rows and `last_activity_at` (bumped only by a status change or a saved note; field, note-edit, note-removal and CV changes leave it alone), plus another user shut out of every trace function: pgTAP, `supabase/tests/history_traces.test.sql`;
+  - each transition kind's HTTP code, the `(cofnięcie)` marker on the details page, and the dashboard order on a clean account: smoke (`scripts/smoke.mjs`);
+  - the revert dialog (cancel sends nothing, accept reverts and records it): `tests/e2e/status-revert.spec.ts`.
+- **Gotcha (pgTAP)**: a test file is one transaction, so `now()` is constant. To assert a bump, first set `last_activity_at` to a fixed past value, then compare with `now()`.
+- **Gotcha (smoke)**: later steps rely on the main application ending at `offer` (status filter counts); a new transition step must restore it.
+- **Scope of the guarantee**: these tests prove the rule for writes through the app's API routes. The database does not enforce transitions or traces by itself (see §7).
 
 ### 6.6 Per-rollout-phase notes
 
 - **Phase 1** (`testing-call-scenario-browser`): the phone search rule keeps an offer listed at every keystroke (a phone-only query with fewer than 3 national digits shows everything; `48` without "+" is read both ways); unit matrix in `search.test.ts`, key-by-key e2e in `call-phone-search.spec.ts`; e2e is a required CI gate. Accepted trade-off (impl review F1): a digit-only query with fewer than 3 national digits (`12`, `485`) shows every application, even when meant as text.
+- **Phase 2** (`testing-status-rules-end-to-end`): oracle = PRD; decisions recorded as PRD updates — Accepted is a forward move from any active status, activity is the moment a note or status change is saved, closed statuses interleave by activity, ties go to the newer application (the only code change: tie-break in `sortApplications`). Every new check was shown red on a deliberate break (transition, stage rank, `created_at` tie-break, revert flag, `edit_note` revision, `add_note` bump, bypassed `window.confirm`). pgTAP mutants are run inside the test transaction (`create or replace` before the assertions, rolled back), never with `db reset`.
 
 ## 7. What We Deliberately Don't Test
 
@@ -163,6 +172,7 @@ contributors should respect these unless the underlying assumption changes.
 
 - **Screenshot tests of every page** — the look keeps changing and such tests would break constantly. UI changes use the dev-only kitchen sink `/dev/ui` as manual visual evidence instead. Re-evaluate if a visual regression reaches production twice. (Source: Phase 2 interview Q5.)
 - **`scripts/demo-data.mjs`** — a manual, owner-run tool for test data, not product behaviour. Re-evaluate if it becomes part of CI.
+- **Owner-level bypass of the app's rules through Supabase directly** — the `authenticated` role keeps Supabase's default table grants and the RLS update/insert policies check only ownership, so the signed-in owner, with their own session token, could change status, fields or notes, or insert history rows, through PostgREST or a direct RPC call, skipping the transition rule and the trace. Accepted for a single-user app: only the owner holds a token for their data, the app's key stays on the server, and RLS still blocks every other account (tested in pgTAP and smoke). Re-evaluate if a second user, a shared account or a client-side Supabase call appears. (Source: Phase 2 plan decision.)
 - **CV upload CPU limit** — measured in production (16–25 ms, all ok) and accepted by the owner; belongs to monitoring (roadmap F-01), not a test.
 
 ## 8. Freshness Ledger
