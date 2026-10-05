@@ -1,10 +1,10 @@
 ---
 change_id: e2e-local-guards
 title: E2E fails fast unless the app uses local Supabase; cleanup cannot strand rows
-status: implemented
+status: archived
 created: 2026-10-05
 updated: 2026-10-05
-archived_at: null
+archived_at: 2026-10-05T15:18:09Z
 ---
 
 ## Notes
