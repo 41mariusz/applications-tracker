@@ -6,9 +6,10 @@ branch: main
 repository: applications-tracker
 topic: "Does a 5 MB CV upload fit the Cloudflare Workers Free-plan CPU limit in production, and what are the options if not?"
 tags: [research, cv-upload, cloudflare-workers, cpu-limit, supabase-storage]
-status: partial
-last_updated: 2026-10-04
+status: complete
+last_updated: 2026-10-05
 last_updated_by: Claude (Opus 5.5)
+last_updated_note: "Follow-up: production measurement of 5 MiB uploads and the owner's plan decision"
 ---
 
 # Research: 5 MB CV upload vs the Workers Free-plan CPU limit
@@ -97,3 +98,16 @@ Roadmap S-02 (`cv-upload-5mb-in-production`): does uploading a CV of up to 5 MB 
 2. **Is the account on Workers Free or Paid?** Visible in the Cloudflare dashboard (Workers & Pages → Plans); not readable with the current API token. If Paid, the 10 ms limit does not apply and S-02 reduces to verification.
 3. **If Free and the upload is close to or over the limit, which fix?** Product/cost decision for `/10x-plan`: $5/month Paid (also covers `/dashboard`'s 111–201 ms) vs browser-side hashing/upload (no cost, weaker server-side guarantees) vs CPU reduction (no guarantee).
 4. Roadmap prerequisite F-01 (`production-error-visibility`): a CPU-limit failure currently surfaces only in Cloudflare analytics; whether that is enough visibility is part of F-01, not this research.
+
+## Follow-up 2026-10-05: production measurement and decision
+
+Resolves Open Questions 1–3 above.
+
+- **Plan:** Workers **Free** (confirmed by the owner in the Cloudflare dashboard, 2026-10-05).
+- **Measurement** (Workers Observability, read-only, `POST /api/cv` events in the 26 h before 2026-10-05 ~09:00 UTC): 6 uploads of a 5 242 880-byte PDF (`content-length` 5 243 075–5 243 081 B):
+  - the first (new file stored, status 201): CPU **25 ms**, wall 544 ms, outcome `ok`;
+  - 5 repeats (deduplicated, status 200): CPU **16–25 ms**, wall 171–211 ms, outcome `ok`.
+  - No `exceededCpu` / error 1102 among these 6 events. These 6 are the only `POST /api/cv` events with a file body in the queried window.
+- **Decision rule** (plan): Free **and** (error **or** CPU > 10 ms) → Workers Paid. With 16–25 ms the rule **fired**.
+- **Owner decision (overrides the rule):** stay on Workers Free; the risk of future termination is accepted. Trigger to revisit: the first `exceededCpu` outcome (Cloudflare dashboard → Workers → Metrics → Invocation statuses), at which point switch to Workers Paid. Recorded in `context/foundation/infrastructure.md` (risk register).
+- Earlier statement "Open Question 1 … blocks the choice" — **superseded**: answered above.

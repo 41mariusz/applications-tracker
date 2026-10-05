@@ -227,32 +227,32 @@ No database changes. Phase 3 is a billing change and is reversible by downgradin
 
 #### Automated
 
-- [x] 1.1 Unit tests pass, including the Content-Length boundary: `npm test`
-- [x] 1.2 Lint and type check pass: `npm run lint && npx astro check`
-- [x] 1.3 Smoke test passes, including the 413 step: `npm run build && npm run smoke`
+- [x] 1.1 Unit tests pass, including the Content-Length boundary: `npm test` — 3d142a1
+- [x] 1.2 Lint and type check pass: `npm run lint && npx astro check` — 3d142a1
+- [x] 1.3 Smoke test passes, including the 413 step: `npm run build && npm run smoke` — 3d142a1
 
 #### Manual
 
-- [ ] 1.4 On production, choosing a file over 5 MB in the CV library shows "Plik jest za duży (maksymalnie 5 MB)." without uploading
+- [x] 1.4 On production, choosing a file over 5 MB in the CV library shows "Plik jest za duży (maksymalnie 5 MB)." without uploading — 3d142a1
 
 ### Phase 2: Measure a real 5 MB upload and decide
 
 #### Automated
 
-- [ ] 2.1 The Observability query returns the production `POST /api/cv` invocation with content-length ≥ 4.5 MB and its CPU time and outcome
+- [x] 2.1 The Observability query returns the production `POST /api/cv` invocation with content-length ≥ 4.5 MB and its CPU time and outcome
 
 #### Manual
 
-- [ ] 2.2 Owner confirms the Workers plan shown in the Cloudflare dashboard
-- [ ] 2.3 Owner confirms the ~5 MB upload result in the UI (success, or the error shown)
-- [ ] 2.4 `research.md` records plan, CPU ms, outcome and the decision ("Paid" or "no change")
+- [x] 2.2 Owner confirms the Workers plan shown in the Cloudflare dashboard
+- [x] 2.3 Owner confirms the ~5 MB upload result in the UI (success, or the error shown)
+- [x] 2.4 `research.md` records plan, CPU ms, outcome and the decision ("Paid" or "no change")
 
 ### Phase 3: Switch to Workers Paid (only if the decision rule fired)
 
 #### Automated
 
-- [ ] 3.1 A repeated production ~5 MB upload shows outcome `ok` in the Observability query (or: phase recorded as skipped with the Phase 2 numbers)
+- [x] 3.1 A repeated production ~5 MB upload shows outcome `ok` in the Observability query (or: phase recorded as skipped with the Phase 2 numbers)
 
 #### Manual
 
-- [ ] 3.2 Owner confirms the Cloudflare dashboard shows Workers Paid (or: skip confirmed by owner)
+- [x] 3.2 Owner confirms the Cloudflare dashboard shows Workers Paid (or: skip confirmed by owner)
