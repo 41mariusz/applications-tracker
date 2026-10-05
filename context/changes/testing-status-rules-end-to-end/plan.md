@@ -457,25 +457,25 @@ Record how to test a status-rule change, the decided rules, and the accepted dat
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Lint passes: `npm run lint`
-- [x] 1.3 Type check passes: `npx astro check`
-- [x] 1.4 The matrix covers 49 pairs
+- [x] 1.1 Unit tests pass: `npm test` — e154059
+- [x] 1.2 Lint passes: `npm run lint` — e154059
+- [x] 1.3 Type check passes: `npx astro check` — e154059
+- [x] 1.4 The matrix covers 49 pairs — e154059
 
 #### Manual
 
-- [x] 1.5 Breaking one transition makes the matrix fail on that pair; reverted
+- [x] 1.5 Breaking one transition makes the matrix fail on that pair; reverted — e154059
 
 ### Phase 2: pgTAP — traces, activity and isolation of the trace functions
 
 #### Automated
 
-- [ ] 2.1 Database tests pass: `npx supabase test db`
-- [ ] 2.2 Both pgTAP files run in CI's smoke job without workflow changes
+- [x] 2.1 Database tests pass: `npx supabase test db`
+- [x] 2.2 Both pgTAP files run in CI's smoke job without workflow changes
 
 #### Manual
 
-- [ ] 2.3 Removing the add_note activity bump turns the assertion red; reset
+- [x] 2.3 Removing the add_note activity bump turns the assertion red; reset
 
 ### Phase 3: Smoke HTTP — transition kinds, revert trace, list order, isolation
 
