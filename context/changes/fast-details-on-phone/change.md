@@ -1,7 +1,7 @@
 ---
 change_id: fast-details-on-phone
 title: Application details readable and fast on a phone during a call
-status: implementing
+status: implemented
 created: 2026-10-05
 updated: 2026-10-05
 archived_at: null

@@ -375,17 +375,17 @@ No database changes. Visual change limited to the details view; other pages unch
 
 #### Manual
 
-- [x] 4.6 Owner reviews the kitchen sink screenshots: every one of the 7 states is visible or marked N/A with a reason
-- [x] 4.7 On production, a mistyped application link shows "Nie znaleziono"; signing in from an application link opens that application
-- [x] 4.8 Keyboard focus is visible on every control of the details page (desktop browser, Tab through the page)
+- [x] 4.6 Owner reviews the kitchen sink screenshots: every one of the 7 states is visible or marked N/A with a reason — 90fa56d
+- [x] 4.7 On production, a mistyped application link shows "Nie znaleziono"; signing in from an application link opens that application — 90fa56d
+- [x] 4.8 Keyboard focus is visible on every control of the details page (desktop browser, Tab through the page) — 90fa56d
 
 ### Phase 5: Guard — rule and check
 
 #### Automated
 
-- [x] 5.1 `npm run lint` passes, and fails when a literal such as `text-purple-300` is temporarily added to `Topbar.astro` (deliberate-break check)
-- [ ] 5.2 CI is green on the pushed commit
+- [x] 5.1 `npm run lint` passes, and fails when a literal such as `text-purple-300` is temporarily added to `Topbar.astro` (deliberate-break check) — 90fa56d
+- [x] 5.2 CI is green on the pushed commit — 90fa56d
 
 #### Manual
 
-- [ ] 5.3 Owner reads the new CLAUDE.md UI block and finds it clear
+- [x] 5.3 Owner reads the new CLAUDE.md UI block and finds it clear
