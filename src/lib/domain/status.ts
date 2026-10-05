@@ -49,7 +49,10 @@ export function allowedTargets(
   });
 }
 
-// List order: Accepted, Offer, Interviews, HR contact, Sent, then closed ones at the bottom.
+// List order: Accepted, Offer, Interviews, HR contact, Sent, then closed ones at the bottom
+// (Rejected and Withdrawn share a rank, so they interleave by activity). Within a rank the most
+// recently active comes first; ties go to the newer created_at, then to id ascending, so the
+// list never reorders between reloads.
 const STAGE_RANK: Record<ApplicationStatus, number> = {
   accepted: 0,
   offer: 1,
@@ -60,11 +63,14 @@ const STAGE_RANK: Record<ApplicationStatus, number> = {
   withdrawn: 5,
 };
 
-export function sortApplications<T extends { status: ApplicationStatus; last_activity_at: string }>(
-  applications: readonly T[],
-): T[] {
+export function sortApplications<
+  T extends { status: ApplicationStatus; last_activity_at: string; created_at: string; id: string },
+>(applications: readonly T[]): T[] {
   return [...applications].sort(
     (a, b) =>
-      STAGE_RANK[a.status] - STAGE_RANK[b.status] || Date.parse(b.last_activity_at) - Date.parse(a.last_activity_at),
+      STAGE_RANK[a.status] - STAGE_RANK[b.status] ||
+      Date.parse(b.last_activity_at) - Date.parse(a.last_activity_at) ||
+      Date.parse(b.created_at) - Date.parse(a.created_at) ||
+      (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
   );
 }

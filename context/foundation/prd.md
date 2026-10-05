@@ -112,7 +112,11 @@ The application orders the user's recruitment processes by stage and, within a s
 
 **Transitions.** Forward moves are allowed, including skipping stages (e.g., Sent → Interviews when HR invites straight away). From any active status the user can move to Rejected or Withdrawn. A terminal status can be reverted — to any other status the user picks, including another terminal one (e.g., Accepted → Withdrawn) — only after explicit confirmation (e.g., a company comes back after a month), and the revert is recorded in the change log. Any other move (e.g., Offer → Sent) is refused.
 
+> Update 2026-10-05: Accepted is reachable as a forward move from any active status (e.g., Sent → Accepted), without confirmation.
+
 **Ordering.** Inputs: each application's status and the date of its most recent activity (latest note or status change). Output: the application list the user sees on opening the app — Accepted on top (until the user starts a new job), then Offer, Interviews, HR contact, Sent; within a stage, the most recently active first. Rejected and Withdrawn sit at the bottom, crossed out.
+
+> Update 2026-10-05: "Most recent activity" is the moment a note or status change is saved. Editing fields, notes or the CV does not change it (a quoted-rate change saved with a note counts, because a note is saved), and removing a note does not lower it. Rejected and Withdrawn interleave by activity, and ties go to the newer application.
 
 ## Access Control
 
