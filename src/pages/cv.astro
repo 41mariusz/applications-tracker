@@ -5,6 +5,8 @@ import CvLibrary, { type CvLibraryEntry } from "@/components/applications/CvLibr
 import { groupByCv } from "@/lib/domain/cv";
 import { listApplications } from "@/lib/services/applications";
 import { listCvFiles } from "@/lib/services/cv";
+import { logError } from "@/lib/log";
+import { isProjectPaused } from "@/lib/supabase-paused";
 
 const supabase = Astro.locals.supabase;
 let entries: CvLibraryEntry[] = [];
@@ -23,9 +25,10 @@ if (supabase) {
       })),
     }));
   } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed reads
-    console.error("CV library failed", e);
+    if (isProjectPaused(e)) return Astro.redirect("/paused");
+    logError(Astro, e, { op: "cv.library", status: 500 });
     loadError = "Nie udało się wczytać biblioteki CV.";
+    Astro.response.status = 500;
   }
 }
 ---

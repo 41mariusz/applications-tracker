@@ -4,25 +4,35 @@ import Topbar from "@/components/Topbar.astro";
 import ApplicationForm from "@/components/applications/ApplicationForm";
 import { TRACKED_FIELDS } from "@/lib/domain/changes";
 import type { ApplicationFormValues } from "@/lib/services/applications";
+import { toServiceError } from "@/lib/services/errors";
+import { isUuid } from "@/lib/domain/ids";
+import { logError } from "@/lib/log";
+import { isProjectPaused } from "@/lib/supabase-paused";
 import type { Application } from "@/types";
 
 const supabase = Astro.locals.supabase;
+const id = Astro.params.id;
 let application: Application | null = null;
 let loadError: string | null = null;
-if (supabase && Astro.params.id) {
-  const { data, error } = await supabase
+// A malformed id cannot name an application: "not found" without asking the database.
+if (supabase && isUuid(id)) {
+  const { data, error, status } = await supabase
     .from("applications")
     .select("*")
-    .eq("id", Astro.params.id)
+    .eq("id", id)
     .maybeSingle<Application>();
   if (error) {
-    // eslint-disable-next-line no-console -- server-side log for failed reads
-    console.error("load application for edit failed", error);
+    const failure = toServiceError("application.edit.load", { error, status });
+    if (isProjectPaused(failure)) return Astro.redirect("/paused");
+    logError(Astro, failure, { op: "application.edit.load", entityId: id, status: 500 });
     loadError = "Nie udało się wczytać aplikacji.";
   }
   application = data;
 }
-if (!application && !loadError) {
+// Unknown, foreign or malformed id → 404; a failed read → 500.
+if (loadError) {
+  Astro.response.status = 500;
+} else if (!application) {
   Astro.response.status = 404;
 }
 

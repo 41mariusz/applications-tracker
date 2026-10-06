@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { checkCvFile, cvStoragePath, sha256Hex } from "@/lib/domain/cv";
+import { toServiceError } from "@/lib/services/errors";
 import type { CvFile } from "@/types";
 
 const BUCKET = "cvs";
@@ -26,9 +27,11 @@ export async function uploadCv(supabase: SupabaseClient, userId: string, file: F
     .upload(path, bytes, { contentType: check.mimeType, upsert: false });
   // "Duplicate" means the bytes are already stored (e.g. an earlier attempt failed after the
   // upload): reuse them and just record the library entry.
-  if (uploadError && !/exists|duplicate/i.test(uploadError.message)) throw uploadError;
+  if (uploadError && !/exists|duplicate/i.test(uploadError.message)) {
+    throw toServiceError("cv.upload.storage", { error: uploadError });
+  }
 
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from("cv_files")
     .insert({
       sha256,
@@ -43,24 +46,28 @@ export async function uploadCv(supabase: SupabaseClient, userId: string, file: F
     // Two uploads of the same file at once: the other one won; use its entry.
     const winner = error.code === "23505" ? await findBySha(supabase, sha256) : null;
     if (winner) return { ok: true, file: winner, reused: true };
-    throw error;
+    throw toServiceError("cv.upload.insert", { error, status });
   }
   return { ok: true, file: data, reused: false };
 }
 
 async function findBySha(supabase: SupabaseClient, sha256: string): Promise<CvFile | null> {
-  const { data, error } = await supabase.from("cv_files").select(CV_COLUMNS).eq("sha256", sha256).maybeSingle<CvFile>();
-  if (error) throw error;
+  const { data, error, status } = await supabase
+    .from("cv_files")
+    .select(CV_COLUMNS)
+    .eq("sha256", sha256)
+    .maybeSingle<CvFile>();
+  if (error) throw toServiceError("cv.find_by_sha", { error, status });
   return data;
 }
 
 export async function listCvFiles(supabase: SupabaseClient): Promise<CvFile[]> {
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from("cv_files")
     .select(CV_COLUMNS)
     .order("created_at", { ascending: false })
     .overrideTypes<CvFile[], { merge: false }>();
-  if (error) throw error;
+  if (error) throw toServiceError("cv.list", { error, status });
   return data;
 }
 
@@ -70,10 +77,10 @@ export async function setApplicationCv(
   applicationId: string,
   cvFileId: string | null,
 ): Promise<boolean> {
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .rpc("set_application_cv", { p_application_id: applicationId, p_cv_file_id: cvFileId })
     .overrideTypes<boolean, { merge: false }>();
-  if (error) throw error;
+  if (error) throw toServiceError("application.cv.set", { error, status });
   return data === true;
 }
 
@@ -83,15 +90,19 @@ export async function readCv(
   supabase: SupabaseClient,
   cvFileId: string,
 ): Promise<{ bytes: ArrayBuffer; mimeType: string; fileName: string } | null> {
-  const { data: file, error } = await supabase
+  const {
+    data: file,
+    error,
+    status,
+  } = await supabase
     .from("cv_files")
     .select("storage_path, file_name, mime_type")
     .eq("id", cvFileId)
     .maybeSingle<{ storage_path: string; file_name: string; mime_type: string }>();
-  if (error) throw error;
+  if (error) throw toServiceError("cv.read.row", { error, status });
   if (!file) return null;
 
   const { data, error: downloadError } = await supabase.storage.from(BUCKET).download(file.storage_path);
-  if (downloadError) throw downloadError;
+  if (downloadError) throw toServiceError("cv.read.download", { error: downloadError });
   return { bytes: await data.arrayBuffer(), mimeType: file.mime_type, fileName: file.file_name };
 }

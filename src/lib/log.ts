@@ -9,6 +9,7 @@ export interface LogErrorExtra {
   status?: number;
   step?: string;
   entityId?: string;
+  bytes?: number;
 }
 
 function releaseVersion(): string {
@@ -19,7 +20,7 @@ function releaseVersion(): string {
   }
 }
 
-function buildLine(context: APIContext, error: unknown, extra: LogErrorExtra, level: "error" | "warn") {
+function buildLine(context: APIContext, error: unknown, extra: LogErrorExtra, level: "error" | "warn" | "info") {
   return formatErrorLine({
     ...extra,
     level,
@@ -43,4 +44,11 @@ export function logError(context: APIContext, error: unknown, extra: LogErrorExt
 export function logWarn(context: APIContext, error: unknown, extra: LogErrorExtra = {}): void {
   // eslint-disable-next-line no-console -- the structured warn line Workers Logs read
   console.warn(JSON.stringify(buildLine(context, error, extra, "warn")));
+}
+
+// A breadcrumb before work that may kill the request outright (an upload over the CPU limit leaves no
+// error line of ours): Workers Logs keeps it with the invocation. Not an error, so not an Issue.
+export function logInfo(context: APIContext, extra: LogErrorExtra): void {
+  // eslint-disable-next-line no-console -- the structured info line Workers Logs read
+  console.log(JSON.stringify(buildLine(context, undefined, extra, "info")));
 }

@@ -89,6 +89,16 @@ describe("isProjectPaused with the app's fetch wrapper", () => {
     expect(isProjectPaused(rpc)).toBe(false);
   });
 
+  it("follows the cause chain of a wrapped service error", async () => {
+    const rpc = await paused.rpc("keepalive_status");
+    const wrapped = new Error("keepalive.status: paused", {
+      cause: { code: rpc.error?.code, message: rpc.error?.message, status: rpc.status },
+    });
+    expect(isProjectPaused(wrapped)).toBe(true);
+    expect(isProjectPaused(new Error("outer", { cause: wrapped }))).toBe(true);
+    expect(isProjectPaused(new Error("other", { cause: { code: "42703", status: 400 } }))).toBe(false);
+  });
+
   it("ignores non-objects", () => {
     expect(isProjectPaused(null)).toBe(false);
     expect(isProjectPaused(undefined)).toBe(false);

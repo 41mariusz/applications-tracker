@@ -15,6 +15,8 @@ import { FIELD_LABELS, mergeHistory, type HistoryField } from "@/lib/domain/chan
 import { isClosed } from "@/lib/domain/status";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { getApplicationDetails, type ApplicationDetails } from "@/lib/services/notes";
+import { logError, logWarn } from "@/lib/log";
+import { isProjectPaused } from "@/lib/supabase-paused";
 import { EMPLOYMENT_TYPE_LABELS, NOTE_KIND_LABELS, STATUS_LABELS, WORK_MODE_LABELS } from "@/types";
 
 const supabase = Astro.locals.supabase;
@@ -22,14 +24,28 @@ const id = Astro.params.id;
 let details: ApplicationDetails | null = null;
 let cvLibrary: CvFile[] = [];
 let loadError: string | null = null;
+// A failed CV library read degrades only the CV panel; the rest of the page still serves the call.
+let cvLoadError: string | null = null;
 // A malformed id cannot name an application: "not found" without asking the database.
 if (supabase && isUuid(id)) {
-  try {
-    [details, cvLibrary] = await Promise.all([getApplicationDetails(supabase, id), listCvFiles(supabase)]);
-  } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed reads
-    console.error("getApplicationDetails failed", e);
+  const [detailsResult, cvResult] = await Promise.allSettled([
+    getApplicationDetails(supabase, id),
+    listCvFiles(supabase),
+  ]);
+  if ([detailsResult, cvResult].some((r) => r.status === "rejected" && isProjectPaused(r.reason))) {
+    return Astro.redirect("/paused");
+  }
+  if (detailsResult.status === "fulfilled") {
+    details = detailsResult.value;
+  } else {
+    logError(Astro, detailsResult.reason, { op: "application.details", entityId: id, status: 500 });
     loadError = "Nie udało się wczytać aplikacji.";
+  }
+  if (cvResult.status === "fulfilled") {
+    cvLibrary = cvResult.value;
+  } else if (details) {
+    logError(Astro, cvResult.reason, { op: "cv.list", entityId: id });
+    cvLoadError = "Nie udało się wczytać CV. Odśwież stronę, aby spróbować ponownie.";
   }
 }
 // Unknown, foreign or malformed id → 404; a failed read → 500.
@@ -42,6 +58,10 @@ if (loadError) {
 const application = details?.application;
 const history = details ? mergeHistory(details.fieldChanges, details.statusChanges) : [];
 const currentCv = cvLibrary.find((f) => f.id === details?.application.cv_file_id) ?? null;
+// An attached CV missing from a library that did load: shown as "no CV", so leave a trace.
+if (details?.application.cv_file_id && !currentCv && !cvLoadError) {
+  logWarn(Astro, new Error("Attached CV not found in the library"), { op: "cv.resolve", entityId: id });
+}
 
 // Show stored values the way the form shows them.
 function displayValue(field: HistoryField, value: string | null): string {
@@ -136,7 +156,13 @@ const plainLinkClass = "text-link focus-visible:ring-ring rounded-sm underline o
 
           <NotesPanel applicationId={application.id} notes={details.notes} client:load />
 
-          <CvPanel applicationId={application.id} current={currentCv} library={cvLibrary} client:idle />
+          {cvLoadError ? (
+            <Alert variant="destructive" data-testid="cv-load-error">
+              <AlertDescription>{cvLoadError}</AlertDescription>
+            </Alert>
+          ) : (
+            <CvPanel applicationId={application.id} current={currentCv} library={cvLibrary} client:idle />
+          )}
 
           <section class="bg-card rounded-xl border p-4 text-sm">
             <div class="mb-2 flex items-center justify-between">

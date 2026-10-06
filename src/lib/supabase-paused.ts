@@ -25,8 +25,16 @@ export function withPauseDetection(baseFetch: Fetch = fetch): Fetch {
 
 // True when a Supabase error (Auth or PostgREST) or a `{ status }`-bearing response comes from a
 // paused project; every other failure (bad credentials, network, other 5xx) is false.
+// A service error (src/lib/services/errors.ts) carries the Supabase error in `cause`, so the chain is followed.
+const MAX_CAUSE_DEPTH = 3;
+
 export function isProjectPaused(errorOrResponse: unknown): boolean {
-  if (!errorOrResponse || typeof errorOrResponse !== "object") return false;
-  const { status, code } = errorOrResponse as { status?: unknown; code?: unknown };
-  return status === PROJECT_PAUSED_STATUS || code === PROJECT_PAUSED_CODE;
+  return pausedAt(errorOrResponse, 0);
+}
+
+function pausedAt(value: unknown, depth: number): boolean {
+  if (!value || typeof value !== "object") return false;
+  const { status, code, cause } = value as { status?: unknown; code?: unknown; cause?: unknown };
+  if (status === PROJECT_PAUSED_STATUS || code === PROJECT_PAUSED_CODE) return true;
+  return depth < MAX_CAUSE_DEPTH && pausedAt(cause, depth + 1);
 }

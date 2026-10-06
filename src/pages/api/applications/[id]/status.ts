@@ -1,8 +1,10 @@
 import type { APIRoute } from "astro";
 import { changeApplicationStatus, changeStatusSchema } from "@/lib/services/applications";
+import { failureResponse, readFormData } from "@/lib/http";
 
 export const prerender = false;
 
+const OP = "application.status";
 const HTTP_STATUS = { not_found: 404, not_allowed: 400, needs_confirmation: 409, conflict: 409 } as const;
 
 export const POST: APIRoute = async (context) => {
@@ -10,12 +12,13 @@ export const POST: APIRoute = async (context) => {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
 
-  const form = await context.request.formData();
+  const id = context.params.id;
+  const form = await readFormData(context, { op: OP, entityId: id });
+  if (form instanceof Response) return form;
   const parsed = changeStatusSchema.safeParse({
     status: form.get("status") ?? undefined,
     confirm: form.get("confirm") ?? undefined,
   });
-  const id = context.params.id;
   if (!parsed.success || !id) {
     return Response.json({ error: "Nieprawidłowy status." }, { status: 400 });
   }
@@ -35,8 +38,6 @@ export const POST: APIRoute = async (context) => {
     }
     return Response.json({ status: result.status }, { status: 200 });
   } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed writes
-    console.error("changeApplicationStatus failed", e);
-    return Response.json({ error: "Nie udało się zmienić statusu. Spróbuj ponownie." }, { status: 500 });
+    return failureResponse(context, e, { op: OP, entityId: id }, "Nie udało się zmienić statusu. Spróbuj ponownie.");
   }
 };

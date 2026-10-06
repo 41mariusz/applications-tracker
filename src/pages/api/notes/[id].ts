@@ -3,10 +3,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { noteInputSchema } from "@/lib/domain/notes";
 import { editNote, removeNote, type NoteResult } from "@/lib/services/notes";
 import { readNoteForm, validationErrors } from "@/lib/services/note-form";
+import { failureResponse, readFormData } from "@/lib/http";
 
 export const prerender = false;
 
-async function run(context: APIContext, action: (supabase: SupabaseClient, id: string) => Promise<NoteResult>) {
+async function run(
+  context: APIContext,
+  op: "note.edit" | "note.remove",
+  action: (supabase: SupabaseClient, id: string) => Promise<NoteResult>,
+) {
   const supabase = context.locals.supabase;
   const id = context.params.id;
   if (!supabase || !id) {
@@ -17,9 +22,7 @@ async function run(context: APIContext, action: (supabase: SupabaseClient, id: s
     if (!result.ok) return Response.json({ error: result.message }, { status: 404 });
     return Response.json({ id: result.id }, { status: 200 });
   } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed writes
-    console.error("note update failed", e);
-    return Response.json({ error: "Nie udało się zapisać zmiany. Spróbuj ponownie." }, { status: 500 });
+    return failureResponse(context, e, { op, entityId: id }, "Nie udało się zapisać zmiany. Spróbuj ponownie.");
   }
 }
 
@@ -28,11 +31,13 @@ export const PATCH: APIRoute = async (context) => {
   if (!context.locals.user) {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
-  const parsed = noteInputSchema.safeParse(readNoteForm(await context.request.formData()));
+  const form = await readFormData(context, { op: "note.edit", entityId: context.params.id });
+  if (form instanceof Response) return form;
+  const parsed = noteInputSchema.safeParse(readNoteForm(form));
   if (!parsed.success) {
     return Response.json({ errors: validationErrors(parsed.error) }, { status: 400 });
   }
-  return run(context, (supabase, id) => editNote(supabase, id, parsed.data));
+  return run(context, "note.edit", (supabase, id) => editNote(supabase, id, parsed.data));
 };
 
 // "Remove" a note: it stays on the timeline, crossed out.
@@ -40,5 +45,5 @@ export const DELETE: APIRoute = async (context) => {
   if (!context.locals.user) {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
-  return run(context, (supabase, id) => removeNote(supabase, id));
+  return run(context, "note.remove", (supabase, id) => removeNote(supabase, id));
 };

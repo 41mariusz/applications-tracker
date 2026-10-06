@@ -687,29 +687,29 @@ Update the API-routes convention: parse bodies inside `try`; check paused errors
 
 #### Automated
 
-- [x] 2.1 Unit tests pass (auth classifier, health reason): `npm test`
-- [x] 2.2 Lint and types pass
-- [x] 2.3 Smoke passes
-- [x] 2.4 E2E passes
+- [x] 2.1 Unit tests pass (auth classifier, health reason): `npm test` — d326c4b
+- [x] 2.2 Lint and types pass — d326c4b
+- [x] 2.3 Smoke passes — d326c4b
+- [x] 2.4 E2E passes — d326c4b
 
 #### Manual
 
-- [x] 2.5 Simulated Auth outage gives /500 and a log instead of sign-in; reverted
-- [x] 2.6 Missing SUPABASE_URL gives 503 misconfigured, health reason and one log line; restored
+- [x] 2.5 Simulated Auth outage gives /500 and a log instead of sign-in; reverted — d326c4b
+- [x] 2.6 Missing SUPABASE_URL gives 503 misconfigured, health reason and one log line; restored — d326c4b
 
 ### Phase 3: Server responses tell the truth
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass (incl. toServiceError): `npm test`
-- [ ] 3.2 Lint and types pass
-- [ ] 3.3 Smoke passes incl. the malformed-body step
-- [ ] 3.4 E2E passes
+- [x] 3.1 Unit tests pass (incl. toServiceError): `npm test`
+- [x] 3.2 Lint and types pass
+- [x] 3.3 Smoke passes incl. the malformed-body step
+- [x] 3.4 E2E passes
 
 #### Manual
 
-- [ ] 3.5 Broken list query gives 500 and one JSON line with op, cause.code and stack; reverted
-- [ ] 3.6 Moving formData outside try turns the malformed-body smoke step red; reverted
+- [x] 3.5 Broken list query gives 500 and one JSON line with op, cause.code and stack; reverted
+- [x] 3.6 Moving formData outside try turns the malformed-body smoke step red; reverted
 
 ### Phase 4: Browser failure channel
 

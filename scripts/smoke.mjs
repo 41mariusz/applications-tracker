@@ -144,6 +144,18 @@ async function upload(path, fileName, type, content) {
   return { status: response.status, location: response.headers.get("location") ?? "", body: await response.text() };
 }
 
+// A body that cannot be parsed (multipart without a boundary): the route must answer 400, not an empty 500.
+async function malformedPost(path) {
+  const response = await fetch(BASE_URL + path, {
+    method: "POST",
+    redirect: "manual",
+    headers: { Cookie: cookieHeader(), Origin: BASE_URL, "Content-Type": "multipart/form-data" },
+    body: "not a multipart body",
+  });
+  storeCookies(response);
+  return { status: response.status, location: response.headers.get("location") ?? "", body: await response.text() };
+}
+
 const cvContent = `%PDF-1.4 smoke CV ${Date.now()}`;
 // Over the 5 MB CV limit: the server must refuse it before parsing the body.
 const oversizedCv = new Uint8Array(5 * 1024 * 1024 + 100 * 1024).fill(0x20);
@@ -366,6 +378,11 @@ const steps = [
         form: { kind: "phone_call", body: " ", noted_at: new Date().toISOString() },
       }),
     { status: 400, bodyIncludes: "body" },
+  ],
+  [
+    "malformed note body is refused with 400",
+    () => malformedPost(`/api/applications/${applicationId}/notes`),
+    { status: 400, bodyIncludes: "Nieprawidłowe dane formularza" },
   ],
   [
     "phone-call note is added",

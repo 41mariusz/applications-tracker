@@ -1,8 +1,11 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { setApplicationCv } from "@/lib/services/cv";
+import { failureResponse, readFormData } from "@/lib/http";
 
 export const prerender = false;
+
+const OP = "application.cv";
 
 // Empty value detaches the CV.
 const schema = z.object({ cv_file_id: z.union([z.uuid(), z.literal("").transform(() => null)]) });
@@ -12,8 +15,10 @@ export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
-  const parsed = schema.safeParse({ cv_file_id: (await context.request.formData()).get("cv_file_id") ?? "" });
   const id = context.params.id;
+  const form = await readFormData(context, { op: OP, entityId: id });
+  if (form instanceof Response) return form;
+  const parsed = schema.safeParse({ cv_file_id: form.get("cv_file_id") ?? "" });
   if (!parsed.success || !id) {
     return Response.json({ error: "Nieprawidłowy plik." }, { status: 400 });
   }
@@ -27,8 +32,6 @@ export const POST: APIRoute = async (context) => {
     if (!ok) return Response.json({ error: "Nie znaleziono aplikacji lub pliku." }, { status: 404 });
     return Response.json({ id, cv_file_id: parsed.data.cv_file_id }, { status: 200 });
   } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed writes
-    console.error("setApplicationCv failed", e);
-    return Response.json({ error: "Nie udało się podpiąć CV. Spróbuj ponownie." }, { status: 500 });
+    return failureResponse(context, e, { op: OP, entityId: id }, "Nie udało się podpiąć CV. Spróbuj ponownie.");
   }
 };

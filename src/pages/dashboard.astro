@@ -2,6 +2,8 @@
 import Layout from "@/layouts/Layout.astro";
 import Topbar from "@/components/Topbar.astro";
 import { listApplications } from "@/lib/services/applications";
+import { logError } from "@/lib/log";
+import { isProjectPaused } from "@/lib/supabase-paused";
 import StatusControl from "@/components/applications/StatusControl";
 import { isClosed } from "@/lib/domain/status";
 import { matchesQuery, matchesStatus, parseStatusFilter } from "@/lib/domain/search";
@@ -15,9 +17,11 @@ if (supabase) {
   try {
     applications = await listApplications(supabase);
   } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed reads
-    console.error("listApplications failed", e);
+    if (isProjectPaused(e)) return Astro.redirect("/paused");
+    logError(Astro, e, { op: "applications.list", status: 500 });
     loadError = "Nie udało się wczytać aplikacji.";
+    // A failed read is a server error, not a page that merely looks empty.
+    Astro.response.status = 500;
   }
 }
 

@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { APPLICATION_STATUSES, EMPLOYMENT_TYPES, WORK_MODES, type Application, type ApplicationStatus } from "@/types";
 import { checkTransition, sortApplications } from "@/lib/domain/status";
 import { diffFields, TRACKED_FIELDS, type TrackedField } from "@/lib/domain/changes";
+import { toServiceError } from "@/lib/services/errors";
 
 // Empty form fields arrive as "" — store them as null.
 const optionalText = (max: number) =>
@@ -76,8 +77,12 @@ export function validateApplicationForm(
 }
 
 export async function createApplication(supabase: SupabaseClient, input: CreateApplicationInput) {
-  const { data, error } = await supabase.from("applications").insert(input).select("id").single<{ id: string }>();
-  if (error) throw error;
+  const { data, error, status } = await supabase
+    .from("applications")
+    .insert(input)
+    .select("id")
+    .single<{ id: string }>();
+  if (error) throw toServiceError("application.create", { error, status });
   return data;
 }
 
@@ -96,12 +101,12 @@ export async function changeApplicationStatus(
   to: ApplicationStatus,
   confirmed: boolean,
 ): Promise<ChangeStatusResult> {
-  const { data: current, error: readError } = await supabase
-    .from("applications")
-    .select("status")
-    .eq("id", id)
-    .maybeSingle<{ status: ApplicationStatus }>();
-  if (readError) throw readError;
+  const {
+    data: current,
+    error: readError,
+    status: readStatus,
+  } = await supabase.from("applications").select("status").eq("id", id).maybeSingle<{ status: ApplicationStatus }>();
+  if (readError) throw toServiceError("application.status.read", { error: readError, status: readStatus });
   if (!current) return { ok: false, code: "not_found", message: "Nie znaleziono aplikacji." };
 
   const transition = checkTransition(current.status, to);
@@ -112,7 +117,11 @@ export async function changeApplicationStatus(
 
   // One transaction: the status and its history row are saved together. The function only
   // updates if the status is still the one we checked, so a concurrent change can't slip past the rule.
-  const { data: updated, error } = await supabase
+  const {
+    data: updated,
+    error,
+    status,
+  } = await supabase
     .rpc("change_application_status", {
       p_application_id: id,
       p_from: current.status,
@@ -120,7 +129,7 @@ export async function changeApplicationStatus(
       p_is_revert: transition.kind === "revert",
     })
     .overrideTypes<boolean, { merge: false }>();
-  if (error) throw error;
+  if (error) throw toServiceError("application.status.change", { error, status });
   if (updated !== true) {
     return { ok: false, code: "conflict", message: "Status zmienił się w międzyczasie. Odśwież stronę." };
   }
@@ -128,11 +137,11 @@ export async function changeApplicationStatus(
 }
 
 export async function listApplications(supabase: SupabaseClient): Promise<Application[]> {
-  const { data, error } = await supabase
+  const { data, error, status } = await supabase
     .from("applications")
     .select("*")
     .overrideTypes<Application[], { merge: false }>();
-  if (error) throw error;
+  if (error) throw toServiceError("applications.list", { error, status });
   return sortApplications(data);
 }
 
@@ -147,12 +156,16 @@ export async function updateApplication(
   input: CreateApplicationInput,
   rateChangeNote: string | null,
 ): Promise<UpdateApplicationResult> {
-  const { data: current, error: readError } = await supabase
+  const {
+    data: current,
+    error: readError,
+    status: readStatus,
+  } = await supabase
     .from("applications")
     .select([...TRACKED_FIELDS, "updated_at"].join(", "))
     .eq("id", id)
     .maybeSingle<Record<TrackedField | "updated_at", string | null>>();
-  if (readError) throw readError;
+  if (readError) throw toServiceError("application.update.read", { error: readError, status: readStatus });
   if (!current) return { ok: false, code: "not_found", message: "Nie znaleziono aplikacji." };
 
   const changes = diffFields(current, input);
@@ -166,7 +179,11 @@ export async function updateApplication(
 
   // One transaction: fields, their change-log rows and the optional note are saved together.
   // The update is guarded by updated_at, so a concurrent edit is not silently overwritten.
-  const { data: updated, error } = await supabase
+  const {
+    data: updated,
+    error,
+    status,
+  } = await supabase
     .rpc("update_application", {
       p_application_id: id,
       p_expected_updated_at: current.updated_at,
@@ -175,7 +192,7 @@ export async function updateApplication(
       p_note_body: noteBody,
     })
     .overrideTypes<boolean, { merge: false }>();
-  if (error) throw error;
+  if (error) throw toServiceError("application.update", { error, status });
   if (updated !== true) {
     return { ok: false, code: "conflict", message: "Aplikacja zmieniła się w międzyczasie. Odśwież stronę." };
   }

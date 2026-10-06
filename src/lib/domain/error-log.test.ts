@@ -14,6 +14,23 @@ describe("formatErrorLine", () => {
     expect(formatErrorLine({ ...base, level: "warn" }).level).toBe("warn");
   });
 
+  it("accepts an info breadcrumb with the request size and no error", () => {
+    const line = formatErrorLine({ ...base, level: "info", op: "cv.upload", step: "received", bytes: 1234 });
+    expect(line).toMatchObject({ level: "info", op: "cv.upload", step: "received", bytes: 1234 });
+    expect(line).not.toHaveProperty("error");
+  });
+
+  it("serialises a service error: op in the message, PostgREST fields and status in cause", () => {
+    const error = new Error("applications.list: column does not exist", {
+      cause: { message: "column does not exist", code: "42703", hint: "Perhaps…", status: 400 },
+    });
+    const line = formatErrorLine({ ...base, op: "applications.list", error });
+    expect(line.error).toMatchObject({
+      message: "applications.list: column does not exist",
+      cause: { code: "42703", hint: "Perhaps…", status: 400 },
+    });
+  });
+
   it("serialises an Error with its cause chain", () => {
     const error = new Error("render failed", { cause: new TypeError("fetch failed") });
     const line = formatErrorLine({ ...base, status: 500, userId: "u-1", error });

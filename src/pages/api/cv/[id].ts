@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { readCv } from "@/lib/services/cv";
+import { failureResponse } from "@/lib/http";
 
 export const prerender = false;
 
@@ -28,8 +29,6 @@ export const GET: APIRoute = async (context) => {
       },
     });
   } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed reads
-    console.error("readCv failed", e);
-    return Response.json({ error: "Nie udało się wczytać pliku." }, { status: 500 });
+    return failureResponse(context, e, { op: "cv.read", entityId: id }, "Nie udało się wczytać pliku.");
   }
 };

@@ -1,7 +1,10 @@
 import type { APIRoute } from "astro";
 import { readApplicationForm, updateApplication, validateApplicationForm } from "@/lib/services/applications";
+import { failureResponse, readFormData } from "@/lib/http";
 
 export const prerender = false;
+
+const OP = "application.update";
 
 // Edit an application; every changed field is recorded in its change log.
 export const PATCH: APIRoute = async (context) => {
@@ -9,7 +12,9 @@ export const PATCH: APIRoute = async (context) => {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
 
-  const form = await context.request.formData();
+  const id = context.params.id;
+  const form = await readFormData(context, { op: OP, entityId: id });
+  if (form instanceof Response) return form;
   const result = validateApplicationForm(readApplicationForm(form));
   if (!result.ok) {
     return Response.json({ errors: result.errors }, { status: 400 });
@@ -18,7 +23,6 @@ export const PATCH: APIRoute = async (context) => {
   const rateChangeNote = typeof rawNote === "string" && rawNote.trim() ? rawNote.trim().slice(0, 2000) : null;
 
   const supabase = context.locals.supabase;
-  const id = context.params.id;
   if (!supabase || !id) {
     return Response.json({ error: "Supabase nie jest skonfigurowany." }, { status: 500 });
   }
@@ -30,8 +34,6 @@ export const PATCH: APIRoute = async (context) => {
     }
     return Response.json({ id, changed: updated.changed }, { status: 200 });
   } catch (e) {
-    // eslint-disable-next-line no-console -- server-side log for failed writes
-    console.error("updateApplication failed", e);
-    return Response.json({ error: "Nie udało się zapisać zmian. Spróbuj ponownie." }, { status: 500 });
+    return failureResponse(context, e, { op: OP, entityId: id }, "Nie udało się zapisać zmian. Spróbuj ponownie.");
   }
 };

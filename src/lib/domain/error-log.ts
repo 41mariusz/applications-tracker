@@ -10,7 +10,8 @@ const MAX_CAUSE_DEPTH = 3;
 
 export interface ErrorLineInput {
   // "warn" for expected-but-notable failures (e.g. a rejected session token); Issues records "error" only.
-  level?: "error" | "warn";
+  // "info" for breadcrumbs written before risky work (e.g. an upload's size before it is parsed).
+  level?: "error" | "warn" | "info";
   op?: string;
   route: string;
   method: string;
@@ -20,6 +21,8 @@ export interface ErrorLineInput {
   version: string;
   step?: string;
   entityId?: string;
+  // Request body size in bytes (from Content-Length), e.g. for uploads.
+  bytes?: number;
   error?: unknown;
 }
 
@@ -94,6 +97,7 @@ export function formatErrorLine(input: ErrorLineInput): Record<string, unknown> 
   if (input.userId) line.userId = input.userId;
   if (input.step !== undefined) line.step = input.step;
   if (input.entityId !== undefined) line.entityId = input.entityId;
+  if (input.bytes !== undefined) line.bytes = input.bytes;
   if (input.error !== undefined) line.error = serializeError(input.error);
   return line;
 }
