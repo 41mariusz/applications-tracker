@@ -67,7 +67,7 @@ orchestrator updates Status as artifacts appear on disk.
 | --- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------- | ----------- | ------------------------------------------------------------- |
 | 1   | Call scenario in the browser | Prove the owner can sign in, find an offer by a differently formatted phone number and read the call info, in a real browser | #1, #6        | unit (format matrix) + e2e (Playwright)     | complete    | `context/archive/2026-10-05-testing-call-scenario-browser/`   |
 | 2   | Status rules end to end      | Prove every PRD transition, revert confirmation, trace and list ordering from the PRD, not from the code                     | #3, #4        | unit + integration                          | complete    | `context/archive/2026-10-05-testing-status-rules-end-to-end/` |
-| 3   | Safe migrations              | Prove production is migrated before deploy and old code survives the new schema                                              | #2            | CI gate + compatibility smoke               | not started | —                                                             |
+| 3   | Safe migrations              | Prove production is migrated before deploy and old code survives the new schema                                              | #2            | CI gate + compatibility smoke               | planned     | `context/changes/testing-safe-migrations/`                    |
 | 4   | Quality-gates wiring         | Run the cheap checks automatically while the agent works and keep the e2e floor in CI                                        | cross-cutting | post-edit hook, end-of-turn check, CI gates | not started | —                                                             |
 
 Risk #5 is largely covered today (smoke isolation steps, `safeNextPath` unit tests); Phase 1 and Phase 2 research must list any gap they find rather than open a separate phase. Phase 2 closed the gaps it found: the smoke note-edit isolation step now targets an active note (it used to pass because the note was already removed), and a second user is also refused removing that note and changing the first user's status; pgTAP shows another user cannot act through any trace function.
@@ -79,7 +79,7 @@ The classic test base for this project. AI-native tools (if any) carry a
 Recommendations in this section must be grounded in local manifests/configs
 plus the MCP/tools actually exposed in the current session.
 
-Test-base profile: **sparse by count, layered in practice** — Vitest with 9 test files (8 in `src/lib/domain/`, 1 in `src/lib/`), 3 pgTAP files, and one dependency-free HTTP smoke test (~79 steps) run in CI against the production build; three Playwright browser tests (risks #1, #3, #6) since Phase 2; no component tests.
+Test-base profile: **sparse by count, layered in practice** — Vitest with 10 test files (8 in `src/lib/domain/`, 1 in `src/lib/`, 1 in `scripts/lib/` for CI tooling), 4 pgTAP files, and one dependency-free HTTP smoke test (~79 steps) run in CI against the production build; three Playwright browser tests (risks #1, #3, #6) since Phase 2; no component tests.
 
 | Layer                     | Tool                                              | Version     | Notes                                               |
 | ------------------------- | ------------------------------------------------- | ----------- | --------------------------------------------------- |
@@ -110,7 +110,8 @@ phase lands; before that, the gate is `planned`.
 | pgTAP                                 | CI (local Supabase)    | required (in place)          | atomic writes, RLS through functions                 |
 | HTTP smoke                            | CI on production build | required (in place)          | broken flows, isolation, entry behaviour             |
 | e2e in a browser on the call scenario | CI on production build | required after §3 Phase 1    | live search / sign-in failures HTTP smoke cannot see |
-| migration state before deploy         | CI deploy job          | required after §3 Phase 3    | code deployed ahead of the cloud schema              |
+| migration state before deploy         | CI deploy job          | required (in place)          | code deployed ahead of the cloud schema              |
+| migration lint + compatibility smoke  | local + CI             | required (in place)          | migrations that break the previous code version      |
 | post-edit / end-of-turn agent hooks   | local (agent loop)     | recommended after §3 Phase 4 | regressions at edit time                             |
 
 ## 6. Cookbook Patterns
@@ -164,6 +165,16 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 - **Phase 1** (`testing-call-scenario-browser`): the phone search rule keeps an offer listed at every keystroke (a phone-only query with fewer than 3 national digits shows everything; `48` without "+" is read both ways); unit matrix in `search.test.ts`, key-by-key e2e in `call-phone-search.spec.ts`; e2e is a required CI gate. Accepted trade-off (impl review F1): a digit-only query with fewer than 3 national digits (`12`, `485`) shows every application, even when meant as text.
 - **Phase 2** (`testing-status-rules-end-to-end`): oracle = PRD; decisions recorded as PRD updates — Accepted is a forward move from any active status, activity is the moment a note or status change is saved, closed statuses interleave by activity, ties go to the newer application (the only code change: tie-break in `sortApplications`). Every new check was shown red on a deliberate break (transition, stage rank, `created_at` tie-break, revert flag, `edit_note` revision, `add_note` bump, bypassed `window.confirm`). pgTAP mutants are run inside the test transaction (`create or replace` before the assertions, rolled back), never with `db reset`.
+- **Phase 3** (`testing-safe-migrations`): risk #2 split in two — code ahead of the cloud (deploy gate over the anon `applied_migrations()` RPC; no new CI secret; fails closed) and old code on a new schema (migration lint + compatibility smoke of the base commit). Also closes roadmap S-03: deploys carry the git SHA; cron/health hazards of rolling back to very old versions are in the infrastructure runbook. Shown red on deliberate breaks: `drop` rule, `max()`-only comparison, gate missing-branch, invoker instead of definer RPC, an edited applied migration.
+
+### 6.7 Adding a migration
+
+- **Rule**: additive and backward-compatible with the previous code version (CLAUDE.md hard rule, `lessons.md`). The previous code runs on the new schema between `db push` and deploy, and after a rollback.
+- **Lint**: `npm run lint` runs `scripts/check-migrations.mjs` over migrations newer than `20261004120000`; rules live in `scripts/lib/migrations.mjs` (tests in `scripts/lib/migrations.test.mjs`). Intentional break: `-- migration-lint: allow <rule> — <reason>` on or above the statement, plus a two-step rollout.
+- **New RPC**: pgTAP next to it in `supabase/tests/`; reference `supabase/tests/applied_migrations.test.sql` / `keepalive.test.sql` for anon-callable security-definer functions.
+- **Order**: `npx supabase migration up` locally → commit → `npx supabase db push` (cloud) → `git push`.
+- **CI**: the `smoke` job builds the previous commit and runs its own `scripts/smoke.mjs` on the new local schema when `supabase/migrations/` changed, and fails if an applied migration was edited, renamed or deleted; the `deploy` job blocks before `wrangler deploy` when the cloud lacks a repo migration or its state cannot be read (`scripts/check-cloud-migrations.mjs`).
+- **Not covered** (review): semantic breaks — new enum values old code cannot render, redefined functions that write columns old code doesn't send.
 
 ## 7. What We Deliberately Don't Test
 

@@ -48,7 +48,7 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 | F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready    |
 | S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done     |
 | S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done     |
-| S-03 | safe-rollback-after-migration | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready    |
+| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready    |
 | S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done     |
 | S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed |
 
@@ -123,7 +123,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ### S-03: Rolling back after a migration is safe
 
 - **Outcome:** user (the owner) can roll back a bad production deploy made after a database migration and still use the app.
-- **Change ID:** safe-rollback-after-migration
+- **Change ID:** testing-safe-migrations (closed by test-plan Phase 3; was `safe-rollback-after-migration`)
 - **PRD refs:** MS-03
 - **Prerequisites:** —
 - **Parallel with:** F-01, S-01, S-04
@@ -161,14 +161,14 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                     | Suggested issue title                             | Ready for `/10x-plan` | Notes                                                      |
-| ---------- | ----------------------------- | ------------------------------------------------- | --------------------- | ---------------------------------------------------------- |
-| F-01       | production-error-visibility   | Make production errors visible to the owner       | yes                   | Run `/10x-plan production-error-visibility`                |
-| S-01       | app-available-after-idle-week | Keep the app working after a week without use     | yes                   | North star — run `/10x-plan app-available-after-idle-week` |
-| S-02       | cv-upload-5mb-in-production   | Verify and fix 5 MB CV upload in production       | no                    | Waits for F-01                                             |
-| S-03       | safe-rollback-after-migration | Make rollback after a migration safe              | yes                   | Run `/10x-plan safe-rollback-after-migration`              |
-| S-04       | fast-details-on-phone         | Measure and, if needed, speed up details on phone | yes                   | Run `/10x-plan fast-details-on-phone`                      |
-| S-05       | switch-to-real-data           | Clear demo data and start using real applications | no                    | Waits for S-01                                             |
+| Roadmap ID | Change ID                     | Suggested issue title                             | Ready for `/10x-plan` | Notes                                                         |
+| ---------- | ----------------------------- | ------------------------------------------------- | --------------------- | ------------------------------------------------------------- |
+| F-01       | production-error-visibility   | Make production errors visible to the owner       | yes                   | Run `/10x-plan production-error-visibility`                   |
+| S-01       | app-available-after-idle-week | Keep the app working after a week without use     | yes                   | North star — run `/10x-plan app-available-after-idle-week`    |
+| S-02       | cv-upload-5mb-in-production   | Verify and fix 5 MB CV upload in production       | no                    | Waits for F-01                                                |
+| S-03       | testing-safe-migrations       | Make rollback after a migration safe              | yes                   | Implemented via test-plan Phase 3 (`testing-safe-migrations`) |
+| S-04       | fast-details-on-phone         | Measure and, if needed, speed up details on phone | yes                   | Run `/10x-plan fast-details-on-phone`                         |
+| S-05       | switch-to-real-data           | Clear demo data and start using real applications | no                    | Waits for S-01                                                |
 
 ## Open Roadmap Questions
 
