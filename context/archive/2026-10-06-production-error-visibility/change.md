@@ -1,10 +1,10 @@
 ---
 change_id: production-error-visibility
 title: Production errors reach the owner
-status: implemented
+status: archived
 created: 2026-10-06
 updated: 2026-10-06
-archived_at: null
+archived_at: 2026-10-06T10:50:09Z
 ---
 
 ## Notes

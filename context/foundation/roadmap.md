@@ -43,14 +43,14 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 
 ## At a glance
 
-| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status      |
-| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ----------- |
-| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | in-progress |
-| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done        |
-| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done        |
-| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done        |
-| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done        |
-| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed    |
+| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status   |
+| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | -------- |
+| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | done     |
+| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done     |
+| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done     |
+| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done     |
+| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done     |
+| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed |
 
 ## Streams
 
@@ -89,7 +89,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Is the platform's built-in observability enough (with a routine to check it), or is a separate error tracker needed? — Owner: user. Block: no.
 - **Risk:** Sequenced first in its stream because the reliability goal means failures must be visible before the risky paths are exercised; the risk is over-building monitoring for a single-user app — keep it to the minimum that surfaces an error.
-- **Status:** in-progress
+- **Status:** done
 
 ## Slices
 
@@ -190,3 +190,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-02: user can attach a CV of up to 5 MB to an application in production without an error** — Archived 2026-10-05 → `context/archive/2026-10-04-cv-upload-5mb-in-production/`. Lesson: —.
 - **S-04: user can open an application's details on a phone and see salary range, quoted rate, status and the latest agreement quickly enough for a live call** — Archived 2026-10-05 → `context/archive/2026-10-05-fast-details-on-phone/`. Lesson: —.
 - **S-03: user (the owner) can roll back a bad production deploy made after a database migration and still use the app.** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-safe-migrations/`. Lesson: Keep migrations additive — old code runs on the new schema.
+- **F-01: (foundation) a failing request in production leaves a record the owner sees without actively digging through live logs.** — Archived 2026-10-06 → `context/archive/2026-10-06-production-error-visibility/`. Lesson: Errors must leave a signal, not just a message.
