@@ -7,7 +7,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint . && node scripts/check-ui-literals.mjs",
+    "lint": "eslint . && node scripts/check-ui-literals.mjs && node scripts/check-migrations.mjs",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "smoke": "node scripts/smoke.mjs",
