@@ -715,24 +715,24 @@ Update the API-routes convention: parse bodies inside `try`; check paused errors
 
 #### Automated
 
-- [x] 4.1 Unit tests pass (classifier, messages, noise filter, report builder): `npm test`
-- [x] 4.2 Lint, UI contract and types pass
-- [x] 4.3 Smoke passes incl. /api/client-error steps
-- [x] 4.4 E2E passes incl. client-errors.spec.ts
+- [x] 4.1 Unit tests pass (classifier, messages, noise filter, report builder): `npm test` — b7a1caf
+- [x] 4.2 Lint, UI contract and types pass — b7a1caf
+- [x] 4.3 Smoke passes incl. /api/client-error steps — b7a1caf
+- [x] 4.4 E2E passes incl. client-errors.spec.ts — b7a1caf
 
 #### Manual
 
-- [x] 4.5 Mapping server results to the network message turns the e2e spec red; reverted
-- [x] 4.6 Blocked CvPreview chunk shows the boundary fallback and a client.boundary log
-- [x] 4.7 /dev/ui shows the three new error states
+- [x] 4.5 Mapping server results to the network message turns the e2e spec red; reverted — b7a1caf
+- [x] 4.6 Blocked CvPreview chunk shows the boundary fallback and a client.boundary log — b7a1caf
+- [x] 4.7 /dev/ui shows the three new error states — b7a1caf
 
 ### Phase 5: Docs and production proof
 
 #### Automated
 
-- [ ] 5.1 Prettier passes on the edited docs
+- [x] 5.1 Prettier passes on the edited docs
 
 #### Manual
 
-- [ ] 5.2 Cloudflare shows Issues enabled and the version matches the deploy SHA tag
-- [ ] 5.3 A signed-in test report reaches Telegram within minutes
+- [x] 5.2 Cloudflare shows Issues enabled and the version matches the deploy SHA tag
+- [x] 5.3 A signed-in test report reaches Telegram within minutes
