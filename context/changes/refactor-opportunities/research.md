@@ -5,10 +5,12 @@ git_commit: ad94d89
 branch: main
 repository: applications-tracker
 topic: "Which CV-flow debt items are worth refactoring, in what target shape and order"
-tags: [research, refactor, cv, api-routes, types, migrations]
+tags: [research, refactor, cv, api-routes, types, migrations, verified]
 status: complete
 last_updated: 2026-10-06
 last_updated_by: Claude (agent)
+verified_at_commit: 75f6f85
+last_updated_note: structural claims behind the ranking re-checked with ast-grep 0.45.3; zeros confirmed with grep (section "Weryfikacja twierdzeń (ast-grep)")
 ---
 
 # Research: refactor opportunities from the CV flow analysis
@@ -67,7 +69,7 @@ Every problem the analysis records, classified. A **candidate** is a problem who
   - **Forced:** SQL cannot import TypeScript, and the applied migration may not be edited [I].
 - **Feasibility.**
   - Steps 1–2 need no migration: export `CV_ACCEPT` from `domain/cv.ts` with a test, then pin the bucket with a pgTAP assertion against the same values.
-  - A real limit change later is a new migration with `update storage.buckets …`, which the lint does not flag (`scripts/lib/migrations.mjs:89-150`) [E].
+  - A real limit change later is a new migration with `update storage.buckets …`, which the lint does not flag (`scripts/lib/migrations.mjs:88-146 (raport: 89-150)`) [E].
   - Ordering trap: raising a limit is safe with the bucket first; lowering it needs the app check deployed first [I].
   - Guards: `src/lib/domain/cv.test.ts` (11 tests) and smoke steps `scripts/smoke.mjs:479,484,489`. The bucket limits themselves are untested [E].
   - Size **S**.
@@ -193,9 +195,9 @@ Every problem the analysis records, classified. A **candidate** is a problem who
   - That is data integrity, not code structure.
   - Its fix is small, but it carries the full migration ritual.
 - **Feasibility.**
-  - **Lint-clean option:** a new trigger function `create function public.applications_cv_owner_check()` (not `or replace`) plus a `before insert or update of cv_file_id` trigger. Neither statement is flagged (`scripts/lib/migrations.mjs:89-150`) [E].
+  - **Lint-clean option:** a new trigger function `create function public.applications_cv_owner_check()` (not `or replace`) plus a `before insert or update of cv_file_id` trigger. Neither statement is flagged (`scripts/lib/migrations.mjs:88-146 (raport: 89-150)`) [E].
   - **Rejected option:** a composite FK needs a unique index plus FK, both flagged.
-  - **Previous code is unaffected** [I]: it writes `cv_file_id` only through `set_application_cv`, which already refuses foreign files (`history_traces.test.sql:286-289`).
+  - **Previous code is unaffected** [I]: it writes `cv_file_id` only through `set_application_cv`, which already refuses foreign files (`history_traces.test.sql:228-235 (raport: 286-289)`).
   - **Prerequisite:** a cloud data check for existing violations.
   - **Rollout:** `db push` before `git push`, the compatibility smoke and the deploy gate apply.
   - Size **S–M**.
@@ -283,6 +285,31 @@ Ranking basis: cost of the debt (what it causes today, how likely and how visibl
   - A UX and observability trade-off (memory buffering, losing the native download UI), not a structural defect.
   - Not ranked.
 
+## Weryfikacja twierdzeń (ast-grep)
+
+Narzędzie: `npx -p @ast-grep/cli@0.45.3 ast-grep run -l <ts|tsx> -p '<wzorzec>'` na commicie `75f6f85`. ast-grep nie parsuje `.astro`, `.sql` ani `.mjs` z regułami lint jako danych, więc tam użyto `rg`. Każde zero z ast-grep powtórzono klasycznym grepem.
+
+| Twierdzenie (na którym stoi ranking)                                                                                                                   | Werdykt       | Dowód (plik:linia)                                                                                                                                                                                                         | Metoda                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| K2: 6 plików tras z segmentem `[id]`, 7 handlerów                                                                                                      | potwierdzone  | `api/applications/[id]/cv.ts:14` POST, `index.ts:10` PATCH, `notes.ts:11` POST, `status.ts:10` POST; `api/notes/[id].ts:30` PATCH, `:44` DELETE; `api/cv/[id].ts:9` GET                                                    | ast-grep `export const $M: APIRoute = $$$` (ts)                                                                                                   |
+| K2: żadna trasa API nie używa `isUuid`                                                                                                                 | potwierdzone  | 0 dopasowań ast-grep; `rg isUuid src/pages/api` → 0; użycia tylko w `src/pages/applications/[id]/index.astro:30`, `edit.astro:18`                                                                                          | ast-grep `isUuid($$$)` + `rg`                                                                                                                     |
+| K2: każda z tras sprawdza tylko `!id`                                                                                                                  | potwierdzone  | `api/cv/[id].ts:15`, `api/notes/[id].ts:17`, `api/applications/[id]/index.ts:26`, `cv.ts:22`, `notes.ts:19`, `status.ts:22`                                                                                                | `rg '!id'` (wzorzec ast-grep dla warunku złożonego dał 0 — zły wzorzec, nie brak wystąpień)                                                       |
+| K2: wspólne elementy do ponownego użycia: `isUuid`, `failureResponse`, `toServiceError`                                                                | potwierdzone  | `src/lib/domain/ids.ts:4`, `src/lib/http.ts:25`, `src/lib/services/errors.ts:11`                                                                                                                                           | ast-grep `export function failureResponse($$$): $R { $$$ }`; dla `isUuid` (typ-predykat `value is string`) wzorzec dał 0 → `rg 'export function'` |
+| K2: smoke testuje zły id tylko dla strony                                                                                                              | potwierdzone  | `scripts/smoke.mjs:526` ("malformed application link is not found"); `:417` dotyczy złego ciała, nie id                                                                                                                    | `rg -i malformed`                                                                                                                                 |
+| K5: jedyne generyki `apiRequest<…>` w `src` to odpowiedź uploadu w dwóch komponentach                                                                  | potwierdzone  | `CvPanel.tsx:82`, `CvLibrary.tsx:131` (+ definicja `api-client.ts:21`)                                                                                                                                                     | `rg 'apiRequest<'` (ast-grep nie dopasowuje jawnych argumentów typu w `.tsx` — znane z M4L3)                                                      |
+| K5: `src/types.ts` ma tylko encje, bez DTO żądań/odpowiedzi                                                                                            | potwierdzone  | 6 interfejsów: `Application:18`, `NoteRevision:67`, `Note:76`, `StatusChange:88`, `FieldChangeRow:96`, `CvFile:104`; 4 aliasy typów enumów `:10,13,16,60`                                                                  | ast-grep `export interface $N { $$$ }`, `export type $N = $$$`                                                                                    |
+| K5: inne komponenty czytają nietypowane `result.data.errors`                                                                                           | potwierdzone  | `ApplicationForm.tsx:75`, `NotesPanel.tsx:31`                                                                                                                                                                              | ast-grep `$R.data.errors` (tsx)                                                                                                                   |
+| K5: adresy `/api/cv/${…}` powtarzane jako stringi                                                                                                      | doprecyzowane | `CvPanel.tsx:135,146`, `CvLibrary.tsx:51,65`, `CvPreview.tsx:49,92` oraz `src/pages/dev/ui.astro:309` — 7 miejsc (raport: 6 + „/dev/ui fixtures”)                                                                          | `rg '/api/cv/\$\{'`                                                                                                                               |
+| K5: `CV_COLUMNS` ręcznie zgodne z `CvFile`; `mime_type` jako `string`                                                                                  | potwierdzone  | `src/lib/services/cv.ts:7`, `src/types.ts:107`                                                                                                                                                                             | `rg`                                                                                                                                              |
+| K5: `demo-data` ma własne `sha256Hex` i ścieżkę                                                                                                        | potwierdzone  | `scripts/demo-data.mjs:160`, `:208`                                                                                                                                                                                        | `rg`                                                                                                                                              |
+| K1: `CV_TYPES` jako jedno źródło typów, z którego da się wyprowadzić `accept`                                                                          | potwierdzone  | `src/lib/domain/cv.ts:16`                                                                                                                                                                                                  | ast-grep `export const CV_TYPES = $V`                                                                                                             |
+| K1: `accept=` i etykieta „PDF lub DOCX, do 5 MB” skopiowane w dwóch komponentach                                                                       | potwierdzone  | `accept=`: `CvPanel.tsx:197`, `CvLibrary.tsx:164`; etykieta: `CvPanel.tsx:191`, `CvLibrary.tsx:158`                                                                                                                        | `rg`                                                                                                                                              |
+| K1/K8: `update storage.buckets`, `create function` i `create trigger` nie są regułami lintu migracji; `create or replace function` i `unique-or-fk` są | potwierdzone  | reguły `scripts/lib/migrations.mjs:88-146` (raport: 89-150): `create-or-replace-function` `:117`, `unique-or-fk` `:133`, `drop` (także `trigger`) `:88-90`; brak reguły dla `update`/`create trigger`                      | `rg 'rule: "'`                                                                                                                                    |
+| K3: storage-js ma pola strukturalne błędu (`statusCode`, `code` np. `ResourceAlreadyExists`)                                                           | potwierdzone  | `node_modules/@supabase/storage-js/dist/index.d.mts:18,39,42`                                                                                                                                                              | `rg`                                                                                                                                              |
+| K8: `set_application_cv` odrzuca nieznane i cudze CV (pgTAP)                                                                                           | doprecyzowane | `supabase/tests/history_traces.test.sql:230` („an unknown CV id is refused”), `:234` („another user's CV is refused”) — 228-235 (raport: 286-289; linie 284-288 dotyczą cudzej _aplikacji_ i ukrywania historii przez RLS) | `rg`                                                                                                                                              |
+
+**Wpływ na ranking:** żadne twierdzenie, na którym stoją pozycje 1–3, nie zostało obalone. Dwa doprecyzowania (7. miejsce z adresem `/api/cv/…` w `/dev/ui`; poprawne linie testu pgTAP dla K8) nie zmieniają oceny kosztu ani zasięgu — do decyzji na etapie planowania.
+
 ## Code References
 
 - `src/lib/domain/ids.ts:4` — `isUuid` (reusable for K2)
@@ -295,7 +322,7 @@ Ranking basis: cost of the debt (what it causes today, how likely and how visibl
 - `supabase/migrations/20261001090000_cv_files.sql:6-14,38-39,54-92` — bucket limits, `cv_file_id`, `set_application_cv` (K1, K8)
 - `src/lib/services/cv.ts:7,25-48` — `CV_COLUMNS`, upload, self-heal regex, `23505` (K3, K4, K5)
 - `node_modules/@supabase/storage-js/dist/index.d.mts:14-47` — structured Storage error fields (K3)
-- `scripts/lib/migrations.mjs:89-150` — migration lint rules (K1, K8 feasibility)
+- `scripts/lib/migrations.mjs:88-146 (raport: 89-150)` — migration lint rules (K1, K8 feasibility)
 
 ## Architecture Insights
 
