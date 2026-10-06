@@ -155,7 +155,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Parallel with:** F-01, S-02, S-03, S-04
 - **Blockers:** —
 - **Unknowns:**
-  - Should demo CV files be removed from storage as well, given the "CV files are never removed" rule applies to real data? — Owner: user. Block: no.
+  - ~~Should demo CV files be removed from storage as well?~~ Resolved 2026-10-06 (domain distillation Q-01): yes — the switch wipes everything (applications, notes, history, CV files and rows); it must run before the first real application is entered (PRD FR-004 update).
 - **Risk:** Last in its stream so real data never lands in an app that can go dark between uses; clearing is destructive and one-way, so it must require an explicit confirmation.
 - **Status:** proposed
 

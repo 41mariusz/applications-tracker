@@ -38,6 +38,7 @@ Primary persona: the author themself — a single candidate running many recruit
 ### Secondary
 
 - The user sees at a glance which applications are waiting for a response, without opening each one.
+  > Update 2026-10-06 (domain distillation Q-04): "waiting for a response" means the company's move — statuses Sent, HR contact and Interviews (Offer waits for the user's decision; terminal statuses are closed). Met by the status shown on every list row plus the bookmarkable filter `/dashboard?status=sent,hr_contact,interviews`; no separate marker.
 
 ### Guardrails
 
@@ -68,6 +69,7 @@ Primary persona: the author themself — a single candidate running many recruit
   > Socrates: Counter-argument considered: "editing overwrites the quoted rate without a trace — after negotiation you lose what you said earlier." Resolution (user's words): "musi zostawać ślad w jakimś changelog" — edits must be recorded in a change log; see FR-012.
 - FR-004: User can remove an application from active tracking; it is never deleted without a trace — at most it stays on the list crossed out, with an appropriate status. Priority: must-have
   > Socrates: Counter-argument considered: "permanent removal wipes the agreements and the change log, contradicting the 'no lost agreements' guardrail." Resolution (user's words): "nie usuwa bez śladu, co najwyżej jest skreślona na liście z odpowiednim statusem" — nothing is ever permanently removed; removed applications appear crossed out with the Withdrawn status (see Business Logic).
+  > Update 2026-10-06 (domain distillation Q-01): one deliberate exception — switching from demo to real data (roadmap S-05) wipes **all** of the account's applications, notes, history and CV files with `npm run demo-data -- --reset`. It runs once, before the first real application is entered, and only with the owner's explicit go-ahead; after that, nothing is deleted.
 
 ### Lookup
 
