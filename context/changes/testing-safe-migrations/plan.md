@@ -535,15 +535,15 @@ Record the additive rule where agents read it, document how to unblock the gate 
 
 - [x] 4.2 Local dry run: base 7289510 passes its own smoke on the new schema — efe82d1
 - [x] 4.3 Local dry run: an edited existing migration is listed by the history check — efe82d1
-- [ ] 4.4 After db push and git push, CI runs the compatibility step and the gate passes
+- [x] 4.4 After db push and git push, CI runs the compatibility step and the gate passes — 9057afe
 
 ### Phase 5: Rules, runbook, test plan and roadmap
 
 #### Automated
 
-- [x] 5.1 Prettier check passes on the edited docs
-- [x] 5.2 Roadmap S-03 references this change
+- [x] 5.1 Prettier check passes on the edited docs — 9057afe
+- [x] 5.2 Roadmap S-03 references this change — 9057afe
 
 #### Manual
 
-- [x] 5.3 CLAUDE.md and test-plan §6 are enough to add and ship a migration
+- [x] 5.3 CLAUDE.md and test-plan §6 are enough to add and ship a migration — 9057afe
