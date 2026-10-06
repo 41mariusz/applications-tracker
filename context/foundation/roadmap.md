@@ -3,7 +3,7 @@ project: Applications Tracker
 version: 1
 status: draft
 created: 2026-09-30
-updated: 2026-10-05
+updated: 2026-10-06
 prd_version: —
 main_goal: quality
 top_blocker: external
@@ -48,7 +48,7 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 | F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready    |
 | S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done     |
 | S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done     |
-| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | ready    |
+| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done     |
 | S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done     |
 | S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed |
 
@@ -131,7 +131,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Are the existing migrations backward-compatible with the previous code version? — Owner: team. Block: no.
 - **Risk:** Low likelihood but high impact; placed early because every later slice in this milestone ships through the same deploy path.
-- **Status:** ready
+- **Status:** done
 
 ### S-04: Details open quickly on a phone
 
@@ -189,3 +189,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-01: user can open the app and search their applications after a week or more without using it** — Archived 2026-10-05 → `context/archive/2026-10-04-app-available-after-idle-week/`. Lesson: —.
 - **S-02: user can attach a CV of up to 5 MB to an application in production without an error** — Archived 2026-10-05 → `context/archive/2026-10-04-cv-upload-5mb-in-production/`. Lesson: —.
 - **S-04: user can open an application's details on a phone and see salary range, quoted rate, status and the latest agreement quickly enough for a live call** — Archived 2026-10-05 → `context/archive/2026-10-05-fast-details-on-phone/`. Lesson: —.
+- **S-03: user (the owner) can roll back a bad production deploy made after a database migration and still use the app.** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-safe-migrations/`. Lesson: Keep migrations additive — old code runs on the new schema.
