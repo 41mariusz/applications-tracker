@@ -77,6 +77,7 @@ Primary persona: the author themself — a single candidate running many recruit
   > Socrates: Counter-arguments considered: "phone numbers come in different formats (+48 600 100 200 vs 600100200) — search would miss the offer at the key moment" and "one company = several applications." Resolution: accepted both; format-insensitive phone matching and disambiguated results.
 - FR-006: User can view an application's details: all fields, current status, and the notes timeline. What is needed during a call — salary range, the quoted rate, status, and the most recent agreement — is visible first, without scrolling, on a phone screen. Priority: must-have
   > Socrates: Counter-argument considered: "all fields + notes timeline + change log on a phone means long scrolling during a call." Resolution: accepted; call-critical information shown first.
+  > Update 2026-10-06 (domain distillation Q-06): "the most recent agreement" is the most recent note that was not removed — any type, including the note saved with a quoted-rate change — ordered by its date (`noted_at`). Shown as "Ostatnie ustalenie" in the call summary.
 - FR-007: User can see a list of all their applications with each one's status, ordered with the most important applications at the top and less important ones at the bottom. Priority: must-have
   > Socrates: Counter-argument considered: "closed processes clutter the list — after a few weeks most entries are rejections." Resolution (user's words): "najważniejsze aplikacje na górze, mniej ważne na dole" — the list is ordered by importance. What makes an application "important" is the domain rule — defined in Business Logic (phase 5).
 - FR-008: User can filter the application list by one or more statuses, combined with search. Priority: must-have
@@ -118,6 +119,8 @@ The application orders the user's recruitment processes by stage and, within a s
 
 **Ordering.** Inputs: each application's status and the date of its most recent activity (latest note or status change). Output: the application list the user sees on opening the app — Accepted on top (until the user starts a new job), then Offer, Interviews, HR contact, Sent; within a stage, the most recently active first. Rejected and Withdrawn sit at the bottom, crossed out.
 
+> Update 2026-10-06 (domain distillation Q-03): Accepted simply stays on top; there is no "new job" event. When a later process matters again, the user reverts the old Accepted application (e.g., to Withdrawn) with the usual confirmation.
+
 > Update 2026-10-05: "Most recent activity" is the moment a note or status change is saved. Editing fields, notes or the CV does not change it (a quoted-rate change saved with a note counts, because a note is saved), and removing a note does not lower it. Rejected and Withdrawn interleave by activity, and ties go to the newer application.
 
 ## Access Control
@@ -126,6 +129,7 @@ The application orders the user's recruitment processes by stage and, within a s
 - No self sign-up: a single owner account is created once, outside the app (revised during the Socrates round for FR-001; see Open Questions 1). Flat user model, no roles.
 - Each user sees and edits only their own applications and notes; no sharing between accounts.
 - An unauthenticated visitor sees only the sign-in screen; any other route redirects to sign-in.
+- Update 2026-10-06 (domain distillation Q-02): deleting the owner account in the Supabase dashboard (outside the app) deletes all of its data (`on delete cascade`). Accepted: the account is deleted only when the owner abandons the product; it is not a way to remove single records.
 
 ## Non-Goals
 

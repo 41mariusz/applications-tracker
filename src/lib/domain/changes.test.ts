@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { diffFields, mergeHistory, TRACKED_FIELDS } from "@/lib/domain/changes";
+import { diffFields, FIELD_LABELS, mergeHistory, TRACKED_FIELDS } from "@/lib/domain/changes";
+import { STATUS_LABELS } from "@/types";
 
 const base = Object.fromEntries(TRACKED_FIELDS.map((f) => [f, null])) as Record<
   (typeof TRACKED_FIELDS)[number],
@@ -63,5 +64,13 @@ describe("mergeHistory", () => {
       [],
     );
     expect(history).toEqual([]);
+  });
+});
+
+describe("FIELD_LABELS", () => {
+  // In the change log a field change and a status change must not read alike (domain glossary: B-02).
+  it("never reuses a status label for a field", () => {
+    const statusLabels = new Set(Object.values(STATUS_LABELS));
+    for (const label of Object.values(FIELD_LABELS)) expect(statusLabels.has(label)).toBe(false);
   });
 });

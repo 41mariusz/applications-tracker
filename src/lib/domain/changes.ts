@@ -25,7 +25,7 @@ export const FIELD_LABELS: Record<HistoryField, string> = {
   posting_url: "Link do ogłoszenia",
   salary_range: "Widełki",
   quoted_rate: "Moja stawka",
-  hr_contact_name: "Kontakt HR",
+  hr_contact_name: "Kontakt HR — imię i nazwisko",
   hr_contact_phone: "Telefon HR",
   applied_on: "Data aplikowania",
   employment_type: "Forma zatrudnienia",
