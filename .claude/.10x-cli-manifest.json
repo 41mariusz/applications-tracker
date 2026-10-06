@@ -2,8 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.26.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-10-05T12:10:02.194Z",
-  "lessonId": "m3l5",
+  "lastApplied": "2026-10-06T16:07:23.661Z",
+  "lessonId": "m4l5",
   "course": "10xdevs4",
   "tool": "claude-code",
   "files": {
@@ -327,6 +327,72 @@
           "references/runtime-probes.md": "5b2b2784874f1de693b41d312a01d519bc31b0e5632b6a3b9f5c7d771e76a1e1",
           "scripts/fake-ingest.mjs": "ad5877bb0924a1faa42b5d186d05b314ed899fc973de422f200074237510bc12"
         }
+      },
+      "10x-ray": {
+        "files": [
+          "SKILL.md",
+          "assets/xray.html",
+          "references/example-map-10x-research.json",
+          "references/mapping-guide.md",
+          "references/worker-brief.md",
+          "scripts/xray.mjs"
+        ],
+        "contentHashes": {
+          "SKILL.md": "440a75701bcc276f547d5bd8b0fabccff7517b17286293efb5f1bce6fdf3f81d",
+          "assets/xray.html": "49e03f9f7470f2a2b082a316607fff42fcb078bb17c394ff22e3d73c4aa5a131",
+          "references/example-map-10x-research.json": "8b3587ad3133e262f8d991a2802bb5f116915ce6ce851092a2ba64f5ba68dcd7",
+          "references/mapping-guide.md": "531431abd944b81b7259343fc64e3051861f8fd1fcea1aa544708aaacca45ed5",
+          "references/worker-brief.md": "26c7663a07bbe79d8f9c7e66ff9e321f834d4535387044b3ee7bac75ae9344f2",
+          "scripts/xray.mjs": "bd70fe098b2eaa90c5ec12a36b24721aefd6e61b06808950cf7a091f46c21dff"
+        }
+      },
+      "10x-repo-map": {
+        "files": [
+          "SKILL.md",
+          "references/agent-discussion.md",
+          "references/agent-history.md",
+          "references/agent-people.md",
+          "references/agent-structure.md",
+          "references/capability-inventory.md",
+          "references/false-signals.md",
+          "references/graph-tools.md",
+          "references/report.md",
+          "references/scan-contract.md",
+          "scripts/graph-metrics.mjs",
+          "scripts/graph-metrics.test.mjs"
+        ],
+        "contentHashes": {
+          "SKILL.md": "39762a8d0246ab91f64ec8594213712f320553cfc5a0e26201a40dfc5c70e3f5",
+          "references/agent-discussion.md": "8ba5c803bafcf21fa6b5923479e01aabef68b2b2b5720a865fe0b3ecf2924cd9",
+          "references/agent-history.md": "d50cd23c326216e3f3a68b34f29363f56e521037a09173c1890b81257c4ef723",
+          "references/agent-people.md": "9be4466fb9d4100bb463b9240d510f55ddc7ad92a11624b76424c5cbe0260fae",
+          "references/agent-structure.md": "661e0493d3f7bdcaacdacb37ecd6142756789af413ac9d9066ee304a17f64586",
+          "references/capability-inventory.md": "feae97f771fecffafce65ce72f54ef998a893308b1a9131ea9c516fa282253db",
+          "references/false-signals.md": "339c78be9c8ea07a992fb2001fee5b6fbc23c5ee51f7bfa7d85c530405876e50",
+          "references/graph-tools.md": "33196a0aaf9aeec1e3833e4fd5d94b953739d766fd6736ab8f669e1ce7efab1d",
+          "references/report.md": "ce1fd8995093e0b811150040f83739cfe85ce726f6892908c6f6621309c756b1",
+          "references/scan-contract.md": "2a416ce37e180f47497cb6a42f2ff5d659ce28b08c7357a67461fbe3459d1ad8",
+          "scripts/graph-metrics.mjs": "0049c3360b8f480e70136f00c391224ff2d82de8badbffe5f74244c520451676",
+          "scripts/graph-metrics.test.mjs": "8f0aceea8d2b0f44f6f96decbcc5fd4ca17b47103ad2b3477add307da901c3e8"
+        }
+      },
+      "10x-domain-distillation": {
+        "files": [
+          "SKILL.md",
+          "references/agent-code-language.md",
+          "references/agent-code-rules.md",
+          "references/agent-docs-language.md",
+          "references/report.md",
+          "references/source-inventory.md"
+        ],
+        "contentHashes": {
+          "SKILL.md": "3c39c99a3f3adcf08cea375e9e9aa2f47652721f51b122ea34705d655ad94ae6",
+          "references/agent-code-language.md": "ee98180b5130bd0055f6de168f34d19d7e0fab2e9151ea420223783982fdb3f2",
+          "references/agent-code-rules.md": "3c57d52673d53e76a302a6e63a5a92c9c764e1a4c9e5a09d34e836f45e14de99",
+          "references/agent-docs-language.md": "eba99ef21989eac1f3682d90564ea1631e03f80f56008615a5af827cb7b7e802",
+          "references/report.md": "d4504847d5fb2c3e87febc4cceb4c4c2d7e40e071b69ae612e9ff0f8b7f2b09d",
+          "references/source-inventory.md": "4df28fff543d7b4836b5855f276820c19e2e240477ac0a83eaf9ae0825aeafde"
+        }
       }
     },
     "prompts": [
@@ -335,7 +401,19 @@
       "m1l5-2-constrain-approach.md",
       "m1l5-3-extend-prerequisites.md",
       "m1l5-4-store-plan.md",
-      "m3l2-ad-hoc-testing.md"
+      "m3l2-ad-hoc-testing.md",
+      "m4l2-1-territory-git-history.md",
+      "m4l2-2-structure-dependency-cruiser.md",
+      "m4l2-3-contributors-git.md",
+      "m4l2-repo-map-synthesis.md",
+      "m4l3-1-research-with-map.md",
+      "m4l3-2-ast-grep-verification.md",
+      "m4l4-1-new-change-intention.md",
+      "m4l4-2-refactor-opportunities-research.md",
+      "m4l4-3-ranking-ast-grep-verification.md",
+      "m4l5-1-domain-distillation.md",
+      "m4l5-2-invariant-aggregate-refactor.md",
+      "m4l5-3-anti-corruption-layer.md"
     ],
     "configs": [],
     "promptHashes": {
@@ -344,7 +422,19 @@
       "m1l5-2-constrain-approach.md": "1d2477cdc3c2a867a4bf79d3d1ba1151f0468875237f2322126b26e5d506c505",
       "m1l5-3-extend-prerequisites.md": "3418ae7c2ffc10f9cce9ad23b48b845033b57793fc2816df66c6deb8b6eae867",
       "m1l5-4-store-plan.md": "0f72fd90618f05bd8f6784825d217e128fa3148def28024995f1ad1026b34f48",
-      "m3l2-ad-hoc-testing.md": "6a4509b6b90d3ea9229d19dbec77aea0c6812d0d706144006f9465e195f5387f"
+      "m3l2-ad-hoc-testing.md": "6a4509b6b90d3ea9229d19dbec77aea0c6812d0d706144006f9465e195f5387f",
+      "m4l2-1-territory-git-history.md": "a327437cf2db9fcd99b69abbe0bad3a89747f388c2dd205aebdb1fbf70d790b5",
+      "m4l2-2-structure-dependency-cruiser.md": "ed0f5b1766b0db6c8a27d140a2ffb5dab443c166ca9d1c26cb06ac2bf0e2ddda",
+      "m4l2-3-contributors-git.md": "2eba27c8ff6a555cfce82f8c34db0ee32c1786b5688fb42fe7b9335b63fdfe66",
+      "m4l2-repo-map-synthesis.md": "24603106856e7c0f7b8e981c8069beb7134faae564bf18eea8c45dd1857b9496",
+      "m4l3-1-research-with-map.md": "53c99801b4da7881e5887cc4df8c02854a5477502ddd8394265c599c986f5a68",
+      "m4l3-2-ast-grep-verification.md": "ba4ae4877441db39ccecebb7b6bded900f7094894a876848d8126dd78949382d",
+      "m4l4-1-new-change-intention.md": "932b65e90f5f4c4ed289b14a457c9950ff59edd22e1a8a2baba5f6e8db3f20a0",
+      "m4l4-2-refactor-opportunities-research.md": "085635e4e677824f475daaadc2b6f7d1df2af6591bfd6fdfc0facbdefeee4413",
+      "m4l4-3-ranking-ast-grep-verification.md": "986364bd6fda83c28d746ef7bbd9f9383d6b9d26af84430cc6a28e89c74138c2",
+      "m4l5-1-domain-distillation.md": "e8611bf46e9d899e713450b47af76582bdd2d9dc3b7784312426e413f045dbeb",
+      "m4l5-2-invariant-aggregate-refactor.md": "fcf22eb1676913dabf73e278515b7d8e47d04bc271ed46bc658c08a3792b7721",
+      "m4l5-3-anti-corruption-layer.md": "c3ad9792233c1eeeadbb6f9522f01f0d4594448f17bbfd2e4002a6eabfb9e386"
     },
     "configHashes": {}
   },
@@ -1393,6 +1483,140 @@
         "m1l5-3-extend-prerequisites.md",
         "m1l5-4-store-plan.md",
         "m3l2-ad-hoc-testing.md"
+      ],
+      "configs": []
+    },
+    "m4l5": {
+      "appliedAt": "2026-10-06T16:07:23.661Z",
+      "skills": {
+        "10x-idea-check": {
+          "files": ["SKILL.md", "references/examples.md"]
+        },
+        "10x-init": {
+          "files": ["SKILL.md"]
+        },
+        "10x-tech-stack-selector": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-stack-assess": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-bootstrapper": {
+          "files": [
+            "references/bootstrapper-config.yaml",
+            "references/handoff-consumer.md",
+            "references/post-scaffold-verification.md",
+            "references/pre-scaffold-verification.md"
+          ]
+        },
+        "10x-health-check": {
+          "files": ["references/health-check-schema.md"]
+        },
+        "10x-lesson": {
+          "files": ["SKILL.md"]
+        },
+        "10x-new": {
+          "files": ["references/change-md.md"]
+        },
+        "10x-plan": {
+          "files": [
+            "references/plan-persistence.md",
+            "references/progress-format.md",
+            "references/task-orchestration.md",
+            "scripts/metadata-guard.mjs",
+            "scripts/metadata-guard.test.mjs"
+          ]
+        },
+        "10x-plan-review": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-implement": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-archive": {
+          "files": ["references/archive-sha.md"]
+        },
+        "10x-status": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-impl-review": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-research": {
+          "files": [
+            "SKILL.md",
+            "references/task-orchestration.md",
+            "scripts/metadata-guard.mjs",
+            "scripts/prose-json-check.mjs",
+            "scripts/prose-json-check.test.mjs"
+          ]
+        },
+        "10x-ui": {
+          "files": ["references/ui-quality-checklist.md"]
+        },
+        "10x-tdd": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-configure-hook": {
+          "files": ["references/other-harnesses.md"]
+        },
+        "10x-observability-audit": {
+          "files": ["references/auditor-briefs.md", "scripts/fake-ingest.mjs"]
+        },
+        "10x-ray": {
+          "files": [
+            "SKILL.md",
+            "assets/xray.html",
+            "references/example-map-10x-research.json",
+            "references/mapping-guide.md",
+            "references/worker-brief.md",
+            "scripts/xray.mjs"
+          ]
+        },
+        "10x-repo-map": {
+          "files": [
+            "SKILL.md",
+            "references/agent-discussion.md",
+            "references/agent-history.md",
+            "references/agent-people.md",
+            "references/agent-structure.md",
+            "references/capability-inventory.md",
+            "references/false-signals.md",
+            "references/graph-tools.md",
+            "references/report.md",
+            "references/scan-contract.md",
+            "scripts/graph-metrics.mjs",
+            "scripts/graph-metrics.test.mjs"
+          ]
+        },
+        "10x-domain-distillation": {
+          "files": [
+            "SKILL.md",
+            "references/agent-code-language.md",
+            "references/agent-code-rules.md",
+            "references/agent-docs-language.md",
+            "references/report.md",
+            "references/source-inventory.md"
+          ]
+        }
+      },
+      "prompts": [
+        "m1l5-1-plan-integration.md",
+        "m1l5-2-constrain-approach.md",
+        "m1l5-3-extend-prerequisites.md",
+        "m1l5-4-store-plan.md",
+        "m4l2-1-territory-git-history.md",
+        "m4l2-2-structure-dependency-cruiser.md",
+        "m4l2-3-contributors-git.md",
+        "m4l2-repo-map-synthesis.md",
+        "m4l3-1-research-with-map.md",
+        "m4l3-2-ast-grep-verification.md",
+        "m4l4-1-new-change-intention.md",
+        "m4l4-2-refactor-opportunities-research.md",
+        "m4l4-3-ranking-ast-grep-verification.md",
+        "m4l5-1-domain-distillation.md",
+        "m4l5-2-invariant-aggregate-refactor.md",
+        "m4l5-3-anti-corruption-layer.md"
       ],
       "configs": []
     }
