@@ -344,4 +344,4 @@ New table and functions only; existing data untouched. The migration is additive
 #### Manual
 
 - [x] 3.4 `/paused` reads well on a phone (360 px) and on desktop
-- [ ] 3.5 Optional live check (causes a few minutes of downtime): pause the project in the Supabase dashboard, confirm a signed-in page and sign-in both land on `/paused`, `/api/health` returns 503 `paused`, and a manual run of the health workflow fails and emails the owner; then restore the project and confirm `/api/health` returns 200 again
+- [x] 3.5 Optional live check (causes a few minutes of downtime): pause the project in the Supabase dashboard, confirm a signed-in page and sign-in both land on `/paused`, `/api/health` returns 503 `paused`, and a manual run of the health workflow fails and emails the owner; then restore the project and confirm `/api/health` returns 200 again
