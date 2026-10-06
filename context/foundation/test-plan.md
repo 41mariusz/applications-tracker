@@ -88,7 +88,7 @@ Test-base profile: **sparse by count, layered in practice** — Vitest with 10 t
 | end-to-end over HTTP      | `scripts/smoke.mjs` (dependency-free)             | n/a         | runs against `astro preview` + local Supabase in CI |
 | e2e in a browser          | Playwright (`@playwright/test`), Chromium         | 1.63.0      | production build + local Supabase; CI `smoke` job   |
 | UI contract               | `scripts/check-ui-literals.mjs` in `npm run lint` | n/a         | literal colours in views already on tokens          |
-| agent hooks               | none yet — see Phase 4                            | —           | `/10x-configure-hook` (course M3L3)                 |
+| agent hooks               | Claude Code hooks in `.claude/hooks/` (Node)      | n/a         | proof: `scripts/agent-hooks.test.mjs` in `npm test` |
 
 **Stack grounding tools (current session):**
 
@@ -103,16 +103,16 @@ The full set of gates that must pass before a change reaches production.
 "Required for §3 Phase <N>" means the gate is enforced once that rollout
 phase lands; before that, the gate is `planned`.
 
-| Gate                                  | Where                  | Required?                    | Catches                                              |
-| ------------------------------------- | ---------------------- | ---------------------------- | ---------------------------------------------------- |
-| lint + typecheck + UI-literal scan    | local + CI             | required (in place)          | syntax, type drift, literal colours in token views   |
-| unit (Vitest)                         | local + CI             | required (in place)          | domain rule regressions                              |
-| pgTAP                                 | CI (local Supabase)    | required (in place)          | atomic writes, RLS through functions                 |
-| HTTP smoke                            | CI on production build | required (in place)          | broken flows, isolation, entry behaviour             |
-| e2e in a browser on the call scenario | CI on production build | required after §3 Phase 1    | live search / sign-in failures HTTP smoke cannot see |
-| migration state before deploy         | CI deploy job          | required (in place)          | code deployed ahead of the cloud schema              |
-| migration lint + compatibility smoke  | local + CI             | required (in place)          | migrations that break the previous code version      |
-| post-edit / end-of-turn agent hooks   | local (agent loop)     | recommended after §3 Phase 4 | regressions at edit time                             |
+| Gate                                  | Where                  | Required?                 | Catches                                              |
+| ------------------------------------- | ---------------------- | ------------------------- | ---------------------------------------------------- |
+| lint + typecheck + UI-literal scan    | local + CI             | required (in place)       | syntax, type drift, literal colours in token views   |
+| unit (Vitest)                         | local + CI             | required (in place)       | domain rule regressions                              |
+| pgTAP                                 | CI (local Supabase)    | required (in place)       | atomic writes, RLS through functions                 |
+| HTTP smoke                            | CI on production build | required (in place)       | broken flows, isolation, entry behaviour             |
+| e2e in a browser on the call scenario | CI on production build | required after §3 Phase 1 | live search / sign-in failures HTTP smoke cannot see |
+| migration state before deploy         | CI deploy job          | required (in place)       | code deployed ahead of the cloud schema              |
+| migration lint + compatibility smoke  | local + CI             | required (in place)       | migrations that break the previous code version      |
+| post-edit / end-of-turn agent hooks   | local (agent loop)     | required (in place)       | regressions at edit time                             |
 
 ## 6. Cookbook Patterns
 
@@ -176,6 +176,14 @@ the relevant rollout phase ships; before that, the sub-section reads
 - **CI**: the `smoke` job builds the previous commit and runs its own `scripts/smoke.mjs` on the new local schema when `supabase/migrations/` changed, and fails if an applied migration was edited, renamed or deleted; the `deploy` job blocks before `wrangler deploy` when the cloud lacks a repo migration or its state cannot be read (`scripts/check-cloud-migrations.mjs`).
 - **Not covered** (review): semantic breaks — new enum values old code cannot render, redefined functions that write columns old code doesn't send.
 - **Limit**: "previous code" is the previous push (`github.event.before`) or the PR base, not the last successfully deployed commit — if the previous deploy failed or the gate blocked it, production runs an older version than the one tested. `wrangler deployments list` shows the deployed SHA when in doubt.
+
+### 6.8 Agent hooks (Claude Code)
+
+- **Per edit** (`PostToolUse` `Write|Edit`, `.claude/hooks/after-edit.mjs`, 60 s): ESLint on the edited file only, `vitest related <file> --run`, and the migration lint when the file is in `supabase/migrations/`. Files outside this repository and `.claude/` are skipped.
+- **End of turn** (`Stop`, `.claude/hooks/end-of-turn.mjs`, 120 s, about 17 s on this host): every changed file from `git diff` + untracked (also files rewritten through Bash) — ESLint, UI-literal scan, migration lint when a migration changed, the whole `vitest run`, `astro check`. Docs-only turns are skipped. One retry: `stop_hook_active` lets the agent finish; lint-staged and CI catch the rest.
+- **Channel**: only exit 2 + stderr reaches the agent; missing tools fail visibly (`npx --no-install`). Node scripts, because the host has no `jq`.
+- **Changing a hook**: extend `scripts/agent-hooks.test.mjs` (throwaway git repos, a fake `npx` on `PATH` reacting to `LINT_ERROR` / `TEST_FAIL` / `TYPE_ERROR` markers), run `npm test`, restart the Claude Code session, check `/hooks`.
+- **Out of reach**: hooks prove lint, types and unit tests only — not hydration, routing, RLS or side effects (smoke, pgTAP, E2E in CI).
 
 ## 7. What We Deliberately Don't Test
 
