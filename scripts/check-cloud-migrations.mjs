@@ -44,8 +44,7 @@ async function readCloudVersions() {
         signal: AbortSignal.timeout(TIMEOUT_MS),
       });
     } catch (error) {
-      const cause = error?.cause?.code ?? error?.cause?.message;
-      lastError = `request to ${endpoint} failed after ${attempt} attempt(s): ${error?.name === "TimeoutError" ? `timeout after ${TIMEOUT_MS} ms` : (error?.message ?? error)}${cause ? ` (${cause})` : ""}`;
+      lastError = requestFailure(endpoint, attempt, error);
       continue;
     }
 
@@ -56,9 +55,19 @@ async function readCloudVersions() {
       continue;
     }
 
+    // Reading the body can still fail on a timeout or reset: retried like a failed request.
+    let text;
+    try {
+      text = await response.text();
+    } catch (error) {
+      lastError = requestFailure(endpoint, attempt, error);
+      continue;
+    }
+
+    // Only a fully read body that is not the expected JSON counts as unparsable (no retry).
     let body;
     try {
-      body = await response.json();
+      body = JSON.parse(text);
     } catch {
       return { error: `unparsable response body from ${endpoint} (expected a JSON array)` };
     }
@@ -70,6 +79,12 @@ async function readCloudVersions() {
   return { error: lastError };
 }
 
+function requestFailure(endpoint, attempt, error) {
+  const cause = error?.cause?.code ?? error?.cause?.message;
+  const reason = error?.name === "TimeoutError" ? `timeout after ${TIMEOUT_MS} ms` : (error?.message ?? error);
+  return `request to ${endpoint} failed after ${attempt} attempt(s): ${reason}${cause ? ` (${cause})` : ""}`;
+}
+
 function statusHint(status) {
   if (status === 404) return " — is the applied_migrations migration pushed? run npx supabase db push";
   if (status === 401 || status === 403) return " — check the SUPABASE_KEY secret (publishable key)";
@@ -77,7 +92,23 @@ function statusHint(status) {
   return "";
 }
 
-const repo = migrationVersions(readdirSync(MIGRATIONS_DIR).filter((name) => name.endsWith(".sql")));
+const names = readdirSync(MIGRATIONS_DIR).filter((name) => name.endsWith(".sql"));
+const malformed = names.find((name) => {
+  try {
+    migrationVersions([name]);
+    return false;
+  } catch {
+    return true;
+  }
+});
+if (malformed !== undefined) {
+  console.error(`Malformed migration file name: ${malformed} (expected YYYYMMDDHHmmss_name.sql)`);
+  if (process.env.GITHUB_ACTIONS === "true") {
+    console.log(`::error title=Malformed migration file name::${escapeAnnotation(malformed)}`);
+  }
+  process.exit(1);
+}
+const repo = migrationVersions(names);
 const verdict = gateVerdict({ repo, ...(await readCloudVersions()) });
 
 const line = `${verdict.title}: ${verdict.message}`;

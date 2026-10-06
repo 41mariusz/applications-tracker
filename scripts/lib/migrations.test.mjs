@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { compareMigrations, gateVerdict, lintMigrationSql, migrationVersions } from "./migrations.mjs";
+import {
+  compareMigrations,
+  gateVerdict,
+  lintMigration,
+  lintMigrationSql,
+  MIGRATION_LINT_RULES,
+  migrationVersions,
+} from "./migrations.mjs";
 
 const rules = (sql) => lintMigrationSql(sql).map((f) => f.rule);
 
@@ -11,7 +18,13 @@ describe("migrationVersions", () => {
     ]);
   });
 
+  it("accepts any characters after the underscore, as the Supabase CLI does", () => {
+    expect(migrationVersions(["20261006130000_add-x.sql"])).toEqual(["20261006130000"]);
+  });
+
   it.each([
+    "foo.sql",
+    "2026_x.sql",
     "2026092918000_short_prefix.sql",
     "20260929180000-dash.sql",
     "20260929180000_name.txt",
@@ -72,6 +85,15 @@ describe("gateVerdict", () => {
     expect(gateVerdict({ repo })).toMatchObject({ ok: false, title: "Cannot read cloud migration state" });
   });
 
+  it("treats an empty cloud list as unreadable, not as every migration missing", () => {
+    expect(gateVerdict({ repo, cloud: [] })).toEqual({
+      ok: false,
+      level: "error",
+      title: "Cannot read cloud migration state",
+      message: "no migrations returned — wrong project or empty history?",
+    });
+  });
+
   it("only warns about cloud versions absent from the repo", () => {
     const verdict = gateVerdict({ repo, cloud: [...repo, "20990101000000"] });
     expect(verdict).toMatchObject({ ok: true, level: "warning" });
@@ -97,6 +119,12 @@ describe("lintMigrationSql: breaking statements", () => {
     ["drop", "drop view public.application_summary;"],
     ["drop", "drop index public.cv_files_user_id_sha256_key;"],
     ["drop", "alter table public.cv_files drop constraint cv_files_user_id_sha256_key;"],
+    ["drop", "alter table public.applications drop quoted_rate;"],
+    ["drop", "alter table x drop if exists b;"],
+    ["drop", "alter table public.applications add column source text, drop quoted_rate;"],
+    ["drop", "do $$ begin drop table x; end $$;"],
+    ["drop", "do $body$\ndeclare n int;\nbegin\n  if true then\n    drop table public.tmp;\n  end if;\nend\n$body$;"],
+    ["rename", "do language plpgsql $$ begin alter table public.notes rename to n2; end $$;"],
     ["rename", "alter table public.notes rename to application_notes;"],
     ["rename", "alter table public.applications rename column quoted_rate to rate;"],
     ["rename", "alter type public.application_status rename value 'hr_contact' to 'screening';"],
@@ -112,7 +140,27 @@ describe("lintMigrationSql: breaking statements", () => {
     ["revoke", "revoke update on table public.notes from authenticated;"],
     ["revoke", "revoke update (deleted_at) on public.notes from authenticated;"],
     ["revoke", "revoke all on table public.keepalive from anon, authenticated;"],
+    ["revoke", "revoke execute on function public.add_note(uuid) from anon;"],
+    ["revoke", "revoke execute on function public.add_note(uuid) from authenticated;"],
+    ["revoke", "revoke execute on function public.f() from public, anon;"],
     ["check-constraint", "alter table public.applications add constraint company_short check (length(company) < 50);"],
+    ["drop-default", "alter table public.applications alter column status drop default;"],
+    ["drop-default", "alter table public.applications alter status drop default;"],
+    ["unique-or-fk", "alter table public.applications add constraint company_role_key unique (company, role);"],
+    [
+      "unique-or-fk",
+      "alter table public.notes add constraint notes_app_fk foreign key (application_id) references public.applications (id);",
+    ],
+    ["unique-or-fk", "alter table public.applications add unique (posting_url);"],
+    ["unique-or-fk", "alter table public.notes add foreign key (application_id) references public.applications (id);"],
+    ["unique-or-fk", "create unique index applications_posting_url_key on public.applications (posting_url);"],
+    ["truncate-or-delete", "truncate public.notes;"],
+    ["truncate-or-delete", "delete from public.notes where deleted_at is not null;"],
+    ["policy-change", 'alter policy "notes_select_own" on public.notes using (false);'],
+    [
+      "policy-change",
+      'create policy "notes_hide" on public.notes as restrictive for select to authenticated using (deleted_at is null);',
+    ],
   ];
 
   it.each(breaking)("flags %s in %j", (rule, sql) => {
@@ -127,6 +175,44 @@ describe("lintMigrationSql: breaking statements", () => {
     expect(
       rules("alter table public.applications drop column quoted_rate; -- migration-lint: allow drop - probe"),
     ).toEqual([]);
+  });
+
+  it("an override sharing its line with code applies only to the statement ending on that line", () => {
+    expect(lintMigrationSql("drop table a; -- migration-lint: allow drop — x\ndrop table b;")).toEqual([
+      { line: 2, rule: "drop", text: "drop table b;" },
+    ]);
+  });
+
+  it("an override inside a do body applies to the statement below it", () => {
+    expect(rules("do $$\nbegin\n  -- migration-lint: allow drop — scratch table\n  drop table x;\nend\n$$;")).toEqual(
+      [],
+    );
+  });
+
+  it("reports how many findings the overrides suppressed", () => {
+    const sql = "-- migration-lint: allow drop — x\ndrop table a;\ntruncate public.notes;";
+    expect(lintMigration(sql)).toEqual({
+      findings: [{ line: 3, rule: "truncate-or-delete", text: "truncate public.notes;" }],
+      suppressed: 1,
+    });
+  });
+
+  it("exports every rule name", () => {
+    expect(MIGRATION_LINT_RULES).toEqual([
+      "drop",
+      "rename",
+      "alter-type",
+      "set-not-null",
+      "drop-default",
+      "not-null-without-default",
+      "create-or-replace-function",
+      "enum-add-value",
+      "revoke",
+      "check-constraint",
+      "unique-or-fk",
+      "truncate-or-delete",
+      "policy-change",
+    ]);
   });
 
   it("accepts '--' as the separator before the reason", () => {
@@ -193,11 +279,24 @@ describe("lintMigrationSql: additive statements pass", () => {
     "create index applications_user_id_idx on public.applications (user_id);",
     'create policy "tags_select_own" on public.tags for select to authenticated using (user_id = (select auth.uid()));',
     "grant execute on function public.f() to authenticated;",
-    "revoke execute on function public.f() from public, anon;",
+    "revoke execute on function public.f() from public;",
+    "revoke execute on function public.applied_migrations() from public;",
+    "alter table x alter column y drop not null;",
+    "alter table public.applications alter column id drop identity;",
+    "alter table public.applications alter column total drop expression;",
+    "alter table public.applications add column cv_file_id uuid references public.cv_files (id);",
+    "create index notes_app_idx on public.notes (application_id);",
+    "do $$ begin perform 1; end $$;",
     "alter table public.tags enable row level security;",
     "alter table public.applications alter column posting_url drop not null;",
   ])("passes %j", (sql) => {
     expect(lintMigrationSql(sql)).toEqual([]);
+  });
+
+  it("does not judge a create function body that a do block does not run", () => {
+    expect(rules("create function public.h() returns void language plpgsql as $$ begin drop table x; end $$;")).toEqual(
+      [],
+    );
   });
 
   it("ignores breaking words in comments, strings and function bodies", () => {

@@ -170,11 +170,12 @@ the relevant rollout phase ships; before that, the sub-section reads
 ### 6.7 Adding a migration
 
 - **Rule**: additive and backward-compatible with the previous code version (CLAUDE.md hard rule, `lessons.md`). The previous code runs on the new schema between `db push` and deploy, and after a rollback.
-- **Lint**: `npm run lint` runs `scripts/check-migrations.mjs` over migrations newer than `20261004120000`; rules live in `scripts/lib/migrations.mjs` (tests in `scripts/lib/migrations.test.mjs`). Intentional break: `-- migration-lint: allow <rule> — <reason>` on or above the statement, plus a two-step rollout.
+- **Lint**: `npm run lint` runs `scripts/check-migrations.mjs` over every migration except the 7 applied before the lint; rules live in `scripts/lib/migrations.mjs` (tests in `scripts/lib/migrations.test.mjs`). Rule names: `MIGRATION_LINT_RULES` in that file. Intentional break: `-- migration-lint: allow <rule> — <reason>` on its own line above the statement or on its last line, plus a two-step rollout. Every file except the 7 applied before the lint is checked, so a back-dated migration is not exempt.
 - **New RPC**: pgTAP next to it in `supabase/tests/`; reference `supabase/tests/applied_migrations.test.sql` / `keepalive.test.sql` for anon-callable security-definer functions.
 - **Order**: `npx supabase migration up` locally → commit → `npx supabase db push` (cloud) → `git push`.
 - **CI**: the `smoke` job builds the previous commit and runs its own `scripts/smoke.mjs` on the new local schema when `supabase/migrations/` changed, and fails if an applied migration was edited, renamed or deleted; the `deploy` job blocks before `wrangler deploy` when the cloud lacks a repo migration or its state cannot be read (`scripts/check-cloud-migrations.mjs`).
 - **Not covered** (review): semantic breaks — new enum values old code cannot render, redefined functions that write columns old code doesn't send.
+- **Limit**: "previous code" is the previous push (`github.event.before`) or the PR base, not the last successfully deployed commit — if the previous deploy failed or the gate blocked it, production runs an older version than the one tested. `wrangler deployments list` shows the deployed SHA when in doubt.
 
 ## 7. What We Deliberately Don't Test
 

@@ -5,7 +5,7 @@
 -- migration, and so hold at least 8 versions.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(7);
+select plan(11);
 
 set local role anon;
 
@@ -38,6 +38,32 @@ select is(
   (select proconfig from pg_proc where oid = 'public.applied_migrations()'::regprocedure),
   array['search_path=""'],
   'the function runs with an empty search_path'
+);
+
+-- Grants: the app roles may execute it, PUBLIC (every other role) may not.
+select ok(
+  has_function_privilege('anon', 'public.applied_migrations()', 'execute'),
+  'anon has execute on the function'
+);
+select ok(
+  has_function_privilege('authenticated', 'public.applied_migrations()', 'execute'),
+  'authenticated has execute on the function'
+);
+select ok(
+  not exists (
+    select 1
+    from pg_proc, aclexplode(proacl) as acl
+    where pg_proc.oid = 'public.applied_migrations()'::regprocedure
+      and acl.grantee = 0
+      and acl.privilege_type = 'EXECUTE'
+  ),
+  'PUBLIC has no execute entry in the function ACL'
+);
+-- A fresh role with no grants of its own sees only what PUBLIC has (rolled back at the end).
+create role probe_no_grant nologin;
+select ok(
+  not has_function_privilege('probe_no_grant', 'public.applied_migrations()', 'execute'),
+  'a role without grants cannot execute the function'
 );
 
 select * from finish();

@@ -87,6 +87,7 @@ jobs:
           BASE_PUSH: ${{ github.event.before }}
         run: |
           set -euo pipefail
+          fail() { echo "::error title=Compatibility smoke::$1"; exit 1; }
           # "Previous code" = what production runs during and after `db push`:
           # the PR's base, or the commit main pointed to before this push (not HEAD~1).
           base="${BASE_PR:-$BASE_PUSH}"
@@ -95,7 +96,7 @@ jobs:
             exit 0
           fi
           # The checkout is shallow: fetch the base commit itself so diff and worktree can see it.
-          git fetch --no-tags --depth=1 origin "$base"
+          git fetch --no-tags --depth=1 origin "$base" || fail "base $base cannot be fetched (force-push?)"
           changed=$(git diff --name-only "$base" HEAD -- supabase/migrations)
           if [ -z "$changed" ]; then
             echo "::notice title=Compatibility smoke::no migration change; previous code already ran on this schema"
@@ -110,17 +111,20 @@ jobs:
           # The local stack still holds the new schema (every head migration applied by `supabase start`).
           # Astro 7 runs one preview per project: make sure nothing from earlier steps holds 4321.
           npx astro preview stop
+          for i in $(seq 1 30); do curl -s --max-time 2 -o /dev/null http://localhost:4321/ || break; sleep 1; done
+          if curl -s --max-time 2 -o /dev/null http://localhost:4321/; then fail "4321 still answers after astro preview stop"; fi
           source supabase.env
           prev="$RUNNER_TEMP/prev"
-          git worktree add --detach "$prev" "$base"
+          git worktree add --detach "$prev" "$base" || fail "worktree for $base could not be created"
           cd "$prev"
           # Same secrets as "Configure secrets for build and preview": the local stack only.
           printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env
           cp .env .dev.vars
-          npm ci
-          npm run build
+          npm ci || fail "npm ci failed for base $base"
+          npm run build || fail "build failed for base $base"
           npm run preview -- --port 4321 &
           for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4321/ && break; sleep 1; done
+          curl -sf -o /dev/null http://localhost:4321/ || fail "base preview did not start on 4321"
           # The base commit's own smoke; it creates its own users through the admin API.
           status=0
           BASE_URL=http://localhost:4321 SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" node scripts/smoke.mjs || status=$?
