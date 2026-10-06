@@ -43,14 +43,14 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 
 ## At a glance
 
-| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status   |
-| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | -------- |
-| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | ready    |
-| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done     |
-| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done     |
-| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done     |
-| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done     |
-| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed |
+| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status      |
+| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ----------- |
+| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | in-progress |
+| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done        |
+| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done        |
+| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done        |
+| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done        |
+| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | proposed    |
 
 ## Streams
 
@@ -89,7 +89,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - Is the platform's built-in observability enough (with a routine to check it), or is a separate error tracker needed? — Owner: user. Block: no.
 - **Risk:** Sequenced first in its stream because the reliability goal means failures must be visible before the risky paths are exercised; the risk is over-building monitoring for a single-user app — keep it to the minimum that surfaces an error.
-- **Status:** ready
+- **Status:** in-progress
 
 ## Slices
 

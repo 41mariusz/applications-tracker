@@ -47,6 +47,8 @@ jobs:
         run: |
           source supabase.env
           printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env
+          # Fixed webhook secret for the smoke's /api/alerts/issue steps; no Telegram secrets, so nothing is sent.
+          printf 'ISSUES_WEBHOOK_SECRET=smoke-webhook-secret\n' >> .env
           cp .env .dev.vars
       - run: npm run build
       - name: Run smoke test against production preview

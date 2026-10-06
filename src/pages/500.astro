@@ -1,0 +1,34 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { Card } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
+import { formatDateTime } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+// Rendered by Astro after an unhandled server error (HTTP 500). Astro passes the error as
+// `Astro.props.error`; it is logged by the middleware hook and never shown to the user.
+interface Props {
+  error?: unknown;
+}
+
+Astro.response.status = 500;
+Astro.response.headers.set("Cache-Control", "no-store");
+const now = new Date().toISOString();
+---
+
+<Layout title="Coś poszło nie tak">
+  <div class="bg-cosmic text-foreground flex min-h-screen items-center justify-center p-4 scheme-dark">
+    <Card className="bg-muted w-full max-w-md gap-4 rounded-2xl p-6 text-center shadow-none backdrop-blur-xl sm:p-8">
+      <h1 class="text-2xl font-bold">Coś poszło nie tak</h1>
+      <p class="text-supporting-foreground text-sm leading-relaxed">
+        Serwer nie mógł obsłużyć tego żądania. Błąd został zapisany. Spróbuj ponownie za chwilę.
+      </p>
+      <p class="text-muted-foreground text-xs">
+        <time datetime={now}>{formatDateTime(now)}</time>
+      </p>
+      <a href="/dashboard" class:list={cn(buttonVariants(), "w-full rounded-lg")}>
+        Wróć do listy aplikacji
+      </a>
+    </Card>
+  </div>
+</Layout>

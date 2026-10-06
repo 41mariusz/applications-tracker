@@ -62,6 +62,32 @@ async function health() {
   return { status: response.status, location: "", body: parsable ? body : `unparsable pingedAt: ${body}` };
 }
 
+// Workers Issues → Telegram webhook, called by Cloudflare: application/json and no Origin header (the app's
+// cross-site check must let exactly this through). No Telegram secrets locally or in CI, so nothing is sent.
+const ISSUES_WEBHOOK_SECRET = process.env.ISSUES_WEBHOOK_SECRET ?? "smoke-webhook-secret";
+const issuePayload = {
+  name: "Workers issue",
+  text: "New issue in applications-tracker: smoke test",
+  data: {},
+  ts: Math.floor(Date.now() / 1000),
+  account_id: "smoke",
+  policy_id: "smoke",
+  policy_name: "Applications Tracker issues",
+  alert_type: "workers_issue",
+  alert_correlation_id: "smoke",
+  alert_event: "issue_created",
+};
+
+async function issueAlert(secret, body = JSON.stringify(issuePayload)) {
+  const response = await fetch(`${BASE_URL}/api/alerts/issue`, {
+    method: "POST",
+    redirect: "manual",
+    headers: { "Content-Type": "application/json", ...(secret === undefined ? {} : { "cf-webhook-auth": secret }) },
+    body,
+  });
+  return { status: response.status, location: "", body: await response.text() };
+}
+
 const jar = new Map();
 
 function cookieHeader() {
@@ -228,6 +254,14 @@ const expectedOrder = [
 const steps = [
   ["keepalive heartbeat is written", pingKeepalive, { status: 200 }],
   ["health check reports ok without a session", health, { status: 200, bodyIncludes: '"status":"ok"' }],
+  ["issue alert without the webhook secret is refused", () => issueAlert(), { status: 401 }],
+  ["issue alert with a wrong secret is refused", () => issueAlert("wrong-secret"), { status: 401 }],
+  [
+    "issue alert with the right secret is accepted (no Telegram configured)",
+    () => issueAlert(ISSUES_WEBHOOK_SECRET),
+    { status: 200, bodyIncludes: '"delivered":false' },
+  ],
+  ["issue alert with invalid JSON is rejected", () => issueAlert(ISSUES_WEBHOOK_SECRET, "{not json"), { status: 400 }],
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   ["signup page is gone", () => request("/auth/signup"), { status: 404 }],

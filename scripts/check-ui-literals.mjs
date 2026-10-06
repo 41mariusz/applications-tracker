@@ -11,6 +11,7 @@ const CLEAN_VIEWS = [
   "src/components/applications/CvPanel.tsx",
   "src/layouts/Layout.astro",
   "src/pages/404.astro",
+  "src/pages/500.astro",
   "src/pages/dev/ui.astro",
 ];
 

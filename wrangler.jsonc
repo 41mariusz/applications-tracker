@@ -15,5 +15,15 @@
   },
   "observability": {
     "enabled": true,
+    // Workers Issues groups uncaught errors and error-level logs; needs wrangler >= 4.134.0.
+    "issues": {
+      "enabled": true,
+    },
   },
+  // Release identity: src/lib/log.ts tags each error line with the deployed version id.
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA",
+  },
+  // Stacks in Issues and logs point at source, not the bundle.
+  "upload_source_maps": true,
 }
