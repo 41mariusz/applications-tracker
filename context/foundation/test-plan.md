@@ -6,7 +6,7 @@
 >
 > Refresh: re-run `/10x-test-plan --refresh` when stale (see §8).
 >
-> Last updated: 2026-10-06 (Phase 3 complete)
+> Last updated: 2026-10-06 (all rollout phases complete)
 
 ## 1. Strategy
 
@@ -63,12 +63,14 @@ Each row is a discrete rollout phase that will open its own change folder
 via `/10x-new`. Status moves left-to-right through the values below; the
 orchestrator updates Status as artifacts appear on disk.
 
-| #   | Phase name                   | Goal (one line)                                                                                                              | Risks covered | Test types                                  | Status        | Change folder                                                 |
-| --- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------- | ------------- | ------------------------------------------------------------- |
-| 1   | Call scenario in the browser | Prove the owner can sign in, find an offer by a differently formatted phone number and read the call info, in a real browser | #1, #6        | unit (format matrix) + e2e (Playwright)     | complete      | `context/archive/2026-10-05-testing-call-scenario-browser/`   |
-| 2   | Status rules end to end      | Prove every PRD transition, revert confirmation, trace and list ordering from the PRD, not from the code                     | #3, #4        | unit + integration                          | complete      | `context/archive/2026-10-05-testing-status-rules-end-to-end/` |
-| 3   | Safe migrations              | Prove production is migrated before deploy and old code survives the new schema                                              | #2            | CI gate + compatibility smoke               | complete      | `context/archive/2026-10-06-testing-safe-migrations/`         |
-| 4   | Quality-gates wiring         | Run the cheap checks automatically while the agent works and keep the e2e floor in CI                                        | cross-cutting | post-edit hook, end-of-turn check, CI gates | change opened | `context/changes/testing-quality-gates-wiring/`               |
+| #   | Phase name                   | Goal (one line)                                                                                                              | Risks covered | Test types                                  | Status   | Change folder                                                 |
+| --- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------- | ------------------------------------------- | -------- | ------------------------------------------------------------- |
+| 1   | Call scenario in the browser | Prove the owner can sign in, find an offer by a differently formatted phone number and read the call info, in a real browser | #1, #6        | unit (format matrix) + e2e (Playwright)     | complete | `context/archive/2026-10-05-testing-call-scenario-browser/`   |
+| 2   | Status rules end to end      | Prove every PRD transition, revert confirmation, trace and list ordering from the PRD, not from the code                     | #3, #4        | unit + integration                          | complete | `context/archive/2026-10-05-testing-status-rules-end-to-end/` |
+| 3   | Safe migrations              | Prove production is migrated before deploy and old code survives the new schema                                              | #2            | CI gate + compatibility smoke               | complete | `context/archive/2026-10-06-testing-safe-migrations/`         |
+| 4   | Quality-gates wiring         | Run the cheap checks automatically while the agent works and keep the e2e floor in CI                                        | cross-cutting | post-edit hook, end-of-turn check, CI gates | complete | `context/archive/2026-10-06-testing-quality-gates-wiring/`    |
+
+Phase 4 was delivered with `/10x-configure-hook` (course M3L3) instead of the research → plan → implement chain; its report is in the archived change folder.
 
 Risk #5 is largely covered today (smoke isolation steps, `safeNextPath` unit tests); Phase 1 and Phase 2 research must list any gap they find rather than open a separate phase. Phase 2 closed the gaps it found: the smoke note-edit isolation step now targets an active note (it used to pass because the note was already removed), and a second user is also refused removing that note and changing the first user's status; pgTAP shows another user cannot act through any trace function.
 
