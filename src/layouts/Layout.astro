@@ -39,6 +39,11 @@ const fullTitle = title ? `${title} · ${APP_NAME}` : APP_NAME;
   </body>
 </html>
 
+<script>
+  // Uncaught errors, unhandled rejections and island hydration failures → /api/client-error.
+  import "@/lib/client-error-listeners";
+</script>
+
 <style>
   html,
   body {

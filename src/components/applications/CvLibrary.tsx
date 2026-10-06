@@ -1,5 +1,9 @@
 import React, { lazy, Suspense, useState } from "react";
 import { ChevronDown, ChevronRight, Download, Eye, EyeOff, FileText } from "lucide-react";
+import ErrorBoundary, { PreviewFallback } from "@/components/ErrorBoundary";
+import ErrorText from "@/components/ErrorText";
+import { apiRequest } from "@/lib/api-client";
+import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
 import { isClosed } from "@/lib/domain/status";
 import { formatDateTime } from "@/lib/format";
@@ -54,9 +58,16 @@ function CvItem({ entry }: { entry: CvLibraryEntry }) {
       </div>
 
       {previewOpen && (
-        <Suspense fallback={<p className="mt-3 text-xs text-blue-100/60">Wczytywanie podglądu…</p>}>
-          <CvPreview cvId={file.id} mimeType={file.mime_type} />
-        </Suspense>
+        <ErrorBoundary
+          op="cv.preview"
+          entityId={file.id}
+          mimeType={file.mime_type}
+          fallback={<PreviewFallback fileUrl={`/api/cv/${file.id}`} />}
+        >
+          <Suspense fallback={<p className="mt-3 text-xs text-blue-100/60">Wczytywanie podglądu…</p>}>
+            <CvPreview cvId={file.id} mimeType={file.mime_type} />
+          </Suspense>
+        </ErrorBoundary>
       )}
 
       {applications.length === 0 ? (
@@ -102,7 +113,7 @@ function CvItem({ entry }: { entry: CvLibraryEntry }) {
 
 function UploadToLibrary() {
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
 
   async function upload(file: File) {
@@ -111,25 +122,26 @@ function UploadToLibrary() {
     // Same rule as the server: a file that would be refused is not sent at all.
     const check = checkCvFile(file);
     if (!check.ok) {
-      setError(check.message);
+      setError({ text: check.message });
       return;
     }
     setPending(true);
-    try {
-      const body = new FormData();
-      body.set("file", file);
-      const response = await fetch("/api/cv", { method: "POST", body });
-      const data = (await response.json()) as { file?: CvFile; reused?: boolean; error?: string };
-      if (!response.ok || !data.file) {
-        setError(data.error ?? "Nie udało się wgrać pliku.");
-      } else if (data.reused) {
-        setMessage(`Ten plik jest już w bibliotece jako „${data.file.file_name}”.`);
-      } else {
-        window.location.reload();
-        return;
-      }
-    } catch {
-      setError("Brak połączenia. Spróbuj ponownie.");
+    const body = new FormData();
+    body.set("file", file);
+    const result = await apiRequest<{ file?: CvFile; reused?: boolean } | null>("/api/cv", {
+      method: "POST",
+      body,
+      op: "cv.upload",
+    });
+    if (result.kind !== "ok") {
+      setError(errorMessage(result, "Nie udało się wgrać pliku."));
+    } else if (!result.data?.file) {
+      setError({ text: "Nie udało się wgrać pliku." });
+    } else if (result.data.reused) {
+      setMessage(`Ten plik jest już w bibliotece jako „${result.data.file.file_name}”.`);
+    } else {
+      window.location.reload();
+      return;
     }
     setPending(false);
   }
@@ -155,7 +167,11 @@ function UploadToLibrary() {
       />
       {pending && <p className="mt-2 text-xs text-blue-100/60">Wgrywanie…</p>}
       {message && <p className="mt-2 text-xs text-blue-100/70">{message}</p>}
-      {error && <p className="mt-2 text-xs text-red-300">{error}</p>}
+      {error && (
+        <p role="alert" className="text-destructive mt-2 text-xs">
+          <ErrorText message={error} />
+        </p>
+      )}
     </div>
   );
 }

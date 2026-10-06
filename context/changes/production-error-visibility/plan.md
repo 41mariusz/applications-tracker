@@ -701,30 +701,30 @@ Update the API-routes convention: parse bodies inside `try`; check paused errors
 
 #### Automated
 
-- [x] 3.1 Unit tests pass (incl. toServiceError): `npm test`
-- [x] 3.2 Lint and types pass
-- [x] 3.3 Smoke passes incl. the malformed-body step
-- [x] 3.4 E2E passes
+- [x] 3.1 Unit tests pass (incl. toServiceError): `npm test` — de1a732
+- [x] 3.2 Lint and types pass — de1a732
+- [x] 3.3 Smoke passes incl. the malformed-body step — de1a732
+- [x] 3.4 E2E passes — de1a732
 
 #### Manual
 
-- [x] 3.5 Broken list query gives 500 and one JSON line with op, cause.code and stack; reverted
-- [x] 3.6 Moving formData outside try turns the malformed-body smoke step red; reverted
+- [x] 3.5 Broken list query gives 500 and one JSON line with op, cause.code and stack; reverted — de1a732
+- [x] 3.6 Moving formData outside try turns the malformed-body smoke step red; reverted — de1a732
 
 ### Phase 4: Browser failure channel
 
 #### Automated
 
-- [ ] 4.1 Unit tests pass (classifier, messages, noise filter, report builder): `npm test`
-- [ ] 4.2 Lint, UI contract and types pass
-- [ ] 4.3 Smoke passes incl. /api/client-error steps
-- [ ] 4.4 E2E passes incl. client-errors.spec.ts
+- [x] 4.1 Unit tests pass (classifier, messages, noise filter, report builder): `npm test`
+- [x] 4.2 Lint, UI contract and types pass
+- [x] 4.3 Smoke passes incl. /api/client-error steps
+- [x] 4.4 E2E passes incl. client-errors.spec.ts
 
 #### Manual
 
-- [ ] 4.5 Mapping server results to the network message turns the e2e spec red; reverted
-- [ ] 4.6 Blocked CvPreview chunk shows the boundary fallback and a client.boundary log
-- [ ] 4.7 /dev/ui shows the three new error states
+- [x] 4.5 Mapping server results to the network message turns the e2e spec red; reverted
+- [x] 4.6 Blocked CvPreview chunk shows the boundary fallback and a client.boundary log
+- [x] 4.7 /dev/ui shows the three new error states
 
 ### Phase 5: Docs and production proof
 

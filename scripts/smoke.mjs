@@ -88,6 +88,24 @@ async function issueAlert(secret, body = JSON.stringify(issuePayload)) {
   return { status: response.status, location: "", body: await response.text() };
 }
 
+// Browser failure report (src/lib/api-client.ts): sent like navigator.sendBeacon with a string body
+// (text/plain, same-origin Origin header). `withSession: false` sends no cookies.
+const clientReport = { kind: "test", op: "smoke", name: "Error", message: "smoke client report", path: "/dashboard" };
+
+async function clientError(body, { withSession = true } = {}) {
+  const response = await fetch(`${BASE_URL}/api/client-error`, {
+    method: "POST",
+    redirect: "manual",
+    headers: {
+      Origin: BASE_URL,
+      "Content-Type": "text/plain;charset=UTF-8",
+      ...(withSession ? { Cookie: cookieHeader() } : {}),
+    },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+  return { status: response.status, location: "", body: await response.text() };
+}
+
 const jar = new Map();
 
 function cookieHeader() {
@@ -277,6 +295,11 @@ const steps = [
   ["home renders", () => request("/"), { status: 200 }],
   ["dashboard redirects anonymous user", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   ["signup page is gone", () => request("/auth/signup"), { status: 404 }],
+  [
+    "client error report without a session is refused",
+    () => clientError(clientReport, { withSession: false }),
+    { status: 401 },
+  ],
   ["admin creates test account", () => createUser(), { status: 200 }],
   [
     "signin rejects wrong password",
@@ -289,6 +312,17 @@ const steps = [
     { status: 302, location: "/dashboard" },
   ],
   ["home sends a signed-in user to the list", () => request("/"), { status: 302, location: "/dashboard" }],
+  ["client error report from a signed-in user is accepted", () => clientError(clientReport), { status: 204 }],
+  [
+    "oversized client error report is refused",
+    () => clientError({ ...clientReport, message: "x".repeat(5000) }),
+    { status: 413 },
+  ],
+  [
+    "client error report of an unknown kind is rejected",
+    () => clientError({ ...clientReport, kind: "spam" }),
+    { status: 400 },
+  ],
   ["dashboard renders for signed-in user", () => request("/dashboard"), { status: 200 }],
   ["new application form renders", () => request("/applications/new"), { status: 200 }],
   [

@@ -6,6 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import ErrorText from "@/components/ErrorText";
+import { apiRequest } from "@/lib/api-client";
+import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { formatDateTime, toLocalInputValue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { NOTE_KINDS, NOTE_KIND_LABELS, type Note, type NoteKind } from "@/types";
@@ -18,17 +21,17 @@ interface Props {
 // Inline text actions: link variant without the button box.
 const textActionClass = "h-auto p-0 font-normal";
 
-type Errors = Partial<Record<"kind" | "body" | "noted_at" | "form", string>>;
+type FieldErrors = Partial<Record<"kind" | "body" | "noted_at", string>>;
+type Errors = FieldErrors & { form?: ClientMessage };
 
-async function send(url: string, method: string, body?: FormData): Promise<Errors | null> {
-  try {
-    const response = await fetch(url, { method, body });
-    if (response.ok) return null;
-    const data = (await response.json()) as { errors?: Errors; error?: string };
-    return data.errors ?? { form: data.error ?? "Nie udało się zapisać." };
-  } catch {
-    return { form: "Brak połączenia. Spróbuj ponownie." };
-  }
+async function send(url: string, method: string, op: string, body?: FormData): Promise<Errors | null> {
+  const result = await apiRequest(url, { method, body, op });
+  if (result.kind === "ok") return null;
+  // Field errors from validation; anything else is one message for the whole form.
+  if (result.kind === "http" && result.data.errors) return result.data.errors;
+  return {
+    form: errorMessage(result, method === "DELETE" ? "Nie udało się usunąć notatki." : "Nie udało się zapisać."),
+  };
 }
 
 // The form sends local time converted to ISO, so the server stores the moment the user meant.
@@ -153,7 +156,11 @@ function NoteForm({ initial, submitLabel, onSubmit, onCancel }: NoteFormProps) {
       </div>
       {errors.form && (
         <Alert variant="destructive">
-          <AlertDescription>{errors.form}</AlertDescription>
+          <AlertDescription>
+            <p>
+              <ErrorText message={errors.form} />
+            </p>
+          </AlertDescription>
         </Alert>
       )}
       <div className="flex items-center gap-3">
@@ -172,7 +179,7 @@ function NoteForm({ initial, submitLabel, onSubmit, onCancel }: NoteFormProps) {
 
 function NoteItem({ note }: { note: Note }) {
   const [editing, setEditing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ClientMessage | null>(null);
   const [removing, setRemoving] = useState(false);
   const removed = note.deleted_at !== null;
 
@@ -180,9 +187,9 @@ function NoteItem({ note }: { note: Note }) {
     if (!window.confirm("Usunąć notatkę? Zostanie na osi czasu jako przekreślona.")) return;
     setRemoving(true);
     setError(null);
-    const result = await send(`/api/notes/${note.id}`, "DELETE");
+    const result = await send(`/api/notes/${note.id}`, "DELETE", "note.remove");
     if (result) {
-      setError(result.form ?? "Nie udało się usunąć notatki.");
+      setError(result.form ?? { text: "Nie udało się usunąć notatki." });
       setRemoving(false);
     } else window.location.reload();
   }
@@ -197,7 +204,7 @@ function NoteItem({ note }: { note: Note }) {
             setEditing(false);
           }}
           onSubmit={async (data) => {
-            const result = await send(`/api/notes/${note.id}`, "PATCH", data);
+            const result = await send(`/api/notes/${note.id}`, "PATCH", "note.edit", data);
             if (!result) window.location.reload();
             return result;
           }}
@@ -247,7 +254,7 @@ function NoteItem({ note }: { note: Note }) {
       <p className={cn("break-words whitespace-pre-wrap", removed && "line-through")}>{note.body}</p>
       {error && (
         <p role="alert" className="text-destructive mt-1 text-xs">
-          {error}
+          <ErrorText message={error} />
         </p>
       )}
       {note.revisions.length > 0 && (
@@ -281,7 +288,7 @@ export default function NotesPanel({ applicationId, notes }: Props) {
           initial={{ kind: "phone_call", body: "", noted_at: null }}
           submitLabel="Dodaj"
           onSubmit={async (data) => {
-            const result = await send(`/api/applications/${applicationId}/notes`, "POST", data);
+            const result = await send(`/api/applications/${applicationId}/notes`, "POST", "note.add", data);
             if (!result) window.location.reload();
             return result;
           }}

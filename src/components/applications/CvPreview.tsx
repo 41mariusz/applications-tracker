@@ -1,36 +1,78 @@
 import { useEffect, useRef, useState } from "react";
+import ErrorText from "@/components/ErrorText";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiRequest, reportClientError } from "@/lib/api-client";
+import { buildReport, errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 
 interface Props {
   cvId: string;
   mimeType: string;
 }
 
-type State = "loading" | "ready" | "error";
+type State = { kind: "loading" } | { kind: "ready" } | { kind: "error"; message: ClientMessage };
+
+const PREVIEW_FAILED: ClientMessage = { text: "Nie udało się pokazać podglądu." };
 
 // Renders the CV inside the page (works on phones, where browsers often download PDFs instead
 // of showing them). The rendering libraries are loaded only when a preview is opened.
 export default function CvPreview({ cvId, mimeType }: Props) {
   const container = useRef<HTMLDivElement>(null);
-  const [state, setState] = useState<State>("loading");
+  const [state, setState] = useState<State>({ kind: "loading" });
 
   useEffect(() => {
     const target = container.current;
     if (!target) return;
     // Aborted when the preview closes or switches to another file.
     const controller = new AbortController();
+    // A function, so the checks after each await read the current value.
+    const aborted = () => controller.signal.aborted;
     target.replaceChildren();
 
+    // Import and render failures are the app's own: reported with the CV and its type.
+    const fail = (step: "import" | "render", error: unknown) => {
+      if (aborted()) return;
+      reportClientError(
+        buildReport({
+          kind: "error",
+          op: `cv.preview.${step}`,
+          error,
+          path: window.location.pathname,
+          entityId: cvId,
+          mimeType,
+        }),
+      );
+      setState({ kind: "error", message: PREVIEW_FAILED });
+    };
+
     void (async () => {
+      // 1. The file (a server page instead of the file is reported by apiRequest).
+      const result = await apiRequest(`/api/cv/${cvId}`, {
+        op: "cv.preview",
+        parse: "bytes",
+        signal: controller.signal,
+      });
+      if (result.kind === "aborted" || aborted()) return;
+      if (result.kind !== "ok") {
+        setState({ kind: "error", message: errorMessage(result, "Nie udało się pobrać pliku.") });
+        return;
+      }
+      // 2. The rendering libraries (a separate chunk, loaded on demand).
+      let renderer: typeof import("./cv-render");
       try {
-        const response = await fetch(`/api/cv/${cvId}`, { signal: controller.signal });
-        if (!response.ok) throw new Error(`HTTP ${String(response.status)}`);
-        const bytes = await response.arrayBuffer();
-        const { renderPdf, renderDocx } = await import("./cv-render");
-        if (controller.signal.aborted) return;
-        await (mimeType === "application/pdf" ? renderPdf(bytes, target) : renderDocx(bytes, target));
-        setState("ready");
-      } catch {
-        if (!controller.signal.aborted) setState("error");
+        renderer = await import("./cv-render");
+      } catch (error) {
+        fail("import", error);
+        return;
+      }
+      if (aborted()) return;
+      // 3. The render itself.
+      try {
+        await (mimeType === "application/pdf"
+          ? renderer.renderPdf(result.data, target)
+          : renderer.renderDocx(result.data, target));
+        if (!aborted()) setState({ kind: "ready" });
+      } catch (error) {
+        fail("render", error);
       }
     })();
 
@@ -41,20 +83,24 @@ export default function CvPreview({ cvId, mimeType }: Props) {
 
   return (
     <div className="mt-3">
-      {state === "loading" && <p className="text-xs text-blue-100/60">Wczytywanie podglądu…</p>}
-      {state === "error" && (
-        <p className="text-xs text-red-300">
-          Nie udało się pokazać podglądu.{" "}
-          <a href={`/api/cv/${cvId}`} target="_blank" rel="noopener noreferrer" className="underline">
-            Otwórz plik w nowej karcie
-          </a>
-          .
-        </p>
+      {state.kind === "loading" && <p className="text-xs text-blue-100/60">Wczytywanie podglądu…</p>}
+      {state.kind === "error" && (
+        <Alert variant="destructive" data-testid="cv-preview-error">
+          <AlertDescription>
+            <p>
+              <ErrorText message={state.message} />{" "}
+              <a href={`/api/cv/${cvId}`} target="_blank" rel="noopener noreferrer" className="text-link underline">
+                Otwórz plik w nowej karcie
+              </a>
+              .
+            </p>
+          </AlertDescription>
+        </Alert>
       )}
       <div
         ref={container}
         className="max-h-[75vh] overflow-auto rounded-lg bg-white p-2 text-black"
-        hidden={state === "error"}
+        hidden={state.kind === "error"}
         data-testid="cv-preview"
       />
     </div>

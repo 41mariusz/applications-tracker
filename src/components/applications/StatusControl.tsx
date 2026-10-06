@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
+import ErrorText from "@/components/ErrorText";
+import { apiRequest } from "@/lib/api-client";
+import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { allowedTargets, isTerminal } from "@/lib/domain/status";
 import { STATUS_LABELS, type ApplicationStatus } from "@/types";
 
@@ -10,7 +13,7 @@ interface Props {
 }
 
 export default function StatusControl({ applicationId, status }: Props) {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
   const targets = allowedTargets(status);
 
@@ -28,17 +31,16 @@ export default function StatusControl({ applicationId, status }: Props) {
     const body = new FormData();
     body.set("status", to);
     if (requiresConfirmation) body.set("confirm", "true");
-    try {
-      const response = await fetch(`/api/applications/${applicationId}/status`, { method: "POST", body });
-      if (response.ok) {
-        window.location.reload();
-        return;
-      }
-      const data = (await response.json()) as { error?: string };
-      setError(data.error ?? "Nie udało się zmienić statusu.");
-    } catch {
-      setError("Brak połączenia. Spróbuj ponownie.");
+    const result = await apiRequest(`/api/applications/${applicationId}/status`, {
+      method: "POST",
+      body,
+      op: "application.status",
+    });
+    if (result.kind === "ok") {
+      window.location.reload();
+      return;
     }
+    setError(errorMessage(result, "Nie udało się zmienić statusu."));
     setPending(false);
   }
 
@@ -79,7 +81,7 @@ export default function StatusControl({ applicationId, status }: Props) {
       )}
       {error && (
         <p role="alert" className="text-destructive max-w-48 text-right text-xs">
-          {error}
+          <ErrorText message={error} />
         </p>
       )}
     </div>

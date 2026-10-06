@@ -8,6 +8,9 @@ import NotFound from "@/pages/404.astro";
 import StatusControl from "@/components/applications/StatusControl";
 import NotesPanel from "@/components/applications/NotesPanel";
 import CvPanel from "@/components/applications/CvPanel";
+import { PreviewFallback } from "@/components/ErrorBoundary";
+import ErrorText from "@/components/ErrorText";
+import { errorMessage } from "@/lib/domain/client-errors";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -69,6 +72,9 @@ const sampleCv: CvFile = {
   size_bytes: 248_000,
   created_at: "2026-09-30T09:00:00.000Z",
 };
+// Browser failure states (src/lib/domain/client-errors.ts): a non-JSON server answer and the paused project.
+const serverErrorMessage = errorMessage({ kind: "server", status: 503 }, "Nie udało się zapisać.");
+const pausedMessage = errorMessage({ kind: "paused", status: 503 }, "Nie udało się zapisać.");
 const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032", file_name: "CV Anna.docx" };
 ---
 
@@ -286,6 +292,21 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
             <Alert variant="destructive">
               <AlertDescription>Brak połączenia. Spróbuj ponownie.</AlertDescription>
             </Alert>
+            <Alert variant="destructive" data-ks="server-error">
+              <AlertDescription>
+                <p>
+                  <ErrorText message={serverErrorMessage} />
+                </p>
+              </AlertDescription>
+            </Alert>
+            <Alert variant="destructive" data-ks="paused">
+              <AlertDescription>
+                <p>
+                  <ErrorText message={pausedMessage} />
+                </p>
+              </AlertDescription>
+            </Alert>
+            <PreviewFallback fileUrl={`/api/cv/${sampleCv.id}`} />
           </div>
           <Card className="gap-2 rounded-xl p-4 text-sm shadow-none" data-ks="section-empty">
             <h2 class="font-semibold">Empty</h2>

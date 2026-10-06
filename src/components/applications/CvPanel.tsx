@@ -1,8 +1,12 @@
 import React, { lazy, Suspense, useState } from "react";
 import { Download, Eye, EyeOff, FileText } from "lucide-react";
+import ErrorBoundary, { PreviewFallback } from "@/components/ErrorBoundary";
+import ErrorText from "@/components/ErrorText";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { apiRequest } from "@/lib/api-client";
+import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -17,13 +21,15 @@ interface Props {
   library: CvFile[];
 }
 
-async function attach(applicationId: string, cvFileId: string): Promise<string | null> {
+async function attach(applicationId: string, cvFileId: string): Promise<ClientMessage | null> {
   const body = new FormData();
   body.set("cv_file_id", cvFileId);
-  const response = await fetch(`/api/applications/${applicationId}/cv`, { method: "POST", body });
-  if (response.ok) return null;
-  const data = (await response.json()) as { error?: string };
-  return data.error ?? "Nie udało się podpiąć CV.";
+  const result = await apiRequest(`/api/applications/${applicationId}/cv`, {
+    method: "POST",
+    body,
+    op: "application.cv",
+  });
+  return result.kind === "ok" ? null : errorMessage(result, "Nie udało się podpiąć CV.");
 }
 
 // How long the "already in the library" message stays readable before the page refreshes.
@@ -31,28 +37,24 @@ const REUSED_MESSAGE_MS = 3000;
 
 export default function CvPanel({ applicationId, current, library }: Props) {
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
 
   // reloadDelayMs is read after the action, so the action can decide whether a message needs reading time.
-  async function run(action: () => Promise<string | null>, reloadDelayMs: () => number = () => 0) {
+  async function run(action: () => Promise<ClientMessage | null>, reloadDelayMs: () => number = () => 0) {
     setPending(true);
     setError(null);
     setMessage(null);
-    try {
-      const failure = await action();
-      if (failure) setError(failure);
-      else {
-        // A delay leaves time to read an informational message before the page refreshes.
-        setTimeout(() => {
-          window.location.reload();
-        }, reloadDelayMs());
-        return;
-      }
-    } catch {
-      setError("Brak połączenia. Spróbuj ponownie.");
+    const failure = await action();
+    if (!failure) {
+      // A delay leaves time to read an informational message before the page refreshes.
+      setTimeout(() => {
+        window.location.reload();
+      }, reloadDelayMs());
+      return;
     }
+    setError(failure);
     setPending(false);
   }
 
@@ -69,7 +71,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
     const check = checkCvFile(file);
     if (!check.ok) {
       setMessage(null);
-      setError(check.message);
+      setError({ text: check.message });
       return;
     }
     let reused = false;
@@ -77,9 +79,14 @@ export default function CvPanel({ applicationId, current, library }: Props) {
       async () => {
         const body = new FormData();
         body.set("file", file);
-        const response = await fetch("/api/cv", { method: "POST", body });
-        const data = (await response.json()) as { file?: CvFile; reused?: boolean; error?: string };
-        if (!response.ok || !data.file) return data.error ?? "Nie udało się wgrać pliku.";
+        const result = await apiRequest<{ file?: CvFile; reused?: boolean } | null>("/api/cv", {
+          method: "POST",
+          body,
+          op: "cv.upload",
+        });
+        if (result.kind !== "ok") return errorMessage(result, "Nie udało się wgrać pliku.");
+        const data = result.data;
+        if (!data?.file) return { text: "Nie udało się wgrać pliku." };
         const failure = await attach(applicationId, data.file.id);
         // The same file was already in the library: nothing new was stored. Said only once attached.
         if (!failure && data.reused) {
@@ -132,9 +139,16 @@ export default function CvPanel({ applicationId, current, library }: Props) {
             </Button>
           </div>
           {previewOpen && (
-            <Suspense fallback={<p className="text-muted-foreground mt-3 text-xs">Wczytywanie podglądu…</p>}>
-              <CvPreview cvId={current.id} mimeType={current.mime_type} />
-            </Suspense>
+            <ErrorBoundary
+              op="cv.preview"
+              entityId={current.id}
+              mimeType={current.mime_type}
+              fallback={<PreviewFallback fileUrl={`/api/cv/${current.id}`} />}
+            >
+              <Suspense fallback={<p className="text-muted-foreground mt-3 text-xs">Wczytywanie podglądu…</p>}>
+                <CvPreview cvId={current.id} mimeType={current.mime_type} />
+              </Suspense>
+            </ErrorBoundary>
           )}
         </>
       ) : (
@@ -190,7 +204,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
       {message && <p className="text-supporting-foreground mt-2 text-xs">{message}</p>}
       {error && (
         <p role="alert" className="text-destructive mt-2 text-xs">
-          {error}
+          <ErrorText message={error} />
         </p>
       )}
     </section>

@@ -1,4 +1,8 @@
 import React, { useState } from "react";
+import ErrorText from "@/components/ErrorText";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { apiRequest } from "@/lib/api-client";
+import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { cn } from "@/lib/utils";
 import type { ApplicationFormErrors, ApplicationFormValues } from "@/lib/services/applications";
 import { EMPLOYMENT_TYPES, EMPLOYMENT_TYPE_LABELS, WORK_MODES, WORK_MODE_LABELS } from "@/types";
@@ -32,11 +36,11 @@ function Field({ name, label, error, children, type = "text", placeholder, defau
           defaultValue={defaultValue}
           className={cn(
             inputClass,
-            error ? "border-red-400/60 focus:ring-red-400" : "border-white/20 focus:ring-purple-400",
+            error ? "border-destructive/60 focus:ring-destructive" : "border-white/20 focus:ring-purple-400",
           )}
         />
       )}
-      {error && <p className="mt-1 text-xs text-red-300">{error}</p>}
+      {error && <p className="text-destructive mt-1 text-xs">{error}</p>}
     </div>
   );
 }
@@ -48,7 +52,7 @@ interface Props {
 
 export default function ApplicationForm({ application }: Props) {
   const [errors, setErrors] = useState<ApplicationFormErrors>({});
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
   const initial = application?.values;
   const [quotedRate, setQuotedRate] = useState(initial?.quoted_rate ?? "");
@@ -58,20 +62,23 @@ export default function ApplicationForm({ application }: Props) {
   async function submit(form: HTMLFormElement) {
     setPending(true);
     setServerError(null);
-    try {
-      const response = application
-        ? await fetch(`/api/applications/${application.id}`, { method: "PATCH", body: new FormData(form) })
-        : await fetch("/api/applications", { method: "POST", body: new FormData(form) });
-      if (response.ok) {
-        window.location.assign(application ? `/applications/${application.id}` : "/dashboard");
-        return;
-      }
-      const body = (await response.json()) as { errors?: ApplicationFormErrors; error?: string };
-      setErrors(body.errors ?? {});
-      setServerError(body.error ?? null);
-    } catch {
-      setServerError("Brak połączenia. Spróbuj ponownie.");
+    const result = await apiRequest(application ? `/api/applications/${application.id}` : "/api/applications", {
+      method: application ? "PATCH" : "POST",
+      body: new FormData(form),
+      op: application ? "application.update" : "application.create",
+    });
+    if (result.kind === "ok") {
+      window.location.assign(application ? `/applications/${application.id}` : "/dashboard");
+      return;
     }
+    // Validation answers with field errors only; anything else gets one message above the buttons.
+    const fieldErrors = result.kind === "http" ? result.data.errors : undefined;
+    setErrors(fieldErrors ?? {});
+    setServerError(
+      fieldErrors && result.kind === "http" && !result.data.error
+        ? null
+        : errorMessage(result, "Nie udało się zapisać."),
+    );
     setPending(false);
   }
 
@@ -194,7 +201,15 @@ export default function ApplicationForm({ application }: Props) {
         </Field>
       </div>
 
-      {serverError && <p className="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{serverError}</p>}
+      {serverError && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            <p>
+              <ErrorText message={serverError} />
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="flex items-center gap-3 pt-2">
         <button
