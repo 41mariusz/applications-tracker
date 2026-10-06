@@ -1,6 +1,5 @@
 import type { APIContext, APIRoute } from "astro";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase";
 import { noteInputSchema } from "@/lib/domain/notes";
 import { editNote, removeNote, type NoteResult } from "@/lib/services/notes";
 import { readNoteForm, validationErrors } from "@/lib/services/note-form";
@@ -8,7 +7,7 @@ import { readNoteForm, validationErrors } from "@/lib/services/note-form";
 export const prerender = false;
 
 async function run(context: APIContext, action: (supabase: SupabaseClient, id: string) => Promise<NoteResult>) {
-  const supabase = createClient(context.request.headers, context.cookies);
+  const supabase = context.locals.supabase;
   const id = context.params.id;
   if (!supabase || !id) {
     return Response.json({ error: "Nie udało się zapisać zmiany." }, { status: 500 });

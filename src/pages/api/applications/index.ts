@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { createClient } from "@/lib/supabase";
 import { createApplication, readApplicationForm, validateApplicationForm } from "@/lib/services/applications";
 
 export const prerender = false;
@@ -14,7 +13,7 @@ export const POST: APIRoute = async (context) => {
     return Response.json({ errors: result.errors }, { status: 400 });
   }
 
-  const supabase = createClient(context.request.headers, context.cookies);
+  const supabase = context.locals.supabase;
   if (!supabase) {
     return Response.json({ error: "Supabase nie jest skonfigurowany." }, { status: 500 });
   }

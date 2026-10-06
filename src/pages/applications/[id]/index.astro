@@ -9,7 +9,6 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { listCvFiles } from "@/lib/services/cv";
 import type { CvFile } from "@/types";
-import { createClient } from "@/lib/supabase";
 import { isUuid } from "@/lib/domain/ids";
 import { latestActiveNote } from "@/lib/domain/notes";
 import { FIELD_LABELS, mergeHistory, type HistoryField } from "@/lib/domain/changes";
@@ -18,7 +17,7 @@ import { formatDate, formatDateTime } from "@/lib/format";
 import { getApplicationDetails, type ApplicationDetails } from "@/lib/services/notes";
 import { EMPLOYMENT_TYPE_LABELS, NOTE_KIND_LABELS, STATUS_LABELS, WORK_MODE_LABELS } from "@/types";
 
-const supabase = createClient(Astro.request.headers, Astro.cookies);
+const supabase = Astro.locals.supabase;
 const id = Astro.params.id;
 let details: ApplicationDetails | null = null;
 let cvLibrary: CvFile[] = [];

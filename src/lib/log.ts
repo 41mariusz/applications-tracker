@@ -19,9 +19,10 @@ function releaseVersion(): string {
   }
 }
 
-export function logError(context: APIContext, error: unknown, extra: LogErrorExtra = {}): void {
-  const line = formatErrorLine({
+function buildLine(context: APIContext, error: unknown, extra: LogErrorExtra, level: "error" | "warn") {
+  return formatErrorLine({
     ...extra,
+    level,
     route: context.routePattern,
     method: context.request.method,
     path: context.url.pathname,
@@ -29,7 +30,17 @@ export function logError(context: APIContext, error: unknown, extra: LogErrorExt
     version: releaseVersion(),
     error,
   });
+}
+
+export function logError(context: APIContext, error: unknown, extra: LogErrorExtra = {}): void {
   // eslint-disable-next-line no-console -- the structured error line Workers Logs and Issues read
-  console.error(JSON.stringify(line));
+  console.error(JSON.stringify(buildLine(context, error, extra, "error")));
   context.locals.errorLogged = true;
+}
+
+// Same line at warn level, for failures that are expected now and then (a rejected session token):
+// visible in Workers Logs, but not an Issue, and it does not mark the request as logged.
+export function logWarn(context: APIContext, error: unknown, extra: LogErrorExtra = {}): void {
+  // eslint-disable-next-line no-console -- the structured warn line Workers Logs read
+  console.warn(JSON.stringify(buildLine(context, error, extra, "warn")));
 }

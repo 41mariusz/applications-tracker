@@ -40,4 +40,11 @@ describe("evaluateHealth", () => {
       reason: "db_unreachable",
     });
   });
+
+  it("reports missing configuration instead of an unreachable database", () => {
+    expect(evaluateHealth({ pingedAt: null, now, outcome: "misconfigured" })).toEqual({
+      healthy: false,
+      reason: "misconfigured",
+    });
+  });
 });

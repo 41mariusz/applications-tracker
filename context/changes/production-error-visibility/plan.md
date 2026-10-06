@@ -671,31 +671,31 @@ Update the API-routes convention: parse bodies inside `try`; check paused errors
 
 #### Automated
 
-- [x] 1.1 Unit tests pass (formatter, stream observer, alert message, secret check): `npm test`
-- [x] 1.2 Lint and UI contract pass: `npm run lint`
-- [x] 1.3 Types pass: `npx astro check`
-- [x] 1.4 Wrangler accepts the config (dry run)
-- [x] 1.5 Smoke passes against a local preview incl. /api/alerts/issue steps
+- [x] 1.1 Unit tests pass (formatter, stream observer, alert message, secret check): `npm test` — 6abec3e
+- [x] 1.2 Lint and UI contract pass: `npm run lint` — 6abec3e
+- [x] 1.3 Types pass: `npx astro check` — 6abec3e
+- [x] 1.4 Wrangler accepts the config (dry run) — 6abec3e
+- [x] 1.5 Smoke passes against a local preview incl. /api/alerts/issue steps — 6abec3e
 
 #### Manual
 
-- [x] 1.6 Local throw renders 500.astro with one JSON line; stream error logs step stream; reverted
-- [x] 1.7 secretMatches always true turns the wrong-secret smoke step red; reverted
-- [ ] 1.8 Owner sets up the Telegram bot, secrets and Issues automation; the test message arrives
+- [x] 1.6 Local throw renders 500.astro with one JSON line; stream error logs step stream; reverted — 6abec3e
+- [x] 1.7 secretMatches always true turns the wrong-secret smoke step red; reverted — 6abec3e
+- [x] 1.8 Owner sets up the Telegram bot, secrets and Issues automation; the test message arrives — 6abec3e
 
 ### Phase 2: Session and Auth — no more false "signed out"
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass (auth classifier, health reason): `npm test`
-- [ ] 2.2 Lint and types pass
-- [ ] 2.3 Smoke passes
-- [ ] 2.4 E2E passes
+- [x] 2.1 Unit tests pass (auth classifier, health reason): `npm test`
+- [x] 2.2 Lint and types pass
+- [x] 2.3 Smoke passes
+- [x] 2.4 E2E passes
 
 #### Manual
 
-- [ ] 2.5 Simulated Auth outage gives /500 and a log instead of sign-in; reverted
-- [ ] 2.6 Missing SUPABASE_URL gives 503 misconfigured, health reason and one log line; restored
+- [x] 2.5 Simulated Auth outage gives /500 and a log instead of sign-in; reverted
+- [x] 2.6 Missing SUPABASE_URL gives 503 misconfigured, health reason and one log line; restored
 
 ### Phase 3: Server responses tell the truth
 

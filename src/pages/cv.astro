@@ -2,12 +2,11 @@
 import Layout from "@/layouts/Layout.astro";
 import Topbar from "@/components/Topbar.astro";
 import CvLibrary, { type CvLibraryEntry } from "@/components/applications/CvLibrary";
-import { createClient } from "@/lib/supabase";
 import { groupByCv } from "@/lib/domain/cv";
 import { listApplications } from "@/lib/services/applications";
 import { listCvFiles } from "@/lib/services/cv";
 
-const supabase = createClient(Astro.request.headers, Astro.cookies);
+const supabase = Astro.locals.supabase;
 let entries: CvLibraryEntry[] = [];
 let loadError: string | null = null;
 if (supabase) {

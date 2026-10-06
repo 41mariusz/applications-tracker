@@ -12,7 +12,10 @@ export const GET: APIRoute = async (context) => {
   let outcome: HealthOutcome = "unreachable";
 
   const supabase = createClient(context.request.headers, context.cookies);
-  if (supabase) {
+  if (!supabase) {
+    // Logged once per isolate by the middleware (op "config").
+    outcome = "misconfigured";
+  } else {
     try {
       pingedAt = await getKeepaliveStatus(supabase);
       outcome = "ok";

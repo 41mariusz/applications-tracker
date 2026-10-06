@@ -3,8 +3,9 @@
 
 export const MAX_PING_AGE_MS = 24 * 60 * 60 * 1000;
 
-export type HealthOutcome = "ok" | "paused" | "unreachable";
-export type HealthReason = "ok" | "ping_stale" | "paused" | "db_unreachable";
+// misconfigured: SUPABASE_URL / SUPABASE_KEY are missing, so the database was never asked.
+export type HealthOutcome = "ok" | "paused" | "unreachable" | "misconfigured";
+export type HealthReason = "ok" | "ping_stale" | "paused" | "db_unreachable" | "misconfigured";
 
 export interface HealthInput {
   pingedAt: Date | null;
@@ -18,6 +19,7 @@ export interface HealthResult {
 }
 
 export function evaluateHealth({ pingedAt, now, outcome }: HealthInput): HealthResult {
+  if (outcome === "misconfigured") return { healthy: false, reason: "misconfigured" };
   if (outcome === "paused") return { healthy: false, reason: "paused" };
   if (outcome === "unreachable") return { healthy: false, reason: "db_unreachable" };
   if (!pingedAt || now.getTime() - pingedAt.getTime() > MAX_PING_AGE_MS) {

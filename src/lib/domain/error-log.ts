@@ -9,6 +9,8 @@ export const MAX_DETAILS_LENGTH = 500;
 const MAX_CAUSE_DEPTH = 3;
 
 export interface ErrorLineInput {
+  // "warn" for expected-but-notable failures (e.g. a rejected session token); Issues records "error" only.
+  level?: "error" | "warn";
   op?: string;
   route: string;
   method: string;
@@ -81,7 +83,7 @@ function stripQuery(path: string): string {
 
 export function formatErrorLine(input: ErrorLineInput): Record<string, unknown> {
   const line: Record<string, unknown> = {
-    level: "error",
+    level: input.level ?? "error",
     route: input.route,
     method: input.method,
     path: stripQuery(input.path),

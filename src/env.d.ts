@@ -1,6 +1,8 @@
 declare namespace App {
   interface Locals {
     user: import("@supabase/supabase-js").User | null;
+    // The middleware's Supabase client, reused by pages and routes (null when SUPABASE_URL/KEY are missing).
+    supabase: import("@supabase/supabase-js").SupabaseClient | null;
     // Set by logError, so the middleware hook and error-page renders do not log the same failure twice.
     errorLogged?: boolean;
   }

@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { createClient } from "@/lib/supabase";
 import { readApplicationForm, updateApplication, validateApplicationForm } from "@/lib/services/applications";
 
 export const prerender = false;
@@ -18,7 +17,7 @@ export const PATCH: APIRoute = async (context) => {
   const rawNote = form.get("rate_change_note");
   const rateChangeNote = typeof rawNote === "string" && rawNote.trim() ? rawNote.trim().slice(0, 2000) : null;
 
-  const supabase = createClient(context.request.headers, context.cookies);
+  const supabase = context.locals.supabase;
   const id = context.params.id;
   if (!supabase || !id) {
     return Response.json({ error: "Supabase nie jest skonfigurowany." }, { status: 500 });

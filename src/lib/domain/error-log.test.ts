@@ -9,6 +9,11 @@ const base = {
 };
 
 describe("formatErrorLine", () => {
+  it("defaults to error level and accepts warn", () => {
+    expect(formatErrorLine(base).level).toBe("error");
+    expect(formatErrorLine({ ...base, level: "warn" }).level).toBe("warn");
+  });
+
   it("serialises an Error with its cause chain", () => {
     const error = new Error("render failed", { cause: new TypeError("fetch failed") });
     const line = formatErrorLine({ ...base, status: 500, userId: "u-1", error });

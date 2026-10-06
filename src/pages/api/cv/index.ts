@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { createClient } from "@/lib/supabase";
 import { uploadCv } from "@/lib/services/cv";
 import { CV_TOO_LARGE_MESSAGE, isUploadRequestTooLarge } from "@/lib/domain/cv";
 
@@ -20,7 +19,7 @@ export const POST: APIRoute = async (context) => {
     return Response.json({ error: "Wybierz plik." }, { status: 400 });
   }
 
-  const supabase = createClient(context.request.headers, context.cookies);
+  const supabase = context.locals.supabase;
   if (!supabase) {
     return Response.json({ error: "Supabase nie jest skonfigurowany." }, { status: 500 });
   }
