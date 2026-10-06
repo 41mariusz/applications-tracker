@@ -492,24 +492,24 @@ Record the additive rule where agents read it, document how to unblock the gate 
 
 #### Automated
 
-- [x] 1.1 Unit tests pass, including the new migration rules: `npm test`
-- [x] 1.2 Lint passes on the current repo: `npm run lint`
+- [x] 1.1 Unit tests pass, including the new migration rules: `npm test` — 6d5aaa3
+- [x] 1.2 Lint passes on the current repo: `npm run lint` — 6d5aaa3
 
 #### Manual
 
-- [x] 1.3 A lint probe migration is flagged, passes with a reasoned override, and is deleted
+- [x] 1.3 A lint probe migration is flagged, passes with a reasoned override, and is deleted — 6d5aaa3
 
 ### Phase 2: `applied_migrations()` RPC
 
 #### Automated
 
-- [ ] 2.1 Database tests pass with the new file: `npx supabase test db`
-- [ ] 2.2 The migration passes the Phase 1 lint with no override: `npm run lint`
-- [ ] 2.3 The RPC answers over HTTP with the local publishable key and returns 8 versions
+- [x] 2.1 Database tests pass with the new file: `npx supabase test db`
+- [x] 2.2 The migration passes the Phase 1 lint with no override: `npm run lint`
+- [x] 2.3 The RPC answers over HTTP with the local publishable key and returns 8 versions
 
 #### Manual
 
-- [ ] 2.4 The new migration applies to the running local stack via migration up and is listed by the RPC
+- [x] 2.4 The new migration applies to the running local stack via migration up and is listed by the RPC
 
 ### Phase 3: Deploy gate and deploy SHA
 
