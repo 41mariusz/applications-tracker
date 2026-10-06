@@ -80,6 +80,52 @@ jobs:
           if curl -s --max-time 2 -o /dev/null http://localhost:4321/; then echo "::error title=Port busy::4321 still answers after astro preview stop"; exit 1; fi
           source supabase.env
           E2E_SUPABASE_URL="$API_URL" E2E_SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" npx playwright test
+      - name: Previous code version passes its smoke on the new schema
+        env:
+          # Passed through env, never interpolated into the script (script-injection hygiene).
+          BASE_PR: ${{ github.event.pull_request.base.sha }}
+          BASE_PUSH: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          # "Previous code" = what production runs during and after `db push`:
+          # the PR's base, or the commit main pointed to before this push (not HEAD~1).
+          base="${BASE_PR:-$BASE_PUSH}"
+          if [ -z "$base" ] || [ -z "${base//0/}" ]; then
+            echo "::notice title=Compatibility smoke::no base; skipped"
+            exit 0
+          fi
+          # The checkout is shallow: fetch the base commit itself so diff and worktree can see it.
+          git fetch --no-tags --depth=1 origin "$base"
+          changed=$(git diff --name-only "$base" HEAD -- supabase/migrations)
+          if [ -z "$changed" ]; then
+            echo "::notice title=Compatibility smoke::no migration change; previous code already ran on this schema"
+            exit 0
+          fi
+          # Applied migrations are never edited, renamed or deleted: only new files are allowed.
+          edited=$(git diff --name-only --diff-filter=MDR "$base" HEAD -- supabase/migrations)
+          if [ -n "$edited" ]; then
+            echo "::error title=Applied migration edited::$(echo "$edited" | paste -sd ' ')"
+            exit 1
+          fi
+          # The local stack still holds the new schema (every head migration applied by `supabase start`).
+          # Astro 7 runs one preview per project: make sure nothing from earlier steps holds 4321.
+          npx astro preview stop
+          source supabase.env
+          prev="$RUNNER_TEMP/prev"
+          git worktree add --detach "$prev" "$base"
+          cd "$prev"
+          # Same secrets as "Configure secrets for build and preview": the local stack only.
+          printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env
+          cp .env .dev.vars
+          npm ci
+          npm run build
+          npm run preview -- --port 4321 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4321/ && break; sleep 1; done
+          # The base commit's own smoke; it creates its own users through the admin API.
+          status=0
+          BASE_URL=http://localhost:4321 SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY" node scripts/smoke.mjs || status=$?
+          npx astro preview stop
+          exit "$status"
       - if: failure()
         uses: actions/upload-artifact@v4
         with:

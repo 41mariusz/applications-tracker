@@ -515,26 +515,26 @@ Record the additive rule where agents read it, document how to unblock the gate 
 
 #### Automated
 
-- [x] 3.1 Unit tests pass, including gateVerdict: `npm test`
-- [x] 3.2 Lint passes: `npm run lint`
-- [x] 3.3 Against the local stack the gate passes
-- [x] 3.4 Against an unreachable URL the gate fails with the unreadable-state message
+- [x] 3.1 Unit tests pass, including gateVerdict: `npm test` — 0452e9e
+- [x] 3.2 Lint passes: `npm run lint` — 0452e9e
+- [x] 3.3 Against the local stack the gate passes — 0452e9e
+- [x] 3.4 Against an unreachable URL the gate fails with the unreadable-state message — 0452e9e
 
 #### Manual
 
-- [x] 3.5 A gate probe migration makes the gate fail and name its version; deleted
-- [x] 3.6 The ci.yml diff shows the gate before npm ci and the SHA on wrangler deploy
+- [x] 3.5 A gate probe migration makes the gate fail and name its version; deleted — 0452e9e
+- [x] 3.6 The ci.yml diff shows the gate before npm ci and the SHA on wrangler deploy — 0452e9e
 
 ### Phase 4: Compatibility smoke in CI
 
 #### Automated
 
-- [ ] 4.1 Workflow YAML parses and lint passes
+- [x] 4.1 Workflow YAML parses and lint passes
 
 #### Manual
 
-- [ ] 4.2 Local dry run: base 7289510 passes its own smoke on the new schema
-- [ ] 4.3 Local dry run: an edited existing migration is listed by the history check
+- [x] 4.2 Local dry run: base 7289510 passes its own smoke on the new schema
+- [x] 4.3 Local dry run: an edited existing migration is listed by the history check
 - [ ] 4.4 After db push and git push, CI runs the compatibility step and the gate passes
 
 ### Phase 5: Rules, runbook, test plan and roadmap
