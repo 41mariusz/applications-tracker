@@ -30,6 +30,46 @@ export function compareMigrations(repoVersions, cloudVersions) {
   };
 }
 
+/**
+ * The deploy gate's decision, from the repo versions and either the cloud versions or the reason
+ * the cloud state could not be read. Fails closed: an unreadable state blocks like a missing
+ * migration, but with a different title so the owner knows which one to fix.
+ * Returns `{ ok, level: "error" | "warning" | "notice", title, message }`; messages are single-line.
+ */
+export function gateVerdict({ repo, cloud, error }) {
+  if (error !== undefined || !Array.isArray(cloud)) {
+    return {
+      ok: false,
+      level: "error",
+      title: "Cannot read cloud migration state",
+      message: String(error ?? "no cloud versions given"),
+    };
+  }
+  const { missing, remoteOnly } = compareMigrations(repo, cloud);
+  if (missing.length > 0) {
+    return {
+      ok: false,
+      level: "error",
+      title: "Cloud DB missing migrations",
+      message: `${missing.join(", ")} — run npx supabase db push, then re-run this job`,
+    };
+  }
+  if (remoteOnly.length > 0) {
+    return {
+      ok: true,
+      level: "warning",
+      title: "Cloud DB has migrations not in the repo",
+      message: `${remoteOnly.join(", ")} — applied in the cloud but absent from supabase/migrations; deploying anyway`,
+    };
+  }
+  return {
+    ok: true,
+    level: "notice",
+    title: "Cloud DB has every repo migration",
+    message: `${repo.length} migration(s) applied in the cloud`,
+  };
+}
+
 // Statements that break the previous code version. Each test gets one statement, lowercased,
 // with comments removed, string and dollar-quoted bodies blanked and whitespace collapsed.
 const RULES = [

@@ -503,27 +503,27 @@ Record the additive rule where agents read it, document how to unblock the gate 
 
 #### Automated
 
-- [x] 2.1 Database tests pass with the new file: `npx supabase test db`
-- [x] 2.2 The migration passes the Phase 1 lint with no override: `npm run lint`
-- [x] 2.3 The RPC answers over HTTP with the local publishable key and returns 8 versions
+- [x] 2.1 Database tests pass with the new file: `npx supabase test db` — 800e374
+- [x] 2.2 The migration passes the Phase 1 lint with no override: `npm run lint` — 800e374
+- [x] 2.3 The RPC answers over HTTP with the local publishable key and returns 8 versions — 800e374
 
 #### Manual
 
-- [x] 2.4 The new migration applies to the running local stack via migration up and is listed by the RPC
+- [x] 2.4 The new migration applies to the running local stack via migration up and is listed by the RPC — 800e374
 
 ### Phase 3: Deploy gate and deploy SHA
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass, including gateVerdict: `npm test`
-- [ ] 3.2 Lint passes: `npm run lint`
-- [ ] 3.3 Against the local stack the gate passes
-- [ ] 3.4 Against an unreachable URL the gate fails with the unreadable-state message
+- [x] 3.1 Unit tests pass, including gateVerdict: `npm test`
+- [x] 3.2 Lint passes: `npm run lint`
+- [x] 3.3 Against the local stack the gate passes
+- [x] 3.4 Against an unreachable URL the gate fails with the unreadable-state message
 
 #### Manual
 
-- [ ] 3.5 A gate probe migration makes the gate fail and name its version; deleted
-- [ ] 3.6 The ci.yml diff shows the gate before npm ci and the SHA on wrangler deploy
+- [x] 3.5 A gate probe migration makes the gate fail and name its version; deleted
+- [x] 3.6 The ci.yml diff shows the gate before npm ci and the SHA on wrangler deploy
 
 ### Phase 4: Compatibility smoke in CI
 

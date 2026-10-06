@@ -105,6 +105,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      # Fail closed before anything else: deploy only when the cloud DB has every repo migration
+      # (and its state can be read). Dependency-free, so it runs before npm ci.
+      - name: Cloud database has every repo migration
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: node scripts/check-cloud-migrations.mjs
       - run: npm ci
       - run: npm run build
       - name: Deploy to Cloudflare
@@ -123,5 +130,6 @@ jobs:
             exit 1
           fi
           npx wrangler whoami > whoami.log 2>&1 || { echo "::error title=wrangler whoami failed::Token rejected by Cloudflare (check CLOUDFLARE_API_TOKEN)"; exit 1; }
-          npx wrangler deploy > deploy.log 2>&1 || { report "wrangler deploy failed" deploy.log; exit 1; }
+          # Each deployed version carries its commit (visible in `wrangler deployments list` and rollback).
+          npx wrangler deploy --message "$GITHUB_SHA" --tag "${GITHUB_SHA::7}" > deploy.log 2>&1 || { report "wrangler deploy failed" deploy.log; exit 1; }
           tail -n 5 deploy.log

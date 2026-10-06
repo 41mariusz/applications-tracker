@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compareMigrations, lintMigrationSql, migrationVersions } from "./migrations.mjs";
+import { compareMigrations, gateVerdict, lintMigrationSql, migrationVersions } from "./migrations.mjs";
 
 const rules = (sql) => lintMigrationSql(sql).map((f) => f.rule);
 
@@ -46,6 +46,44 @@ describe("compareMigrations", () => {
     const repo = ["20260929180000", "20261001090000", "20261004120000"];
     const cloud = ["20260929180000", "20261004120000"];
     expect(compareMigrations(repo, cloud).missing).toEqual(["20261001090000"]);
+  });
+});
+
+describe("gateVerdict", () => {
+  const repo = ["20260929180000", "20261004120000", "20261006120000"];
+
+  it("blocks when the cloud lacks repo migrations and names them", () => {
+    const verdict = gateVerdict({ repo, cloud: ["20260929180000"] });
+    expect(verdict).toMatchObject({ ok: false, level: "error", title: "Cloud DB missing migrations" });
+    expect(verdict.message).toMatch(/^20261004120000, 20261006120000 — run npx supabase db push/);
+  });
+
+  it("blocks an unreadable cloud state with a different title, carrying the reason", () => {
+    const verdict = gateVerdict({ repo, error: "HTTP 404" });
+    expect(verdict).toEqual({
+      ok: false,
+      level: "error",
+      title: "Cannot read cloud migration state",
+      message: "HTTP 404",
+    });
+  });
+
+  it("blocks when no cloud versions are given at all (fail closed)", () => {
+    expect(gateVerdict({ repo })).toMatchObject({ ok: false, title: "Cannot read cloud migration state" });
+  });
+
+  it("only warns about cloud versions absent from the repo", () => {
+    const verdict = gateVerdict({ repo, cloud: [...repo, "20990101000000"] });
+    expect(verdict).toMatchObject({ ok: true, level: "warning" });
+    expect(verdict.message).toMatch(/^20990101000000 — /);
+  });
+
+  it("passes equal sets and reports the count", () => {
+    expect(gateVerdict({ repo, cloud: [...repo].reverse() })).toMatchObject({
+      ok: true,
+      level: "notice",
+      message: "3 migration(s) applied in the cloud",
+    });
   });
 });
 
