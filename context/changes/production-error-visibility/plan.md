@@ -730,9 +730,9 @@ Update the API-routes convention: parse bodies inside `try`; check paused errors
 
 #### Automated
 
-- [x] 5.1 Prettier passes on the edited docs
+- [x] 5.1 Prettier passes on the edited docs — 03e7808
 
 #### Manual
 
-- [x] 5.2 Cloudflare shows Issues enabled and the version matches the deploy SHA tag
-- [x] 5.3 A signed-in test report reaches Telegram within minutes
+- [x] 5.2 Cloudflare shows Issues enabled and the version matches the deploy SHA tag — 03e7808
+- [x] 5.3 A signed-in test report reaches Telegram within minutes — 03e7808
