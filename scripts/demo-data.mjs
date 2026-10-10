@@ -1,14 +1,23 @@
 // Test data for manual testing: ~300 applications with notes, status history, rate edits and
 // real CV files (PDFs) in the private "cvs" bucket, attached to many of the applications.
 //
-//   node scripts/demo-data.mjs            # add test data for the only user in the project
-//   node scripts/demo-data.mjs --reset    # first DELETE ALL of that user's applications and CV files
+//   node scripts/demo-data.mjs                              # add test data for the only user in the project
+//   node scripts/demo-data.mjs --clear-only                 # preview what a wipe would delete (deletes nothing)
+//   node scripts/demo-data.mjs --clear-only --confirm=<e-mail>  # DELETE ALL of that user's data, add nothing
+//   node scripts/demo-data.mjs --reset --confirm=<e-mail>   # DELETE ALL, then add test data again
+//
+// A wipe deletes the account's applications (with their notes and history), the CV library and the stored
+// CV files — nothing can undo it. Without --confirm=<the account's e-mail> the destructive modes only
+// preview. They refuse while applications without the "[TEST]" prefix exist, unless --include-real is given
+// (rules: scripts/lib/demo-data-guard.mjs). The switch to real data (roadmap S-05) is the one sanctioned
+// production wipe: `--clear-only --confirm=<owner e-mail>`, once, before the first real application.
 //
 // Reads SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY from the environment or .env. The service-role
 // (secret) key bypasses RLS — it is only for this maintenance script and never for the app.
 // Pick the account with DEMO_EMAIL=... when the project has more than one user.
 import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
+import { decideWipe, parseDemoArgs } from "./lib/demo-data-guard.mjs";
 
 function loadDotEnv() {
   try {
@@ -23,7 +32,11 @@ function loadDotEnv() {
 loadDotEnv();
 
 const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DEMO_EMAIL } = process.env;
-const reset = process.argv.includes("--reset");
+const args = parseDemoArgs(process.argv.slice(2));
+if (!args.ok) {
+  console.error(args.error);
+  process.exit(1);
+}
 const COUNT = 300;
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
@@ -200,6 +213,56 @@ async function resetUser(userId) {
   console.log(`Deleted ${count ?? 0} applications and ${files.length} CV files.`);
 }
 
+// What a wipe would delete: row counts per table (history and notes go with their applications) and the
+// stored CV files. Head-only counts — no rows are fetched.
+async function wipeSummary(userId) {
+  const counts = {};
+  for (const table of ["applications", "notes", "status_changes", "field_changes", "cv_files"]) {
+    const { count, error } = await db.from(table).select("*", { count: "exact", head: true }).eq("user_id", userId);
+    check(error, `Counting ${table}`);
+    counts[table] = count ?? 0;
+  }
+  const { data: files, error } = await db.storage.from("cvs").list(userId, { limit: 1000 });
+  check(error, "Listing CV files");
+  counts.stored_cv_files = files.length;
+  return counts;
+}
+
+async function accountApplications(userId) {
+  const { data, error } = await db.from("applications").select("company, position").eq("user_id", userId);
+  check(error, "Reading applications");
+  return data;
+}
+
+// --reset / --clear-only: preview, refuse or wipe — never without a matching --confirm (see the header).
+async function guardedWipe(user) {
+  const summary = await wipeSummary(user.id);
+  const decision = decideWipe({
+    mode: args.mode,
+    confirm: args.confirm,
+    includeReal: args.includeReal,
+    accountEmail: user.email,
+    applications: await accountApplications(user.id),
+  });
+  console.log(
+    "Would delete:",
+    Object.entries(summary)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(", "),
+  );
+  if (decision.action === "refuse") {
+    console.error(decision.reason);
+    for (const example of decision.realExamples ?? []) console.error(`  - ${example}`);
+    process.exit(1);
+  }
+  if (decision.action === "preview") {
+    const flags = `--${args.mode}${args.includeReal ? " --include-real" : ""} --confirm=${user.email}`;
+    console.log(`Preview only — nothing was deleted. To proceed: npm run demo-data -- ${flags}`);
+    process.exit(0);
+  }
+  await resetUser(user.id);
+}
+
 async function uploadCvs(userId) {
   const library = [];
   for (const cv of cvVersions) {
@@ -363,7 +426,11 @@ async function insertAll(table, rows) {
 
 const user = await findUser();
 console.log(`Account: ${user.email} (${SUPABASE_URL})`);
-if (reset) await resetUser(user.id);
+if (args.mode !== "seed") await guardedWipe(user);
+if (args.mode === "clear-only") {
+  console.log("Account cleared; no test data added.");
+  process.exit(0);
+}
 const library = await uploadCvs(user.id);
 const data = buildData(user.id, library);
 await insertAll("applications", data.applications);
