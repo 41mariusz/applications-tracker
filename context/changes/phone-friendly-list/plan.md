@@ -337,32 +337,32 @@ No data or schema change. No `db push`.
 
 #### Automated
 
-- [x] 1.1 Lint passes incl. UI contract with dashboard.astro in CLEAN_VIEWS: `npm run lint`
-- [x] 1.2 Types and unit tests pass: `npx astro check` and `npm test`
-- [x] 1.3 Hardcoded-value scan on the view returns 0 lines
-- [x] 1.4 Smoke passes: `npm run smoke`
-- [x] 1.5 E2E passes: `npx playwright test`
+- [x] 1.1 Lint passes incl. UI contract with dashboard.astro in CLEAN_VIEWS: `npm run lint` — 959d7c5
+- [x] 1.2 Types and unit tests pass: `npx astro check` and `npm test` — 959d7c5
+- [x] 1.3 Hardcoded-value scan on the view returns 0 lines — 959d7c5
+- [x] 1.4 Smoke passes: `npm run smoke` — 959d7c5
+- [x] 1.5 E2E passes: `npx playwright test` — 959d7c5
 
 #### Manual
 
-- [x] 1.6 List looks as before at 1280 and 360 px apart from closed items (before/after screenshots)
-- [x] 1.7 Closed application: struck-through title, muted texts, status control in full contrast
-- [x] 1.8 Break check: a literal class in the view turns npm run lint red; restored
+- [x] 1.6 List looks as before at 1280 and 360 px apart from closed items (before/after screenshots) — 959d7c5
+- [x] 1.7 Closed application: struck-through title, muted texts, status control in full contrast — 959d7c5
+- [x] 1.8 Break check: a literal class in the view turns npm run lint red; restored — 959d7c5
 
 ### Phase 2: Phone layout and tap targets (C4)
 
 #### Automated
 
-- [ ] 2.1 Lint, types and unit tests pass
-- [ ] 2.2 Hardcoded-value scan on the view still returns 0 lines
-- [ ] 2.3 Smoke passes: `npm run smoke`
-- [ ] 2.4 E2E passes incl. phone-list.spec.ts: `npx playwright test`
+- [x] 2.1 Lint, types and unit tests pass
+- [x] 2.2 Hardcoded-value scan on the view still returns 0 lines
+- [x] 2.3 Smoke passes: `npm run smoke`
+- [x] 2.4 E2E passes incl. phone-list.spec.ts: `npx playwright test`
 
 #### Manual
 
-- [ ] 2.5 At 360 px status under the title in every card, no sideways scroll; at 1280 px status on the right
-- [ ] 2.6 Details view: status control right-aligned, 40 px, status change still works
-- [ ] 2.7 Break check: no wrapping on the company title turns the overflow assertion red; restored
+- [x] 2.5 At 360 px status under the title in every card, no sideways scroll; at 1280 px status on the right
+- [x] 2.6 Details view: status control right-aligned, 40 px, status change still works
+- [x] 2.7 Break check: no wrapping on the company title turns the overflow assertion red; restored
 
 ### Phase 3: States, visual gate and rule (C3)
 

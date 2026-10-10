@@ -5,14 +5,18 @@ import ErrorText from "@/components/ErrorText";
 import { apiRequest } from "@/lib/api-client";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { allowedTargets, isTerminal } from "@/lib/domain/status";
+import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type ApplicationStatus } from "@/types";
 
 interface Props {
   applicationId: string;
   status: ApplicationStatus;
+  /** "end" (default): right-aligned, as on the details view. "responsive": start-aligned below 640 px, where
+   * the list stacks it under the title, and right-aligned from 640 px. */
+  align?: "end" | "responsive";
 }
 
-export default function StatusControl({ applicationId, status }: Props) {
+export default function StatusControl({ applicationId, status, align = "end" }: Props) {
   const [error, setError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
   const targets = allowedTargets(status);
@@ -51,7 +55,7 @@ export default function StatusControl({ applicationId, status }: Props) {
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
+    <div className={cn("flex flex-col gap-1", align === "responsive" ? "items-start sm:items-end" : "items-end")}>
       <Label className="sr-only" htmlFor={`status-${applicationId}`}>
         Zmień status
       </Label>
@@ -61,7 +65,7 @@ export default function StatusControl({ applicationId, status }: Props) {
         value=""
         disabled={pending}
         onChange={handleChange}
-        className="bg-secondary text-secondary-foreground h-auto rounded-full py-1 pr-8 pl-3 text-xs"
+        className="bg-secondary text-secondary-foreground h-auto min-h-10 rounded-full py-1 pr-8 pl-3 text-xs"
       >
         <NativeSelectOption value="" disabled>
           {STATUS_LABELS[status]}
@@ -80,7 +84,10 @@ export default function StatusControl({ applicationId, status }: Props) {
         </p>
       )}
       {error && (
-        <p role="alert" className="text-destructive max-w-48 text-right text-xs">
+        <p
+          role="alert"
+          className={cn("text-destructive max-w-48 text-xs", align === "responsive" ? "sm:text-right" : "text-right")}
+        >
           <ErrorText message={error} />
         </p>
       )}

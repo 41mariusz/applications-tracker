@@ -78,13 +78,13 @@ const statusCounts = APPLICATION_STATUSES.map((s) => ({
             type="search"
             value={query}
             autoComplete="off"
-            placeholder="Szukaj: firma, stanowisko, nazwisko lub telefon HR"
+            placeholder="Firma, stanowisko, HR lub telefon"
             className="bg-muted h-auto rounded-lg px-4 py-3 text-base md:text-base"
           />
           <fieldset class="mt-3 flex flex-wrap gap-2" data-testid="status-filter">
             <legend class="sr-only">Filtruj po statusie</legend>
             {statusCounts.map(({ status, count }) => (
-              <label class="border-input bg-card text-supporting-foreground hover:bg-muted has-[:checked]:border-link has-[:checked]:bg-accent has-[:checked]:text-foreground cursor-pointer rounded-full border px-3 py-1 text-xs transition-colors select-none">
+              <label class="border-input bg-card text-supporting-foreground hover:bg-muted has-[:checked]:border-link has-[:checked]:bg-accent has-[:checked]:text-foreground inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors select-none">
                 <input
                   type="checkbox"
                   name="status"
@@ -124,9 +124,14 @@ const statusCounts = APPLICATION_STATUSES.map((s) => ({
             })}
             hidden={!matches.has(a.id)}
           >
-            <div class="flex flex-wrap items-baseline justify-between gap-2">
+            {/* Phone: status under the title, start-aligned; from 640 px to its right. Text wraps anywhere,
+                so an unbroken company name cannot push the page sideways. */}
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               {/* Closed: struck through and muted; the status control stays at full contrast (it reverts). */}
-              <div class:list={[isClosed(a.status) && "text-muted-foreground line-through"]}>
+              <div
+                class:list={["min-w-0 wrap-anywhere", isClosed(a.status) && "text-muted-foreground line-through"]}
+                data-testid="card-title"
+              >
                 <a href={`/applications/${a.id}`} class="font-semibold hover:underline">
                   {a.company}
                 </a>
@@ -137,12 +142,12 @@ const statusCounts = APPLICATION_STATUSES.map((s) => ({
                   {a.applied_on && <span class="text-muted-foreground"> · {formatDate(a.applied_on)}</span>}
                 </p>
               </div>
-              <StatusControl applicationId={a.id} status={a.status} client:visible />
+              <StatusControl applicationId={a.id} status={a.status} align="responsive" client:visible />
             </div>
             {(a.salary_range ?? a.quoted_rate) && (
               <p
                 class:list={[
-                  "mt-2 text-sm",
+                  "mt-2 text-sm wrap-anywhere",
                   isClosed(a.status) ? "text-muted-foreground" : "text-supporting-foreground",
                 ]}
               >
