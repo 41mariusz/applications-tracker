@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
 import { setApplicationCv } from "@/lib/services/cv";
-import { failureResponse, readFormData } from "@/lib/http";
+import { failureResponse, readFormData, routeId } from "@/lib/http";
 
 export const prerender = false;
 
@@ -15,11 +15,12 @@ export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
-  const id = context.params.id;
+  const id = routeId(context);
+  if (id instanceof Response) return id;
   const form = await readFormData(context, { op: OP, entityId: id });
   if (form instanceof Response) return form;
   const parsed = schema.safeParse({ cv_file_id: form.get("cv_file_id") ?? "" });
-  if (!parsed.success || !id) {
+  if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowy plik." }, { status: 400 });
   }
 

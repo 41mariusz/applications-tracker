@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { noteInputSchema } from "@/lib/domain/notes";
 import { addNote } from "@/lib/services/notes";
 import { readNoteForm, validationErrors } from "@/lib/services/note-form";
-import { failureResponse, readFormData } from "@/lib/http";
+import { failureResponse, readFormData, routeId } from "@/lib/http";
 
 export const prerender = false;
 
@@ -12,12 +12,13 @@ export const POST: APIRoute = async (context) => {
   if (!context.locals.user) {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
-  const id = context.params.id;
+  const id = routeId(context);
+  if (id instanceof Response) return id;
   const form = await readFormData(context, { op: OP, entityId: id });
   if (form instanceof Response) return form;
   const parsed = noteInputSchema.safeParse(readNoteForm(form));
-  if (!parsed.success || !id) {
-    return Response.json({ errors: parsed.success ? {} : validationErrors(parsed.error) }, { status: 400 });
+  if (!parsed.success) {
+    return Response.json({ errors: validationErrors(parsed.error) }, { status: 400 });
   }
 
   const supabase = context.locals.supabase;

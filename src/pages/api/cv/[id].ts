@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { readCv } from "@/lib/services/cv";
-import { failureResponse } from "@/lib/http";
+import { failureResponse, routeId } from "@/lib/http";
 
 export const prerender = false;
 
@@ -10,9 +10,10 @@ export const GET: APIRoute = async (context) => {
   if (!context.locals.user) {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
+  const id = routeId(context);
+  if (id instanceof Response) return id;
   const supabase = context.locals.supabase;
-  const id = context.params.id;
-  if (!supabase || !id) {
+  if (!supabase) {
     return Response.json({ error: "Supabase nie jest skonfigurowany." }, { status: 500 });
   }
   try {

@@ -1,9 +1,9 @@
 ---
 change_id: refactor-opportunities
 title: Rank refactor opportunities from the CV flow analysis
-status: preparing
+status: implementing
 created: 2026-10-06
-updated: 2026-10-06
+updated: 2026-10-10
 archived_at: null
 ---
 

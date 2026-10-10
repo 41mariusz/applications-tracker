@@ -528,6 +528,21 @@ const steps = [
     { status: 404, bodyIncludes: "Nie znaleziono" },
   ],
   [
+    // A mistyped id is "not found" before any query — not a logged 500 that would raise an alert.
+    "malformed CV link in the API is not found",
+    () => request("/api/cv/not-a-uuid"),
+    { status: 404, bodyIncludes: "Nie znaleziono" },
+  ],
+  [
+    "malformed application id in a write route is not found",
+    () =>
+      request("/api/applications/not-a-uuid/notes", {
+        method: "POST",
+        form: { kind: "comment", body: "Notatka do nieistniejącej aplikacji", noted_at: new Date().toISOString() },
+      }),
+    { status: 404, bodyIncludes: "Nie znaleziono" },
+  ],
+  [
     "application link sends an anonymous visitor to sign-in with a return path",
     () => anonymous(`/applications/${applicationId}`),
     { status: 302, location: `/auth/signin?next=%2Fapplications%2F${applicationId}` },

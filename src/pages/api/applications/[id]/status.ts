@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { changeApplicationStatus, changeStatusSchema } from "@/lib/services/applications";
-import { failureResponse, readFormData } from "@/lib/http";
+import { failureResponse, readFormData, routeId } from "@/lib/http";
 
 export const prerender = false;
 
@@ -12,14 +12,15 @@ export const POST: APIRoute = async (context) => {
     return Response.json({ error: "Zaloguj się ponownie." }, { status: 401 });
   }
 
-  const id = context.params.id;
+  const id = routeId(context);
+  if (id instanceof Response) return id;
   const form = await readFormData(context, { op: OP, entityId: id });
   if (form instanceof Response) return form;
   const parsed = changeStatusSchema.safeParse({
     status: form.get("status") ?? undefined,
     confirm: form.get("confirm") ?? undefined,
   });
-  if (!parsed.success || !id) {
+  if (!parsed.success) {
     return Response.json({ error: "Nieprawidłowy status." }, { status: 400 });
   }
 

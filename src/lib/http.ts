@@ -1,5 +1,6 @@
 // Shared JSON answers for API routes. Imports src/lib/log.ts (`cloudflare:workers`), so nothing Vitest runs may import it.
 import type { APIContext } from "astro";
+import { isUuid } from "@/lib/domain/ids";
 import { logError, type LogErrorExtra } from "@/lib/log";
 import { isProjectPaused } from "@/lib/supabase-paused";
 
@@ -7,6 +8,13 @@ export const MALFORMED_BODY_MESSAGE = "Nieprawidłowe dane formularza.";
 
 export function jsonError(status: number, message: string): Response {
   return Response.json({ error: message }, { status });
+}
+
+// The route's [id]. Anything but a UUID cannot name a row, so it is "not found" before the body is read
+// or Postgres is asked — a mistyped link must not become a logged 500 (and an alert). Like pages, not logged.
+export function routeId(context: APIContext): string | Response {
+  const id = context.params.id;
+  return isUuid(id) ? id : jsonError(404, "Nie znaleziono.");
 }
 
 // The request's form body. A malformed or truncated body (e.g. multipart without a boundary) is the
