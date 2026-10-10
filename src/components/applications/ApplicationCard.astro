@@ -1,0 +1,64 @@
+---
+// One card of the application list (/dashboard). Shared with the kitchen sink (/dev/ui), so the two cannot drift.
+import StatusControl from "@/components/applications/StatusControl";
+import { isClosed } from "@/lib/domain/status";
+import { formatDate } from "@/lib/format";
+import type { Application } from "@/types";
+
+interface Props {
+  application: Application;
+  /** Matches the current search and status filter (hidden otherwise; the in-page filter can show it again). */
+  visible: boolean;
+  /** false in the kitchen sink: the status control renders statically, without hydration. */
+  hydrate?: boolean;
+}
+
+const { application: a, visible, hydrate = true } = Astro.props;
+const closed = isClosed(a.status);
+---
+
+<li
+  class="border-border bg-muted rounded-xl border p-4 backdrop-blur-xl"
+  data-status={a.status}
+  data-testid={visible ? "application-visible" : undefined}
+  data-search={JSON.stringify({
+    company: a.company,
+    position: a.position,
+    hr_contact_name: a.hr_contact_name,
+    hr_contact_phone: a.hr_contact_phone,
+  })}
+  hidden={!visible}
+>
+  {/* Phone: status under the title, start-aligned; from 640 px to its right. Text wraps anywhere,
+      so an unbroken company name cannot push the page sideways. */}
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+    {/* Closed: struck through and muted; the status control stays at full contrast (it reverts). */}
+    <div
+      class:list={["min-w-0 wrap-anywhere", closed && "text-muted-foreground line-through"]}
+      data-testid="card-title"
+    >
+      <a
+        href={`/applications/${a.id}`}
+        class="focus-visible:ring-ring rounded-sm font-semibold outline-none hover:underline focus-visible:ring-2"
+      >
+        {a.company}
+      </a>
+      <p class:list={["text-sm", closed ? "text-muted-foreground" : "text-supporting-foreground"]}>
+        {a.position}
+        {a.applied_on && <span class="text-muted-foreground"> · {formatDate(a.applied_on)}</span>}
+      </p>
+    </div>
+    {hydrate ? (
+      <StatusControl applicationId={a.id} status={a.status} align="responsive" client:visible />
+    ) : (
+      <StatusControl applicationId={a.id} status={a.status} align="responsive" />
+    )}
+  </div>
+  {(a.salary_range ?? a.quoted_rate) && (
+    <p class:list={["mt-2 text-sm wrap-anywhere", closed ? "text-muted-foreground" : "text-supporting-foreground"]}>
+      {a.salary_range && <span>Widełki: {a.salary_range}</span>}
+      {a.salary_range && a.quoted_rate && <span> · </span>}
+      {a.quoted_rate && <span>Moja stawka: {a.quoted_rate}</span>}
+    </p>
+  )}
+</li>

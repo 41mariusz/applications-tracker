@@ -5,7 +5,8 @@
 // data-ks="focus-target". Token classes only.
 import Layout from "@/layouts/Layout.astro";
 import NotFound from "@/pages/404.astro";
-import StatusControl from "@/components/applications/StatusControl";
+import StatusControl, { STATUS_PILL_CLASS } from "@/components/applications/StatusControl";
+import ApplicationCard from "@/components/applications/ApplicationCard.astro";
 import NotesPanel from "@/components/applications/NotesPanel";
 import CvPanel from "@/components/applications/CvPanel";
 import { PreviewFallback } from "@/components/ErrorBoundary";
@@ -14,13 +15,14 @@ import { errorMessage } from "@/lib/domain/client-errors";
 import { cvFileUrl } from "@/lib/cv-urls";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Textarea } from "@/components/ui/textarea";
-import type { CvFile, Note } from "@/types";
+import { cn } from "@/lib/utils";
+import { STATUS_LABELS, type Application, type CvFile, type Note } from "@/types";
 
 // Production builds answer 404 with the regular not-found page.
 const enabled = import.meta.env.DEV;
@@ -73,6 +75,45 @@ const sampleCv: CvFile = {
   size_bytes: 248_000,
   created_at: "2026-09-30T09:00:00.000Z",
 };
+// Application list (/dashboard): an open card with an unbroken company name and a closed one.
+const listBase = {
+  user_id: "00000000-0000-4000-8000-000000000000",
+  posting_url: null,
+  hr_contact_name: "Jan Nowak",
+  hr_contact_phone: "500-600-700",
+  employment_type: null,
+  work_mode: null,
+  cv_file_id: null,
+  last_activity_at: "2026-10-05T10:00:00.000Z",
+  created_at: "2026-10-01T10:00:00.000Z",
+  updated_at: "2026-10-05T10:00:00.000Z",
+} satisfies Partial<Application>;
+const openApplication: Application = {
+  ...listBase,
+  id: "00000000-0000-4000-8000-000000000041",
+  company: "Przedsiębiorstwo-Informatyczno-Usługowe-Bardzo-Długa-Nazwa-Sp-z-o-o",
+  position: "Senior Fullstack Developer (React, Node.js)",
+  salary_range: "18 000 – 24 000 PLN netto/mies. na B2B",
+  quoted_rate: "22 000 PLN",
+  applied_on: "2026-10-01",
+  status: "interviews",
+};
+const closedApplication: Application = {
+  ...listBase,
+  id: "00000000-0000-4000-8000-000000000042",
+  company: "Globex Corporation",
+  position: "Backend Engineer (Go)",
+  salary_range: null,
+  quoted_rate: "17k",
+  applied_on: "2026-08-15",
+  status: "rejected",
+};
+const chipClass =
+  "border-input bg-card text-supporting-foreground hover:bg-muted has-[:checked]:border-link has-[:checked]:bg-accent has-[:checked]:text-foreground has-[:focus-visible]:ring-ring inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs select-none has-[:focus-visible]:ring-2";
+const statusErrorMessage = errorMessage(
+  { kind: "network", name: "TypeError", message: "Failed to fetch" },
+  "Nie udało się zmienić statusu.",
+);
 // Browser failure states (src/lib/domain/client-errors.ts): a non-JSON server answer and the paused project.
 const serverErrorMessage = errorMessage({ kind: "server", status: 503 }, "Nie udało się zapisać.");
 const pausedMessage = errorMessage({ kind: "paused", status: 503 }, "Nie udało się zapisać.");
@@ -323,6 +364,93 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
             <p class="text-muted-foreground text-xs">Wczytywanie podglądu…</p>
           </Card>
         </div>
+
+        {/* Application list (/dashboard): the shared card plus the list's controls, in the 7 states. */}
+        <section class="space-y-4" data-ks="section-list">
+          <h2 class="font-semibold">Lista aplikacji (/dashboard)</h2>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">default — otwarta (nazwa bez spacji zawija się)</p>
+              <ul>
+                <ApplicationCard application={openApplication} visible hydrate={false} />
+              </ul>
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">
+                default — zamknięta (przekreślona, status w pełnym kontraście)
+              </p>
+              <ul>
+                <ApplicationCard application={closedApplication} visible hydrate={false} />
+              </ul>
+            </div>
+          </div>
+          <Card className="gap-3 rounded-xl p-4 shadow-none">
+            <p class="text-muted-foreground text-xs">
+              hover / focus-visible — najedź albo przejdź Tabem (pierścień ring na chipie, linku, przycisku i
+              wyszukiwarce).
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <label class:list={chipClass} data-ks="hover-target">
+                <input type="checkbox" class="sr-only" />
+                Wysłana <span class="opacity-60">3</span>
+              </label>
+              <label class:list={chipClass}>
+                <input type="checkbox" class="sr-only" checked data-ks="focus-target" />
+                Rozmowy <span class="opacity-60">1</span>
+              </label>
+              <a
+                href="#ks-list"
+                class:list={cn(buttonVariants(), "h-auto rounded-lg px-4 py-2")}
+                data-ks="focus-target"
+              >
+                + Dodaj aplikację
+              </a>
+            </div>
+            <Input
+              type="search"
+              aria-label="Szukaj"
+              placeholder="Firma, stanowisko, HR lub telefon"
+              className="bg-muted h-auto rounded-lg px-4 py-3 text-base md:text-base"
+              data-ks="focus-target"
+            />
+          </Card>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">disabled — status w trakcie zapisu</p>
+              <div class="flex flex-col items-start gap-1">
+                <NativeSelect disabled aria-label="Zmień status" className={STATUS_PILL_CLASS}>
+                  <NativeSelectOption value="">{STATUS_LABELS.interviews}</NativeSelectOption>
+                </NativeSelect>
+                <p class="text-muted-foreground text-xs">Zapisywanie…</p>
+              </div>
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">error — odczyt listy i zmiana statusu</p>
+              <Alert variant="destructive">
+                <AlertDescription>Nie udało się wczytać aplikacji.</AlertDescription>
+              </Alert>
+              <p role="alert" class="text-destructive max-w-48 text-xs">
+                <ErrorText message={statusErrorMessage} />
+              </p>
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">empty — brak aplikacji / brak wyników</p>
+              <p class="border-border bg-card text-supporting-foreground rounded-xl border p-6 text-center">
+                Nie masz jeszcze żadnych aplikacji. Dodaj pierwszą po wysłaniu CV.
+              </p>
+              <p class="text-supporting-foreground text-sm">
+                Brak wyników. Spróbuj fragmentu nazwy albo numeru albo zmień wybrane statusy.
+              </p>
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">loading — N/A</p>
+              <p class="text-supporting-foreground">
+                Lista renderuje się na serwerze, bez pobierania w przeglądarce. Najbliższy stan to „Zapisywanie…”
+                kontrolki statusu — pokazany w disabled.
+              </p>
+            </Card>
+          </div>
+        </section>
 
         {/* Islands with sample props (static render; interaction states need the live page). */}
         <section class="space-y-4" data-ks="section-islands">

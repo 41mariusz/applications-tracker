@@ -4,10 +4,8 @@ import Topbar from "@/components/Topbar.astro";
 import { listApplications } from "@/lib/services/applications";
 import { logError } from "@/lib/log";
 import { isProjectPaused } from "@/lib/supabase-paused";
-import StatusControl from "@/components/applications/StatusControl";
-import { isClosed } from "@/lib/domain/status";
+import ApplicationCard from "@/components/applications/ApplicationCard.astro";
 import { matchesQuery, matchesStatus, parseStatusFilter } from "@/lib/domain/search";
-import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { APPLICATION_STATUSES, STATUS_LABELS, type Application } from "@/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -84,7 +82,7 @@ const statusCounts = APPLICATION_STATUSES.map((s) => ({
           <fieldset class="mt-3 flex flex-wrap gap-2" data-testid="status-filter">
             <legend class="sr-only">Filtruj po statusie</legend>
             {statusCounts.map(({ status, count }) => (
-              <label class="border-input bg-card text-supporting-foreground hover:bg-muted has-[:checked]:border-link has-[:checked]:bg-accent has-[:checked]:text-foreground inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors select-none">
+              <label class="border-input bg-card text-supporting-foreground hover:bg-muted has-[:checked]:border-link has-[:checked]:bg-accent has-[:checked]:text-foreground inline-flex min-h-10 has-[:focus-visible]:ring-ring cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors select-none has-[:focus-visible]:ring-2">
                 <input
                   type="checkbox"
                   name="status"
@@ -112,51 +110,7 @@ const statusCounts = APPLICATION_STATUSES.map((s) => ({
 
       <ul class="space-y-3" data-testid="applications-list">
         {applications.map((a) => (
-          <li
-            class="border-border bg-muted rounded-xl border p-4 backdrop-blur-xl"
-            data-status={a.status}
-            data-testid={matches.has(a.id) ? "application-visible" : undefined}
-            data-search={JSON.stringify({
-              company: a.company,
-              position: a.position,
-              hr_contact_name: a.hr_contact_name,
-              hr_contact_phone: a.hr_contact_phone,
-            })}
-            hidden={!matches.has(a.id)}
-          >
-            {/* Phone: status under the title, start-aligned; from 640 px to its right. Text wraps anywhere,
-                so an unbroken company name cannot push the page sideways. */}
-            <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              {/* Closed: struck through and muted; the status control stays at full contrast (it reverts). */}
-              <div
-                class:list={["min-w-0 wrap-anywhere", isClosed(a.status) && "text-muted-foreground line-through"]}
-                data-testid="card-title"
-              >
-                <a href={`/applications/${a.id}`} class="font-semibold hover:underline">
-                  {a.company}
-                </a>
-                <p
-                  class:list={["text-sm", isClosed(a.status) ? "text-muted-foreground" : "text-supporting-foreground"]}
-                >
-                  {a.position}
-                  {a.applied_on && <span class="text-muted-foreground"> · {formatDate(a.applied_on)}</span>}
-                </p>
-              </div>
-              <StatusControl applicationId={a.id} status={a.status} align="responsive" client:visible />
-            </div>
-            {(a.salary_range ?? a.quoted_rate) && (
-              <p
-                class:list={[
-                  "mt-2 text-sm wrap-anywhere",
-                  isClosed(a.status) ? "text-muted-foreground" : "text-supporting-foreground",
-                ]}
-              >
-                {a.salary_range && <span>Widełki: {a.salary_range}</span>}
-                {a.salary_range && a.quoted_rate && <span> · </span>}
-                {a.quoted_rate && <span>Moja stawka: {a.quoted_rate}</span>}
-              </p>
-            )}
-          </li>
+          <ApplicationCard application={a} visible={matches.has(a.id)} />
         ))}
       </ul>
     </div>

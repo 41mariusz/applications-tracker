@@ -8,6 +8,10 @@ import { allowedTargets, isTerminal } from "@/lib/domain/status";
 import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type ApplicationStatus } from "@/types";
 
+// The status pill; also used by the kitchen sink (/dev/ui) to show its disabled state.
+export const STATUS_PILL_CLASS =
+  "bg-secondary text-secondary-foreground h-auto min-h-10 rounded-full py-1 pr-8 pl-3 text-xs";
+
 interface Props {
   applicationId: string;
   status: ApplicationStatus;
@@ -65,7 +69,7 @@ export default function StatusControl({ applicationId, status, align = "end" }: 
         value=""
         disabled={pending}
         onChange={handleChange}
-        className="bg-secondary text-secondary-foreground h-auto min-h-10 rounded-full py-1 pr-8 pl-3 text-xs"
+        className={STATUS_PILL_CLASS}
       >
         <NativeSelectOption value="" disabled>
           {STATUS_LABELS[status]}

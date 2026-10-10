@@ -353,27 +353,27 @@ No data or schema change. No `db push`.
 
 #### Automated
 
-- [x] 2.1 Lint, types and unit tests pass
-- [x] 2.2 Hardcoded-value scan on the view still returns 0 lines
-- [x] 2.3 Smoke passes: `npm run smoke`
-- [x] 2.4 E2E passes incl. phone-list.spec.ts: `npx playwright test`
+- [x] 2.1 Lint, types and unit tests pass — db70215
+- [x] 2.2 Hardcoded-value scan on the view still returns 0 lines — db70215
+- [x] 2.3 Smoke passes: `npm run smoke` — db70215
+- [x] 2.4 E2E passes incl. phone-list.spec.ts: `npx playwright test` — db70215
 
 #### Manual
 
-- [x] 2.5 At 360 px status under the title in every card, no sideways scroll; at 1280 px status on the right
-- [x] 2.6 Details view: status control right-aligned, 40 px, status change still works
-- [x] 2.7 Break check: no wrapping on the company title turns the overflow assertion red; restored
+- [x] 2.5 At 360 px status under the title in every card, no sideways scroll; at 1280 px status on the right — db70215
+- [x] 2.6 Details view: status control right-aligned, 40 px, status change still works — db70215
+- [x] 2.7 Break check: no wrapping on the company title turns the overflow assertion red; restored — db70215
 
 ### Phase 3: States, visual gate and rule (C3)
 
 #### Automated
 
-- [ ] 3.1 Lint, types and unit tests pass
-- [ ] 3.2 Smoke and E2E pass
-- [ ] 3.3 The five "after" screenshots exist in the change folder
+- [x] 3.1 Lint, types and unit tests pass
+- [x] 3.2 Smoke and E2E pass
+- [x] 3.3 The five "after" screenshots exist in the change folder
 
 #### Manual
 
-- [ ] 3.4 Tab at 1280 px shows a visible ring on add button, search, every chip and every company link
-- [ ] 3.5 /dev/ui "Lista aplikacji" shows all 7 states (loading N/A with reason) at 1280 and 360 px
+- [x] 3.4 Tab at 1280 px shows a visible ring on add button, search, every chip and every company link
+- [x] 3.5 /dev/ui "Lista aplikacji" shows all 7 states (loading N/A with reason) at 1280 and 360 px
 - [ ] 3.6 Owner checks the list on their phone in production after deploy
