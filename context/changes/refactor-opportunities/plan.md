@@ -353,7 +353,7 @@ No migration. The pgTAP pin reads the bucket the existing migration created.
 
 - [x] 1.5 Break check: guard removed from api/cv/[id].ts turns the malformed-id smoke step red; restored — 022ffbf
 - [x] 1.6 Local preview logs show no error line for malformed-id requests — 022ffbf
-- [ ] 1.7 Production: /api/cv/abc shows 404 JSON and no Telegram alert
+- [x] 1.7 Production: /api/cv/abc shows 404 JSON and no Telegram alert — 022ffbf
 
 ### Phase 2: CV HTTP types and URL helpers (K5)
 
@@ -374,15 +374,15 @@ No migration. The pgTAP pin reads the bucket the existing migration created.
 
 #### Automated
 
-- [x] 3.1 Unit tests pass incl. CV_ACCEPT / CV_LIMITS_TEXT: `npm test`
-- [x] 3.2 Lint and types pass: `npm run lint` and `npx astro check`
-- [x] 3.3 Database tests pass incl. cv_bucket.test.sql: `npx supabase test db`
-- [x] 3.4 No accept= or limits literal left in islands (rg)
-- [x] 3.5 Smoke passes: `npm run smoke`
-- [x] 3.6 E2E passes: `npx playwright test`
+- [x] 3.1 Unit tests pass incl. CV_ACCEPT / CV_LIMITS_TEXT: `npm test` — 225fe06
+- [x] 3.2 Lint and types pass: `npm run lint` and `npx astro check` — 225fe06
+- [x] 3.3 Database tests pass incl. cv_bucket.test.sql: `npx supabase test db` — 225fe06
+- [x] 3.4 No accept= or limits literal left in islands (rg) — 225fe06
+- [x] 3.5 Smoke passes: `npm run smoke` — 225fe06
+- [x] 3.6 E2E passes: `npx playwright test` — 225fe06
 
 #### Manual
 
-- [x] 3.7 Break check (unit): CV_ACCEPT without .docx turns the test red; restored
-- [x] 3.8 Break check (database): bucket file_size_limit = 1 fails cv_bucket.test.sql; restored
-- [ ] 3.9 Label and file picker filter unchanged on /cv and the CV panel
+- [x] 3.7 Break check (unit): CV_ACCEPT without .docx turns the test red; restored — 225fe06
+- [x] 3.8 Break check (database): bucket file_size_limit = 1 fails cv_bucket.test.sql; restored — 225fe06
+- [x] 3.9 Label and file picker filter unchanged on /cv and the CV panel — 225fe06
