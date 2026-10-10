@@ -43,14 +43,14 @@ A candidate running many parallel recruitment processes needs, the moment HR cal
 
 ## At a glance
 
-| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status      |
-| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ----------- |
-| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | done        |
-| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done        |
-| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done        |
-| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done        |
-| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done        |
-| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | in-progress |
+| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status |
+| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ------ |
+| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | done   |
+| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done   |
+| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done   |
+| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done   |
+| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done   |
+| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | done   |
 
 ## Streams
 
@@ -157,7 +157,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Unknowns:**
   - ~~Should demo CV files be removed from storage as well?~~ Resolved 2026-10-06 (domain distillation Q-01): yes — the switch wipes everything (applications, notes, history, CV files and rows); it must run before the first real application is entered (PRD FR-004 update).
 - **Risk:** Last in its stream so real data never lands in an app that can go dark between uses; clearing is destructive and one-way, so it must require an explicit confirmation.
-- **Status:** in-progress
+- **Status:** done
 
 ## Backlog Handoff
 
@@ -191,3 +191,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **S-04: user can open an application's details on a phone and see salary range, quoted rate, status and the latest agreement quickly enough for a live call** — Archived 2026-10-05 → `context/archive/2026-10-05-fast-details-on-phone/`. Lesson: —.
 - **S-03: user (the owner) can roll back a bad production deploy made after a database migration and still use the app.** — Archived 2026-10-06 → `context/archive/2026-10-06-testing-safe-migrations/`. Lesson: Keep migrations additive — old code runs on the new schema.
 - **F-01: (foundation) a failing request in production leaves a record the owner sees without actively digging through live logs.** — Archived 2026-10-06 → `context/archive/2026-10-06-production-error-visibility/`. Lesson: Errors must leave a signal, not just a message.
+- **S-05: user can clear the demo data and start tracking their real applications.** — Archived 2026-10-10 → `context/archive/2026-10-10-switch-to-real-data/`. Lesson: —.
