@@ -1,179 +1,188 @@
 ---
 project: Applications Tracker
-version: 1
+version: 2
 status: draft
-created: 2026-09-30
+created: 2026-10-10
 updated: 2026-10-10
 prd_version: —
 main_goal: quality
-top_blocker: external
-milestone_id: ready-for-real-use
-milestone_seq: 1
+top_blocker: time
+milestone_id: solid-daily-use-on-real-data
+milestone_seq: 2
 milestone_status: open
 ---
 
 # Roadmap: Applications Tracker
 
-> Derived from `context/foundation/infrastructure.md` (risk register) + the owner's description of the switch to real data + auto-researched codebase baseline.
+> Derived from the owner's description of milestone M-2 (scope anchors below), the analyses `context/map/repo-map.md`, `context/domain/domain-distillation.md`, `context/archive/2026-10-06-cv-flow-analysis/research.md`, `context/archive/2026-10-06-refactor-opportunities/research.md` and the observability audit, plus the known codebase baseline.
 > Edit-in-place; archive when superseded.
 > Slices below are listed in dependency order. The "At a glance" table is the index.
 
 ## Milestone
 
-**M-1: Ready for real use** — Status: open
+**M-2: Solid daily use on real data** — Status: open
 
-- **Intent:** The owner can rely on the app for real job-hunting: it is up when a recruiter calls, the risky paths are verified in production, failures are visible, and the demo data is replaced by real applications.
-- **Source materials:** `context/foundation/infrastructure.md` (researched 2026-09-30, `## Risk Register`) and the owner's description (switch from `[TEST]` demo data to real data). Every PRD must-have (FR-001–FR-013) is already built and deployed — see `## Baseline` — so the PRD is not re-sliced here.
-- **Done when:** every F-NN and S-NN below is `done`.
+- **Intent:** The owner uses the app every day on real applications: every screen works one-handed on a small phone, the CV flow is robust against the gaps the analyses found, and every known error path from the audit is either fixed or consciously accepted.
+- **Source materials:** user description (anchors below), grounded in the analyses listed above.
+- **Done when:** every S-NN below is `done`. If time runs short before 2026-11-04, items are cut in this order: S-12, then S-09, then S-08 (see `## Open Roadmap Questions`).
 - **Scope anchors:**
-  - MS-01: The app is usable after a week or more without use — the database must not be paused when a recruiter calls. (Risk register: Supabase free project pauses after inactivity — M/H.)
-  - MS-02: Uploading a CV of up to 5 MB works in production. (Risk register: CV upload exceeds the free-plan CPU limit — M/M.)
-  - MS-03: Rolling back a production deploy after a database migration does not break the app. (Risk register: rollback after a migration runs old code on a new schema — L/H.)
-  - MS-04: Application details open quickly on a phone during a call. (Risk register: latency from multiple sequential database calls per page — L/M.)
-  - MS-05: Production errors are noticed instead of failing silently. (Risk register: silent errors with nobody watching logs — M/M.)
-  - MS-06: The owner removes the demo data and starts entering real applications. (Owner's description: clear test data without loading new test data.)
+  - MS-01: Every screen can be used one-handed on a 360 px phone — the application list, the add/edit form and the CV library move onto the UI design contract (PRD guardrail "Phone usability").
+  - MS-02: Re-uploading a CV recognises an already-stored file by the storage service's structured error code, not by the wording of its message (analysis item K3).
+  - MS-03: The database refuses an application that points at another user's CV (analysis item K8, domain drift D-06).
+  - MS-04: In-page preview of both PDF and DOCX is proven by a browser test, and each allowed file type has an explicitly assigned renderer (analysis item K6).
+  - MS-05: The 21 observability-audit findings not named in the production-error-visibility plan are re-checked; the ones still open are fixed or consciously accepted.
 
 ## Vision recap
 
-A candidate running many parallel recruitment processes needs, the moment HR calls unexpectedly, to know which offer the call is about, what rate they quoted, and what was already agreed — something a spreadsheet can't answer quickly on a phone or a computer. The product answers "what do I know about this company?" in under 10 seconds. This milestone doesn't add capabilities; it makes that promise hold in daily, real use.
+A single candidate runs many recruitment processes at once; when HR calls unexpectedly they must find the right application and see its salary range, quoted rate and agreements in under 10 seconds, on phone or desktop. Milestone M-1 made the app dependable for real use; M-2 makes daily use on real data comfortable and closes the gaps the analyses found.
 
 ## North star
 
-**S-01: The app works after a week without use** — the north star is the smallest end-to-end change whose success proves this milestone's point: that the app can be trusted at the moment it matters. It goes first because the app is worthless during a call if its database is asleep, and every other item here only matters once that holds.
+**S-06: user can scan the application list on a 360 px phone without horizontal scrolling or clipped text** — the list is the first screen during an unexpected HR call, and it is the one place the project map found broken on a small phone.
+
+> "North star" here means the smallest end-to-end slice whose delivery proves the milestone's point — placed first because the rest only matters if daily use on the phone works.
 
 ## At a glance
 
-| ID   | Change ID                     | Outcome (user can …)                                                        | Prerequisites | PRD refs | Status |
-| ---- | ----------------------------- | --------------------------------------------------------------------------- | ------------- | -------- | ------ |
-| F-01 | production-error-visibility   | (foundation) production errors reach a place the owner actually checks      | —             | MS-05    | done   |
-| S-01 | app-available-after-idle-week | open the app and search after a week or more without using it               | —             | MS-01    | done   |
-| S-02 | cv-upload-5mb-in-production   | attach a 5 MB CV in production without an error                             | F-01          | MS-02    | done   |
-| S-03 | testing-safe-migrations       | roll back a bad deploy after a migration and still use the app              | —             | MS-03    | done   |
-| S-04 | fast-details-on-phone         | open an application's details on a phone and see call-critical info quickly | —             | MS-04    | done   |
-| S-05 | switch-to-real-data           | clear the demo data and start tracking real applications                    | S-01          | MS-06    | done   |
+| ID   | Change ID                  | Outcome (user can …)                                                           | Prerequisites | PRD refs | Status |
+| ---- | -------------------------- | ------------------------------------------------------------------------------ | ------------- | -------- | ------ |
+| S-06 | phone-friendly-list        | scan the application list on a 360 px phone without horizontal scrolling       | —             | MS-01    | ready  |
+| S-07 | phone-friendly-form        | add and edit an application comfortably on a 360 px phone                      | —             | MS-01    | ready  |
+| S-08 | phone-friendly-cv-library  | use the CV library and its preview comfortably on a 360 px phone               | —             | MS-01    | ready  |
+| S-09 | cv-preview-by-type         | preview both PDF and DOCX CVs, with a browser test proving each                | —             | MS-04    | ready  |
+| S-10 | cv-duplicate-by-error-code | re-upload a CV after a failed attempt and have the stored file reused reliably | —             | MS-02    | ready  |
+| S-11 | cv-owner-integrity         | trust that an application can only point at their own CV                       | —             | MS-03    | ready  |
+| S-12 | audit-findings-closed      | rely on every known error path being reported or consciously accepted          | —             | MS-05    | ready  |
 
 ## Streams
 
-Navigation aid — groups items that share a Prerequisites chain. Canonical ordering still lives in the dependency graph below; this table is the proposed reading order across parallel tracks.
+Navigation aid — groups items that share a theme and a reading order. Canonical ordering still lives in the slice list below; this table is the proposed reading order across parallel tracks.
 
-| Stream | Theme            | Chain           | Note                                                                                   |
-| ------ | ---------------- | --------------- | -------------------------------------------------------------------------------------- |
-| A      | Availability     | `S-01` → `S-05` | Real data goes in only after the app is known to stay up — the reliability goal first. |
-| B      | Visible failures | `F-01` → `S-02` | Error visibility first, so the CV-upload check can see a CPU-limit failure.            |
-| C      | Safe releases    | `S-03`          | Standalone; protects every later deploy in this milestone.                             |
-| D      | Call speed       | `S-04`          | Standalone; measures before changing anything.                                         |
+| Stream | Theme         | Chain                    | Note                                                                                        |
+| ------ | ------------- | ------------------------ | ------------------------------------------------------------------------------------------- |
+| A      | Phone comfort | `S-06` → `S-07` → `S-08` | The main_goal (quality) is felt here first; the list leads because it is used during calls. |
+| B      | CV robustness | `S-09` → `S-10` → `S-11` | Independent of Stream A; S-11 is the only item with a database migration.                   |
+| C      | Error paths   | `S-12`                   | Standalone; first in the cut order if time runs short.                                      |
 
 ## Baseline
 
-What's already in place in the codebase as of `2026-09-30` (auto-researched + user-confirmed).
-Foundations below assume these are present and do NOT re-scaffold them.
+What's already in place in the codebase as of `2026-10-10` (known from the project map and M-1; no layer is absent).
 
-- **Frontend:** present — per tech-stack.md: server-rendered pages with interactive islands; all PRD screens shipped (list, search, status filter, details, edit, CV library).
-- **Backend / API:** present — API routes for applications, notes, CV and sign-in, each checking the signed-in user.
-- **Data:** present — hosted Postgres with row-level security, atomic "change + trace" database functions, private CV storage with content deduplication.
+- **Frontend:** present — server-rendered pages with interactive islands; all PRD screens shipped. The details view, the 500 page and the shared error components are on the UI design contract (`scripts/check-ui-literals.mjs`); the list, the add/edit form and the CV library are not yet.
+- **Backend / API:** present — API routes for applications, notes, CV, sign-in and error reports; malformed route ids answer 404 (`routeId`).
+- **Data:** present — hosted Postgres with row-level security, atomic "change + trace" database functions, private CV storage with content deduplication; migrations are linted and gated before deploy.
 - **Auth:** present — email + password sign-in, no self sign-up, protected routes.
-- **Deploy / infra:** present — Cloudflare Workers, CI with lint, unit, database and smoke tests, auto-deploy on `main`. No scheduled jobs and no health-check endpoint.
-- **Observability:** partial — platform observability is enabled and errors are logged in route handlers, but nothing alerts the owner and nobody reviews the logs.
+- **Deploy / infra:** present — Cloudflare Workers, CI (lint, unit, database, smoke and browser tests), auto-deploy on `main`, a keepalive schedule and a daily health probe.
+- **Observability:** present — errors become Cloudflare issues and reach the owner on Telegram; one structured log line per failure; browser failures are reported.
 
 ## Foundations
 
-### F-01: Production errors reach the owner
-
-- **Outcome:** (foundation) a failing request in production leaves a record the owner sees without actively digging through live logs.
-- **Change ID:** production-error-visibility
-- **PRD refs:** MS-05
-- **Unlocks:** S-02 (verification path: a CPU-limit failure on CV upload becomes visible instead of a silent error page); detection path for S-01 (knowing if the app goes down between uses).
-- **Prerequisites:** —
-- **Parallel with:** S-01, S-03, S-04
-- **Blockers:** —
-- **Unknowns:**
-  - Is the platform's built-in observability enough (with a routine to check it), or is a separate error tracker needed? — Owner: user. Block: no.
-- **Risk:** Sequenced first in its stream because the reliability goal means failures must be visible before the risky paths are exercised; the risk is over-building monitoring for a single-user app — keep it to the minimum that surfaces an error.
-- **Status:** done
+None — every layer is present (see `## Baseline`); each slice below introduces what it needs.
 
 ## Slices
 
-### S-01: The app works after a week without use
+### S-06: Phone-friendly application list
 
-- **Outcome:** user can open the app and search their applications after a week or more without using it.
-- **Change ID:** app-available-after-idle-week
+- **Outcome:** user can scan the application list on a 360 px phone without horizontal scrolling or clipped text.
+- **Change ID:** phone-friendly-list
 - **PRD refs:** MS-01
 - **Prerequisites:** —
-- **Parallel with:** F-01, S-03, S-04
+- **Parallel with:** S-07, S-08, S-09, S-10, S-11, S-12
 - **Blockers:** —
-- **Unknowns:**
-  - What is the database provider's current inactivity-pause policy for free projects (period, and what counts as activity)? — Owner: user. Block: no.
-  - Keep the free plan with a keep-alive, or move to a paid database plan? — Owner: user. Block: no.
-- **Risk:** Highest-impact risk in the register and the north star; the risk in the fix is a keep-alive that silently stops running — it needs its own failure signal.
-- **Status:** done
+- **Unknowns:** —
+- **Risk:** The list is the busiest screen and the one used during calls; moving it onto the design contract first gives the pattern the other two screens follow.
+- **Status:** ready
 
-### S-02: A 5 MB CV uploads in production
+### S-07: Phone-friendly add and edit form
 
-- **Outcome:** user can attach a CV of up to 5 MB to an application in production without an error.
-- **Change ID:** cv-upload-5mb-in-production
-- **PRD refs:** MS-02
-- **Prerequisites:** F-01
-- **Parallel with:** S-01, S-03, S-04
-- **Blockers:** —
-- **Unknowns:**
-  - Does a 5 MB upload actually exceed the free-plan CPU limit in production, or is it within burst tolerance? — Owner: user. Block: no.
-- **Risk:** Follows F-01 so the test result is observable; if it fails, the choice is between a paid hosting plan and moving the hashing work, which changes where file checks happen.
-- **Status:** done
-
-### S-03: Rolling back after a migration is safe
-
-- **Outcome:** user (the owner) can roll back a bad production deploy made after a database migration and still use the app.
-- **Change ID:** testing-safe-migrations (closed by test-plan Phase 3; was `safe-rollback-after-migration`)
-- **PRD refs:** MS-03
+- **Outcome:** user can add and edit an application comfortably on a 360 px phone.
+- **Change ID:** phone-friendly-form
+- **PRD refs:** MS-01
 - **Prerequisites:** —
-- **Parallel with:** F-01, S-01, S-04
+- **Parallel with:** S-06, S-08, S-09, S-10, S-11, S-12
 - **Blockers:** —
-- **Unknowns:**
-  - Are the existing migrations backward-compatible with the previous code version? — Owner: team. Block: no.
-- **Risk:** Low likelihood but high impact; placed early because every later slice in this milestone ships through the same deploy path.
-- **Status:** done
+- **Unknowns:** —
+- **Risk:** The form has the most fields and validation messages; sequenced after the list so it reuses the list's patterns.
+- **Status:** ready
 
-### S-04: Details open quickly on a phone
+### S-08: Phone-friendly CV library
 
-- **Outcome:** user can open an application's details on a phone and see salary range, quoted rate, status and the latest agreement quickly enough for a live call.
-- **Change ID:** fast-details-on-phone
+- **Outcome:** user can use the CV library and its preview comfortably on a 360 px phone.
+- **Change ID:** phone-friendly-cv-library
+- **PRD refs:** MS-01
+- **Prerequisites:** —
+- **Parallel with:** S-06, S-07, S-09, S-10, S-11, S-12
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Used less often than the list and the form, so third in the cut order; touches the same preview component as S-09 — run them one after the other, not at the same time.
+- **Status:** ready
+
+### S-09: CV preview proven per file type
+
+- **Outcome:** user can preview both PDF and DOCX CVs in the page, and a browser test proves each.
+- **Change ID:** cv-preview-by-type
 - **PRD refs:** MS-04
 - **Prerequisites:** —
-- **Parallel with:** F-01, S-01, S-03
+- **Parallel with:** S-06, S-07, S-10, S-11, S-12
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** DOCX preview has never been exercised by any test; the browser test is the safety net that the analyses said must come before changing the renderer choice.
+- **Status:** ready
+
+### S-10: CV duplicate recognised by error code
+
+- **Outcome:** user can re-upload a CV after a failed attempt and have the already-stored file reused reliably.
+- **Change ID:** cv-duplicate-by-error-code
+- **PRD refs:** MS-02
+- **Prerequisites:** —
+- **Parallel with:** S-06, S-07, S-08, S-09, S-11, S-12
 - **Blockers:** —
 - **Unknowns:**
-  - Is the details page actually slow on a phone today, or is this risk theoretical? — Owner: user. Block: no.
-- **Risk:** Measure first; if it is already fast the slice closes with the measurement, avoiding an optimisation nobody needs.
-- **Status:** done
+  - What the storage service actually returns for a duplicate file (status, code) locally and in the cloud — Owner: team (a local probe as the first step). Block: no.
+- **Risk:** Small change, but a wrong structured check would break the very self-healing it protects; the probe comes first.
+- **Status:** ready
 
-### S-05: Switch to real data
+### S-11: CV ownership enforced by the database
 
-- **Outcome:** user can clear the demo data and start tracking their real applications.
-- **Change ID:** switch-to-real-data
-- **PRD refs:** MS-06
-- **Prerequisites:** S-01
-- **Parallel with:** F-01, S-02, S-03, S-04
+- **Outcome:** user can trust that an application can only point at their own CV.
+- **Change ID:** cv-owner-integrity
+- **PRD refs:** MS-03
+- **Prerequisites:** —
+- **Parallel with:** S-06, S-07, S-08, S-09, S-10, S-12
 - **Blockers:** —
 - **Unknowns:**
-  - ~~Should demo CV files be removed from storage as well?~~ Resolved 2026-10-06 (domain distillation Q-01): yes — the switch wipes everything (applications, notes, history, CV files and rows); it must run before the first real application is entered (PRD FR-004 update).
-- **Risk:** Last in its stream so real data never lands in an app that can go dark between uses; clearing is destructive and one-way, so it must require an explicit confirmation.
-- **Status:** done
+  - Whether any existing production row already points at another user's CV — Owner: user (one read-only query in the cloud database). Block: no.
+- **Risk:** The only item with a database migration — it carries the migration ritual (push the migration before the code, previous-version compatibility check, deploy gate).
+- **Status:** ready
+
+### S-12: Audit findings closed
+
+- **Outcome:** user can rely on every known error path being reported, or consciously accepted as a known limit.
+- **Change ID:** audit-findings-closed
+- **PRD refs:** MS-05
+- **Prerequisites:** —
+- **Parallel with:** S-06, S-07, S-08, S-09, S-10, S-11
+- **Blockers:** —
+- **Unknowns:** —
+- **Risk:** Size unknown until the re-check runs; first in the cut order, and its re-check alone (without fixes) already turns unknowns into a list.
+- **Status:** ready
 
 ## Backlog Handoff
 
-| Roadmap ID | Change ID                     | Suggested issue title                             | Ready for `/10x-plan` | Notes                                                         |
-| ---------- | ----------------------------- | ------------------------------------------------- | --------------------- | ------------------------------------------------------------- |
-| F-01       | production-error-visibility   | Make production errors visible to the owner       | yes                   | Run `/10x-plan production-error-visibility`                   |
-| S-01       | app-available-after-idle-week | Keep the app working after a week without use     | yes                   | North star — run `/10x-plan app-available-after-idle-week`    |
-| S-02       | cv-upload-5mb-in-production   | Verify and fix 5 MB CV upload in production       | no                    | Waits for F-01                                                |
-| S-03       | testing-safe-migrations       | Make rollback after a migration safe              | yes                   | Implemented via test-plan Phase 3 (`testing-safe-migrations`) |
-| S-04       | fast-details-on-phone         | Measure and, if needed, speed up details on phone | yes                   | Run `/10x-plan fast-details-on-phone`                         |
-| S-05       | switch-to-real-data           | Clear demo data and start using real applications | no                    | Waits for S-01                                                |
+| Roadmap ID | Change ID                  | Suggested issue title                                    | Ready for `/10x-plan` | Notes                                            |
+| ---------- | -------------------------- | -------------------------------------------------------- | --------------------- | ------------------------------------------------ |
+| S-06       | phone-friendly-list        | Application list usable on a 360 px phone                | yes                   | Run `/10x-ui` or `/10x-plan phone-friendly-list` |
+| S-07       | phone-friendly-form        | Add/edit form usable on a 360 px phone                   | yes                   | Run `/10x-ui` or `/10x-plan phone-friendly-form` |
+| S-08       | phone-friendly-cv-library  | CV library usable on a 360 px phone                      | yes                   | Run after S-09 or before it, not in parallel     |
+| S-09       | cv-preview-by-type         | Browser test for PDF and DOCX preview; renderer per type | yes                   | Run `/10x-plan cv-preview-by-type`               |
+| S-10       | cv-duplicate-by-error-code | Recognise a stored CV duplicate by error code            | yes                   | Probe the storage response first                 |
+| S-11       | cv-owner-integrity         | Database refuses a foreign CV on an application          | yes                   | Migration ritual applies                         |
+| S-12       | audit-findings-closed      | Re-check and close the remaining audit findings          | yes                   | Start with `/10x-observability-audit --verify`   |
 
 ## Open Roadmap Questions
 
-1. **Stay on free plans with workarounds, or pay for the database and/or hosting plan?** — Owner: user. Block: affects the fix chosen in S-01 and S-02, not whether they can be planned.
-2. **Is "remove = set status Withdrawn" accepted by external reviewers as the delete operation?** — Owner: user (ask the reviewers). Block: roadmap-wide only if the answer is no — then a new source anchor is needed.
+1. **Is "remove = set status Withdrawn" accepted by external reviewers as the delete operation?** — Owner: user (ask the reviewers). Block: roadmap-wide only if the answer is no — then a new source anchor is needed.
+2. **If time runs short before 2026-11-04, which items are cut?** — Owner: user. Block: none — the agreed cut order is S-12, then S-09, then S-08.
 
 ## Parked
 
@@ -181,8 +190,13 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Adapter and runtime compatibility-date upgrades** — Why parked: upgrade deliberately, one at a time, with the smoke test — not a milestone item (risk register: adapter drift, M/L).
 - **Moving the data layer to the hosting vendor** — Why parked: the owner prefers co-located services, but the database carries sign-in, row-level security and the atomic change functions; `infrastructure.md` lists it as out of scope.
 - **Reminders, integrations, AI features, offline mode** — Why parked: PRD Non-Goals.
+- **Paid database or hosting plan** — Why parked: M-1 stayed on the free plans (measured CPU headroom for 5 MB uploads, keepalive against pausing); revisit at the first exceeded-CPU or paused-project event.
+- **Download through the client error channel (analysis item K7)** — Why parked: a UX and observability trade-off (memory buffering, losing the native download), not a structural defect.
+- **Single request for upload and attach (analysis item K4)** — Why parked: it would be a new domain operation, and storage cannot share a database transaction; the two-step flow is acceptable.
 
 ## Milestone History
+
+- **M-1: Ready for real use** (`ready-for-real-use`) — closed 2026-10-10. The app stays up between uses, the risky paths (5 MB CV upload, rollback after a migration, call-critical details on a phone) are verified in production, production errors reach the owner on Telegram, and the demo data is replaced by real applications.
 
 ## Done
 
