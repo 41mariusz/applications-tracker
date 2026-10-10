@@ -2,8 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.26.0",
   "manifestVersion": 3,
-  "lastApplied": "2026-10-06T16:07:23.661Z",
-  "lessonId": "m4l5",
+  "lastApplied": "2026-10-10T09:26:31.538Z",
+  "lessonId": "m2l6",
   "course": "10xdevs4",
   "tool": "claude-code",
   "files": {
@@ -1617,6 +1617,83 @@
         "m4l5-1-domain-distillation.md",
         "m4l5-2-invariant-aggregate-refactor.md",
         "m4l5-3-anti-corruption-layer.md"
+      ],
+      "configs": []
+    },
+    "m2l6": {
+      "appliedAt": "2026-10-10T09:26:31.538Z",
+      "skills": {
+        "10x-idea-check": {
+          "files": ["SKILL.md", "references/examples.md"]
+        },
+        "10x-init": {
+          "files": ["SKILL.md"]
+        },
+        "10x-tech-stack-selector": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-stack-assess": {
+          "files": ["references/decision-flow.md", "references/starter-registry.yaml"]
+        },
+        "10x-bootstrapper": {
+          "files": [
+            "references/bootstrapper-config.yaml",
+            "references/handoff-consumer.md",
+            "references/post-scaffold-verification.md",
+            "references/pre-scaffold-verification.md"
+          ]
+        },
+        "10x-health-check": {
+          "files": ["references/health-check-schema.md"]
+        },
+        "10x-lesson": {
+          "files": ["SKILL.md"]
+        },
+        "10x-new": {
+          "files": ["references/change-md.md"]
+        },
+        "10x-plan": {
+          "files": [
+            "references/plan-persistence.md",
+            "references/progress-format.md",
+            "references/task-orchestration.md",
+            "scripts/metadata-guard.mjs",
+            "scripts/metadata-guard.test.mjs"
+          ]
+        },
+        "10x-plan-review": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-implement": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-archive": {
+          "files": ["references/archive-sha.md"]
+        },
+        "10x-status": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-impl-review": {
+          "files": ["references/progress-format.md"]
+        },
+        "10x-research": {
+          "files": [
+            "SKILL.md",
+            "references/task-orchestration.md",
+            "scripts/metadata-guard.mjs",
+            "scripts/prose-json-check.mjs",
+            "scripts/prose-json-check.test.mjs"
+          ]
+        },
+        "10x-ui": {
+          "files": ["references/ui-quality-checklist.md"]
+        }
+      },
+      "prompts": [
+        "m1l5-1-plan-integration.md",
+        "m1l5-2-constrain-approach.md",
+        "m1l5-3-extend-prerequisites.md",
+        "m1l5-4-store-plan.md"
       ],
       "configs": []
     }
