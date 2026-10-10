@@ -1,15 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import ErrorText from "@/components/ErrorText";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/api-client";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { cn } from "@/lib/utils";
-import type { ApplicationFormErrors, ApplicationFormValues } from "@/lib/services/applications";
+import {
+  APPLICATION_FIELD_MAX,
+  type ApplicationFormErrors,
+  type ApplicationFormValues,
+} from "@/lib/services/applications";
 import { EMPLOYMENT_TYPES, EMPLOYMENT_TYPE_LABELS, WORK_MODES, WORK_MODE_LABELS } from "@/types";
+import {
+  FORM_CONTROL_CLASS,
+  FORM_ERROR_CLASS,
+  FORM_LABEL_CLASS,
+  FORM_TEXT_ACTION_CLASS,
+} from "@/components/applications/form-classes";
 
-const inputClass =
-  "w-full rounded-lg border bg-white/10 px-3 py-2 text-white placeholder-white/40 focus:ring-2 focus:outline-none";
-const labelClass = "mb-1 block text-sm text-blue-100/80";
+const noopSubscribe = () => () => undefined;
 
 interface FieldProps {
   name: keyof ApplicationFormErrors;
@@ -19,28 +32,27 @@ interface FieldProps {
   type?: string;
   placeholder?: string;
   defaultValue?: string;
+  maxLength?: number;
 }
 
-function Field({ name, label, error, children, type = "text", placeholder, defaultValue }: FieldProps) {
+function Field({ name, label, error, children, type = "text", placeholder, defaultValue, maxLength }: FieldProps) {
   return (
     <div>
-      <label htmlFor={name} className={labelClass}>
+      <Label htmlFor={name} className={FORM_LABEL_CLASS}>
         {label}
-      </label>
+      </Label>
       {children ?? (
-        <input
+        <Input
           id={name}
           name={name}
           type={type}
           placeholder={placeholder}
           defaultValue={defaultValue}
-          className={cn(
-            inputClass,
-            error ? "border-destructive/60 focus:ring-destructive" : "border-white/20 focus:ring-purple-400",
-          )}
+          maxLength={maxLength}
+          className={cn(FORM_CONTROL_CLASS, error && "border-destructive")}
         />
       )}
-      {error && <p className="text-destructive mt-1 text-xs">{error}</p>}
+      {error && <p className={FORM_ERROR_CLASS}>{error}</p>}
     </div>
   );
 }
@@ -54,6 +66,13 @@ export default function ApplicationForm({ application }: Props) {
   const [errors, setErrors] = useState<ApplicationFormErrors>({});
   const [serverError, setServerError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
+  // The form has no native action: until the island hydrates, a submit would be a GET with the values in the URL.
+  // The server snapshot is false, so SSR and the first client render agree and the button enables after hydration.
+  const hydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
   const initial = application?.values;
   const [quotedRate, setQuotedRate] = useState(initial?.quoted_rate ?? "");
   // Editing the quoted rate offers an optional "why" note (PRD FR-012).
@@ -87,8 +106,6 @@ export default function ApplicationForm({ application }: Props) {
     void submit(e.currentTarget);
   }
 
-  const selectClass = cn(inputClass, "border-white/20 focus:ring-purple-400");
-
   return (
     <form
       className="space-y-4"
@@ -101,8 +118,20 @@ export default function ApplicationForm({ application }: Props) {
       noValidate
     >
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field name="company" label="Firma *" defaultValue={initial?.company} error={errors.company} />
-        <Field name="position" label="Stanowisko *" defaultValue={initial?.position} error={errors.position} />
+        <Field
+          name="company"
+          label="Firma *"
+          defaultValue={initial?.company}
+          maxLength={APPLICATION_FIELD_MAX.company}
+          error={errors.company}
+        />
+        <Field
+          name="position"
+          label="Stanowisko *"
+          defaultValue={initial?.position}
+          maxLength={APPLICATION_FIELD_MAX.position}
+          error={errors.position}
+        />
       </div>
 
       <Field
@@ -111,6 +140,7 @@ export default function ApplicationForm({ application }: Props) {
         type="url"
         placeholder="https://…"
         defaultValue={initial?.posting_url}
+        maxLength={APPLICATION_FIELD_MAX.posting_url}
         error={errors.posting_url}
       />
 
@@ -120,6 +150,7 @@ export default function ApplicationForm({ application }: Props) {
           label="Widełki z ogłoszenia"
           placeholder="np. 18–24k netto B2B"
           defaultValue={initial?.salary_range}
+          maxLength={APPLICATION_FIELD_MAX.salary_range}
           error={errors.salary_range}
         />
         <Field
@@ -127,21 +158,22 @@ export default function ApplicationForm({ application }: Props) {
           label="Moja podana stawka"
           placeholder="np. 22k netto"
           defaultValue={initial?.quoted_rate}
+          maxLength={APPLICATION_FIELD_MAX.quoted_rate}
           error={errors.quoted_rate}
         />
       </div>
 
       {rateChanged && (
         <div>
-          <label htmlFor="rate_change_note" className={labelClass}>
+          <Label htmlFor="rate_change_note" className={FORM_LABEL_CLASS}>
             Dlaczego zmieniasz stawkę? (opcjonalnie — trafi do notatek)
-          </label>
-          <textarea
+          </Label>
+          <Textarea
             id="rate_change_note"
             name="rate_change_note"
             rows={2}
             placeholder="np. po rozmowie technicznej podniosłem do 24k"
-            className={cn(inputClass, "border-white/20 focus:ring-purple-400")}
+            className={FORM_CONTROL_CLASS}
           />
         </div>
       )}
@@ -151,6 +183,7 @@ export default function ApplicationForm({ application }: Props) {
           name="hr_contact_name"
           label="Kontakt HR — imię i nazwisko"
           defaultValue={initial?.hr_contact_name}
+          maxLength={APPLICATION_FIELD_MAX.hr_contact_name}
           error={errors.hr_contact_name}
         />
         <Field
@@ -158,6 +191,7 @@ export default function ApplicationForm({ application }: Props) {
           label="Kontakt HR — telefon"
           type="tel"
           defaultValue={initial?.hr_contact_phone}
+          maxLength={APPLICATION_FIELD_MAX.hr_contact_phone}
           error={errors.hr_contact_phone}
         />
       </div>
@@ -171,33 +205,36 @@ export default function ApplicationForm({ application }: Props) {
           error={errors.applied_on}
         />
         <Field name="employment_type" label="Forma zatrudnienia" error={errors.employment_type}>
-          <select
+          <NativeSelect
             id="employment_type"
             name="employment_type"
             defaultValue={initial?.employment_type ?? ""}
-            className={selectClass}
+            wrapperClassName="w-full"
+            className={cn(FORM_CONTROL_CLASS, errors.employment_type && "border-destructive")}
           >
-            <option value="" className="text-black">
-              —
-            </option>
+            <NativeSelectOption value="">—</NativeSelectOption>
             {EMPLOYMENT_TYPES.map((t) => (
-              <option key={t} value={t} className="text-black">
+              <NativeSelectOption key={t} value={t}>
                 {EMPLOYMENT_TYPE_LABELS[t]}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </Field>
         <Field name="work_mode" label="Tryb pracy" error={errors.work_mode}>
-          <select id="work_mode" name="work_mode" defaultValue={initial?.work_mode ?? ""} className={selectClass}>
-            <option value="" className="text-black">
-              —
-            </option>
+          <NativeSelect
+            id="work_mode"
+            name="work_mode"
+            defaultValue={initial?.work_mode ?? ""}
+            wrapperClassName="w-full"
+            className={cn(FORM_CONTROL_CLASS, errors.work_mode && "border-destructive")}
+          >
+            <NativeSelectOption value="">—</NativeSelectOption>
             {WORK_MODES.map((m) => (
-              <option key={m} value={m} className="text-black">
+              <NativeSelectOption key={m} value={m}>
                 {WORK_MODE_LABELS[m]}
-              </option>
+              </NativeSelectOption>
             ))}
-          </select>
+          </NativeSelect>
         </Field>
       </div>
 
@@ -211,18 +248,12 @@ export default function ApplicationForm({ application }: Props) {
         </Alert>
       )}
 
-      <div className="flex items-center gap-3 pt-2">
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-lg bg-purple-600 px-5 py-2 font-medium transition-colors hover:bg-purple-500 disabled:opacity-60"
-        >
+      <div className="flex items-center gap-4 pt-2">
+        {/* size lg is h-10: the submit is 40 px tall like the controls. */}
+        <Button type="submit" size="lg" disabled={pending || !hydrated}>
           {pending ? "Zapisywanie…" : "Zapisz"}
-        </button>
-        <a
-          href={application ? `/applications/${application.id}` : "/dashboard"}
-          className="text-sm text-purple-300 hover:underline"
-        >
+        </Button>
+        <a href={application ? `/applications/${application.id}` : "/dashboard"} className={FORM_TEXT_ACTION_CLASS}>
           Anuluj
         </a>
       </div>

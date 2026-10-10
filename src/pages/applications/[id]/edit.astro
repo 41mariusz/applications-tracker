@@ -2,12 +2,15 @@
 import Layout from "@/layouts/Layout.astro";
 import Topbar from "@/components/Topbar.astro";
 import ApplicationForm from "@/components/applications/ApplicationForm";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { buttonVariants } from "@/components/ui/button";
 import { TRACKED_FIELDS } from "@/lib/domain/changes";
 import type { ApplicationFormValues } from "@/lib/services/applications";
 import { toServiceError } from "@/lib/services/errors";
 import { isUuid } from "@/lib/domain/ids";
 import { logError } from "@/lib/log";
 import { isProjectPaused } from "@/lib/supabase-paused";
+import { cn } from "@/lib/utils";
 import type { Application } from "@/types";
 
 const supabase = Astro.locals.supabase;
@@ -40,16 +43,38 @@ if (loadError) {
 const values = application
   ? (Object.fromEntries(TRACKED_FIELDS.map((f) => [f, application[f] ?? ""])) as ApplicationFormValues)
   : null;
+// Inline text link: link variant without the button box (as on the details view).
+const linkClass = cn(buttonVariants({ variant: "link" }), "h-auto p-0 font-normal");
 ---
 
-<Layout title="Edytuj aplikację">
-  <div class="bg-cosmic min-h-screen p-4 sm:p-8">
+<Layout title={application ? "Edytuj aplikację" : loadError ? "Aplikacja" : "Nie znaleziono"}>
+  <div class="bg-cosmic min-h-screen p-4 scheme-dark sm:p-8">
     <Topbar />
-    <div class="mx-auto max-w-2xl rounded-2xl border border-white/10 bg-white/10 p-6 text-white backdrop-blur-xl sm:p-8">
-      <h1 class="mb-6 text-2xl font-bold">Edytuj aplikację</h1>
-      {loadError && <p class="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{loadError}</p>}
-      {!application && !loadError && <p class="text-blue-100/70">Nie znaleziono tej aplikacji.</p>}
-      {application && values && <ApplicationForm application={{ id: application.id, values }} client:load />}
+    <div class="text-foreground mx-auto max-w-2xl space-y-4">
+      <a href={application ? `/applications/${application.id}` : "/dashboard"} class:list={linkClass}>
+        {application ? "← Szczegóły aplikacji" : "← Moje aplikacje"}
+      </a>
+
+      {loadError && (
+        <Alert variant="destructive">
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      )}
+      {!application && !loadError && (
+        <div class="bg-card rounded-xl border p-6 text-center" data-testid="not-found">
+          <h1 class="text-lg font-semibold">Nie znaleziono</h1>
+          <p class="text-supporting-foreground mt-1">Tej aplikacji nie ma albo link jest nieprawidłowy.</p>
+          <a href="/dashboard" class:list={cn(buttonVariants({ size: "sm" }), "mt-4")}>
+            Wróć do listy
+          </a>
+        </div>
+      )}
+      {application && values && (
+        <div class="bg-card rounded-xl border p-4 sm:p-6">
+          <h1 class="mb-6 text-2xl font-bold">Edytuj aplikację</h1>
+          <ApplicationForm application={{ id: application.id, values }} client:load />
+        </div>
+      )}
     </div>
   </div>
 </Layout>

@@ -387,30 +387,30 @@ No database migration. The change is UI-only and backward-compatible with the AP
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes (incl. `check-ui-literals`, `check-migrations`)
-- [x] 1.2 `npm test` passes (existing validation tests unchanged)
-- [x] 1.3 `npx astro check` passes
-- [x] 1.4 Hardcoded-value scan on `form-classes.ts` returns 0 hits
+- [x] 1.1 `npm run lint` passes (incl. `check-ui-literals`, `check-migrations`) — a2a5f36
+- [x] 1.2 `npm test` passes (existing validation tests unchanged) — a2a5f36
+- [x] 1.3 `npx astro check` passes — a2a5f36
+- [x] 1.4 Hardcoded-value scan on `form-classes.ts` returns 0 hits — a2a5f36
 
 #### Manual
 
-- [x] 1.5 `/applications/new` renders exactly as before (no visual change in this phase)
+- [x] 1.5 `/applications/new` renders exactly as before (no visual change in this phase) — a2a5f36
 
 ### Phase 2: The view on tokens and ui components
 
 #### Automated
 
-- [ ] 2.1 Hardcoded-value scan on `new.astro`, `[id]/edit.astro`, `ApplicationForm.tsx`, `form-classes.ts` returns 0 hits
-- [ ] 2.2 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass
-- [ ] 2.3 `npm run smoke` passes against a local preview
+- [x] 2.1 Hardcoded-value scan on `new.astro`, `[id]/edit.astro`, `ApplicationForm.tsx`, `form-classes.ts` returns 0 hits
+- [x] 2.2 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass
+- [x] 2.3 `npm run smoke` passes against a local preview
 
 #### Manual
 
-- [ ] 2.4 At 360 px: no sideways scroll, every control and "Anuluj" ≥ 40 px, rows stacked; 1280 px side by side — screenshots saved
-- [ ] 2.5 Select option lists are readable (light text on the dark popover) in Chromium
-- [ ] 2.6 Keyboard: every control and the back/cancel links show the `ring` focus
-- [ ] 2.7 Unknown-UUID edit URL shows the "Nie znaleziono" card with "Wróć do listy"
-- [ ] 2.8 Create and edit still save and redirect as before
+- [x] 2.4 At 360 px: no sideways scroll, every control and "Anuluj" ≥ 40 px, rows stacked; 1280 px side by side — screenshots saved
+- [x] 2.5 Select option lists are readable (light text on the dark popover) in Chromium
+- [x] 2.6 Keyboard: every control and the back/cancel links show the `ring` focus
+- [x] 2.7 Unknown-UUID edit URL shows the "Nie znaleziono" card with "Wróć do listy"
+- [x] 2.8 Create and edit still save and redirect as before
 
 ### Phase 3: States — error, busy and the kitchen sink
 
