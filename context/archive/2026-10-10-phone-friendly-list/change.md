@@ -1,10 +1,10 @@
 ---
 change_id: phone-friendly-list
 title: Application list usable on a 360 px phone (S-06)
-status: impl_reviewed
+status: archived
 created: 2026-10-10
 updated: 2026-10-10
-archived_at: null
+archived_at: 2026-10-10T09:25:06Z
 ---
 
 ## Notes
