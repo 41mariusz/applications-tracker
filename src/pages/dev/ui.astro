@@ -7,6 +7,7 @@ import Layout from "@/layouts/Layout.astro";
 import NotFound from "@/pages/404.astro";
 import StatusControl, { STATUS_PILL_CLASS } from "@/components/applications/StatusControl";
 import ApplicationCard from "@/components/applications/ApplicationCard.astro";
+import { FILTER_CHIP_CLASS } from "@/components/applications/list-classes";
 import NotesPanel from "@/components/applications/NotesPanel";
 import CvPanel from "@/components/applications/CvPanel";
 import { PreviewFallback } from "@/components/ErrorBoundary";
@@ -108,8 +109,16 @@ const closedApplication: Application = {
   applied_on: "2026-08-15",
   status: "rejected",
 };
-const chipClass =
-  "border-input bg-card text-supporting-foreground hover:bg-muted has-[:checked]:border-link has-[:checked]:bg-accent has-[:checked]:text-foreground has-[:focus-visible]:ring-ring inline-flex min-h-10 cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-xs select-none has-[:focus-visible]:ring-2";
+const bareApplication: Application = {
+  ...listBase,
+  id: "00000000-0000-4000-8000-000000000043",
+  company: "Initech",
+  position: "QA",
+  salary_range: null,
+  quoted_rate: null,
+  applied_on: null,
+  status: "sent",
+};
 const statusErrorMessage = errorMessage(
   { kind: "network", name: "TypeError", message: "Failed to fetch" },
   "Nie udało się zmienić statusu.",
@@ -366,7 +375,7 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
         </div>
 
         {/* Application list (/dashboard): the shared card plus the list's controls, in the 7 states. */}
-        <section class="space-y-4" data-ks="section-list">
+        <section class="space-y-4" id="ks-list" data-ks="section-list">
           <h2 class="font-semibold">Lista aplikacji (/dashboard)</h2>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div class="space-y-1">
@@ -383,6 +392,12 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
                 <ApplicationCard application={closedApplication} visible hydrate={false} />
               </ul>
             </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">default — bez widełek i stawki, bez daty</p>
+              <ul>
+                <ApplicationCard application={bareApplication} visible hydrate={false} />
+              </ul>
+            </div>
           </div>
           <Card className="gap-3 rounded-xl p-4 shadow-none">
             <p class="text-muted-foreground text-xs">
@@ -390,13 +405,13 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
               wyszukiwarce).
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <label class:list={chipClass} data-ks="hover-target">
+              <label class:list={FILTER_CHIP_CLASS} data-ks="hover-target">
                 <input type="checkbox" class="sr-only" />
-                Wysłana <span class="opacity-60">3</span>
+                Wysłana <span class="text-muted-foreground">3</span>
               </label>
-              <label class:list={chipClass}>
+              <label class:list={FILTER_CHIP_CLASS}>
                 <input type="checkbox" class="sr-only" checked data-ks="focus-target" />
-                Rozmowy <span class="opacity-60">1</span>
+                Rozmowy <span class="text-muted-foreground">1</span>
               </label>
               <a
                 href="#ks-list"
@@ -413,7 +428,13 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
               className="bg-muted h-auto rounded-lg px-4 py-3 text-base md:text-base"
               data-ks="focus-target"
             />
+            <p class="text-muted-foreground text-xs">
+              Wyniki: <span>12</span>
+            </p>
           </Card>
+          {/* StatusControl shows "Zapisywanie…" and its error line only after an interaction (internal state), so
+              these two cards copy that markup around the shared STATUS_PILL_CLASS. Keep them in step with
+              src/components/applications/StatusControl.tsx when it changes. */}
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
               <p class="text-muted-foreground text-xs">disabled — status w trakcie zapisu</p>

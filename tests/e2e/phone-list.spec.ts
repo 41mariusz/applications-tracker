@@ -50,12 +50,16 @@ test.describe("S-06: application list on a 360 px phone", () => {
 
     await page.goto("/dashboard");
     await expect(page.getByRole("link", { name: unbroken })).toBeVisible();
-    // Status controls are islands hydrated on visibility: wait for every visible card's control.
+    // Only this test's own cards are measured: other specs share the E2E user and may add or remove
+    // applications in parallel, so walking every card by index would be flaky.
     const cards = page.getByTestId("application-visible");
-    const count = await cards.count();
-    for (let i = 0; i < count; i++) {
-      await cards.nth(i).scrollIntoViewIfNeeded();
-      await expect(cards.nth(i).getByLabel("Zmień status")).toBeVisible();
+    const own = [unbroken, closed].map((company) => ({
+      company,
+      card: cards.filter({ has: page.getByRole("link", { name: company, exact: true }) }),
+    }));
+    for (const { card } of own) {
+      await card.scrollIntoViewIfNeeded();
+      await expect(card.getByLabel("Zmień status")).toBeVisible();
     }
 
     // No horizontal overflow.
@@ -65,15 +69,13 @@ test.describe("S-06: application list on a 360 px phone", () => {
     }));
     expect(width.scroll, "the page must not scroll sideways at 360 px").toBeLessThanOrEqual(width.client);
 
-    // Every visible card: the status control starts below the title block; it is at least 40 px tall.
-    for (let i = 0; i < count; i++) {
-      const card = cards.nth(i);
+    // Both cards: the status control starts below the title block; it is at least 40 px tall.
+    for (const { company, card } of own) {
       const title = await card.getByTestId("card-title").boundingBox();
       const status = await card.getByLabel("Zmień status").boundingBox();
-      expect(title && status, "card title and status control are rendered").toBeTruthy();
-      if (!title || !status) continue;
-      expect(status.y, `card ${i}: status control under the title`).toBeGreaterThanOrEqual(title.y + title.height);
-      expect(status.height, `card ${i}: status control at least 40 px`).toBeGreaterThanOrEqual(40);
+      if (!title || !status) throw new Error(`${company}: card title and status control must be rendered`);
+      expect(status.y, `${company}: status control under the title`).toBeGreaterThanOrEqual(title.y + title.height);
+      expect(status.height, `${company}: status control at least 40 px`).toBeGreaterThanOrEqual(40);
     }
 
     // Every filter chip is at least 40 px tall.
@@ -86,7 +88,7 @@ test.describe("S-06: application list on a 360 px phone", () => {
     }
 
     // Closed card: struck-through title; its status control has no reduced-opacity ancestor.
-    const closedCard = cards.filter({ has: page.getByRole("link", { name: closed }) });
+    const closedCard = own[1].card;
     await expect(closedCard.getByTestId("card-title")).toHaveCSS("text-decoration-line", "line-through");
     const dimmed = await closedCard.getByLabel("Zmień status").evaluate((el) => {
       for (let n: Element | null = el; n; n = n.parentElement) {

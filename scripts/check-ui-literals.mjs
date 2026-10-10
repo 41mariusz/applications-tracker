@@ -15,6 +15,8 @@ const CLEAN_VIEWS = [
   "src/pages/dev/ui.astro",
   "src/pages/dashboard.astro",
   "src/components/applications/ApplicationCard.astro",
+  "src/components/applications/StatusControl.tsx",
+  "src/components/applications/list-classes.ts",
   "src/components/ErrorBoundary.tsx",
   "src/components/ErrorText.tsx",
 ];
