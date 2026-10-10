@@ -212,14 +212,14 @@ Run the first command (preview) first, check the URL and counts, then the second
 
 #### Automated
 
-- [x] 1.1 Unit tests pass incl. demo-data-guard.test.mjs: `npm test`
-- [x] 1.2 Lint and types pass: `npm run lint` and `npx astro check`
+- [x] 1.1 Unit tests pass incl. demo-data-guard.test.mjs: `npm test` — 5c39abe
+- [x] 1.2 Lint and types pass: `npm run lint` and `npx astro check` — 5c39abe
 
 #### Manual
 
-- [x] 1.3 Local: preview shows local URL and counts and deletes nothing
-- [x] 1.4 Local: wrong --confirm e-mail refuses and deletes nothing
-- [x] 1.5 Local: a non-[TEST] application makes the run refuse; --include-real proceeds
-- [x] 1.6 Local: --clear-only --confirm leaves 0 rows in all six places and an empty bucket folder, no seeding
-- [x] 1.7 Local: --reset --confirm wipes and seeds ~300 [TEST] applications again
-- [x] 1.8 Break check: guard removed from decideWipe turns the unit test red; restored
+- [x] 1.3 Local: preview shows local URL and counts and deletes nothing — 5c39abe
+- [x] 1.4 Local: wrong --confirm e-mail refuses and deletes nothing — 5c39abe
+- [x] 1.5 Local: a non-[TEST] application makes the run refuse; --include-real proceeds — 5c39abe
+- [x] 1.6 Local: --clear-only --confirm leaves 0 rows in all six places and an empty bucket folder, no seeding — 5c39abe
+- [x] 1.7 Local: --reset --confirm wipes and seeds ~300 [TEST] applications again — 5c39abe
+- [x] 1.8 Break check: guard removed from decideWipe turns the unit test red; restored — 5c39abe

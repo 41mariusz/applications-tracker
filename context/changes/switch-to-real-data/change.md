@@ -1,7 +1,7 @@
 ---
 change_id: switch-to-real-data
 title: Switch from demo data to real data (S-05)
-status: implementing
+status: implemented
 created: 2026-10-10
 updated: 2026-10-10
 archived_at: null
