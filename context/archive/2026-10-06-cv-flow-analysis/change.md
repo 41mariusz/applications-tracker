@@ -1,9 +1,10 @@
 ---
 change_id: cv-flow-analysis
 title: CV flow analysis (upload, attach, preview, download)
-status: preparing
+status: archived
 created: 2026-10-06
-updated: 2026-10-06
+updated: 2026-10-10
+archived_at: 2026-10-10T07:54:57Z
 ---
 
 ## Notes
