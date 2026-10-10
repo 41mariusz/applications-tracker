@@ -13,6 +13,7 @@ const CLEAN_VIEWS = [
   "src/pages/404.astro",
   "src/pages/500.astro",
   "src/pages/dev/ui.astro",
+  "src/pages/dashboard.astro",
   "src/components/ErrorBoundary.tsx",
   "src/components/ErrorText.tsx",
 ];
