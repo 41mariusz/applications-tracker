@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   checkCvFile,
+  CV_ACCEPT,
+  CV_LIMITS_TEXT,
+  CV_TYPES,
   cvStoragePath,
   formatFileSize,
   groupByCv,
@@ -106,5 +109,22 @@ describe("groupByCv", () => {
     expect(groups.get("cv-a")?.map((a) => a.id)).toEqual(["1", "4"]);
     expect(groups.get("cv-b")?.map((a) => a.id)).toEqual(["3"]);
     expect(groups.get("cv-unused")).toEqual([]);
+  });
+});
+
+describe("CV_ACCEPT / CV_LIMITS_TEXT", () => {
+  it("equal the strings the file pickers showed before they were derived", () => {
+    expect(CV_ACCEPT).toBe(
+      ".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    );
+    expect(CV_LIMITS_TEXT).toBe("PDF lub DOCX, do 5 MB");
+  });
+
+  it("lists every accepted MIME type and extension", () => {
+    const accepted = CV_ACCEPT.split(",");
+    for (const [mimeType, extension] of Object.entries(CV_TYPES)) {
+      expect(accepted).toContain(mimeType);
+      expect(accepted).toContain(`.${extension}`);
+    }
   });
 });

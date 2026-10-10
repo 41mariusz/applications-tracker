@@ -5,7 +5,7 @@ import ErrorText from "@/components/ErrorText";
 import { apiRequest } from "@/lib/api-client";
 import { cvFileUrl } from "@/lib/cv-urls";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
-import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
+import { checkCvFile, CV_ACCEPT, CV_LIMITS_TEXT, formatFileSize } from "@/lib/domain/cv";
 import { isClosed } from "@/lib/domain/status";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -156,13 +156,13 @@ function UploadToLibrary() {
   return (
     <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
       <label htmlFor="cv-library-upload" className="mb-1 block text-xs text-blue-100/70">
-        Wgraj CV do biblioteki (PDF lub DOCX, do 5 MB) — ten sam plik nie zapisze się drugi raz
+        {`Wgraj CV do biblioteki (${CV_LIMITS_TEXT}) — ten sam plik nie zapisze się drugi raz`}
       </label>
       <input
         id="cv-library-upload"
         type="file"
         disabled={pending}
-        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        accept={CV_ACCEPT}
         onChange={handleChange}
         className="block w-full text-xs text-blue-100/80 file:mr-3 file:rounded-lg file:border-0 file:bg-purple-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-purple-500 disabled:opacity-60"
       />

@@ -8,7 +8,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { apiRequest } from "@/lib/api-client";
 import { applicationCvUrl, cvFileUrl } from "@/lib/cv-urls";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
-import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
+import { checkCvFile, CV_ACCEPT, CV_LIMITS_TEXT, formatFileSize } from "@/lib/domain/cv";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AttachCvResponse, CvFile, UploadCvResponse } from "@/types";
@@ -189,13 +189,13 @@ export default function CvPanel({ applicationId, current, library }: Props) {
             htmlFor={`cv-upload-${applicationId}`}
             className="text-supporting-foreground mb-1 block text-xs font-normal"
           >
-            Wgraj nowe (PDF lub DOCX, do 5 MB)
+            {`Wgraj nowe (${CV_LIMITS_TEXT})`}
           </Label>
           <input
             id={`cv-upload-${applicationId}`}
             type="file"
             disabled={pending}
-            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            accept={CV_ACCEPT}
             onChange={handleUpload}
             className="text-supporting-foreground focus-visible:ring-ring file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 block w-full rounded-lg text-xs outline-none file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-1.5 focus-visible:ring-2"
           />

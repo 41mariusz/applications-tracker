@@ -19,6 +19,16 @@ export const CV_TYPES = {
 } as const;
 export type CvMimeType = keyof typeof CV_TYPES;
 
+// What the file pickers show, derived from the rules above. The "cvs" bucket holds its own copy of
+// the limits (pinned by supabase/tests/cv_bucket.test.sql).
+export const CV_ACCEPT = [
+  ...Object.values(CV_TYPES).map((extension) => `.${extension}`),
+  ...Object.keys(CV_TYPES),
+].join(",");
+export const CV_LIMITS_TEXT = `${Object.values(CV_TYPES)
+  .map((extension) => extension.toUpperCase())
+  .join(" lub ")}, do ${Math.floor(MAX_CV_BYTES / (1024 * 1024))} MB`;
+
 export type CvCheck = { ok: true; mimeType: CvMimeType; extension: string } | { ok: false; message: string };
 
 // Browsers sometimes send an empty or generic type for .docx, so the extension is a fallback.

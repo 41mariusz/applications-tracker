@@ -359,30 +359,30 @@ No migration. The pgTAP pin reads the bucket the existing migration created.
 
 #### Automated
 
-- [x] 2.1 Unit tests pass incl. cv-urls.test.ts: `npm test`
-- [x] 2.2 Lint and types pass: `npm run lint` and `npx astro check`
-- [x] 2.3 No inline CV reply type or hand-built CV URL left (rg)
-- [x] 2.4 Smoke passes: `npm run smoke`
-- [x] 2.5 E2E passes: `npx playwright test`
+- [x] 2.1 Unit tests pass incl. cv-urls.test.ts: `npm test` — 761cd97
+- [x] 2.2 Lint and types pass: `npm run lint` and `npx astro check` — 761cd97
+- [x] 2.3 No inline CV reply type or hand-built CV URL left (rg) — 761cd97
+- [x] 2.4 Smoke passes: `npm run smoke` — 761cd97
+- [x] 2.5 E2E passes: `npx playwright test` — 761cd97
 
 #### Manual
 
-- [x] 2.6 Break check: renaming `reused` in UploadCvResponse fails astro check; restored
-- [x] 2.7 Upload, reuse, attach, preview and download behave as before
+- [x] 2.6 Break check: renaming `reused` in UploadCvResponse fails astro check; restored — 761cd97
+- [x] 2.7 Upload, reuse, attach, preview and download behave as before — 761cd97
 
 ### Phase 3: CV limits from one source (K1)
 
 #### Automated
 
-- [ ] 3.1 Unit tests pass incl. CV_ACCEPT / CV_LIMITS_TEXT: `npm test`
-- [ ] 3.2 Lint and types pass: `npm run lint` and `npx astro check`
-- [ ] 3.3 Database tests pass incl. cv_bucket.test.sql: `npx supabase test db`
-- [ ] 3.4 No accept= or limits literal left in islands (rg)
-- [ ] 3.5 Smoke passes: `npm run smoke`
-- [ ] 3.6 E2E passes: `npx playwright test`
+- [x] 3.1 Unit tests pass incl. CV_ACCEPT / CV_LIMITS_TEXT: `npm test`
+- [x] 3.2 Lint and types pass: `npm run lint` and `npx astro check`
+- [x] 3.3 Database tests pass incl. cv_bucket.test.sql: `npx supabase test db`
+- [x] 3.4 No accept= or limits literal left in islands (rg)
+- [x] 3.5 Smoke passes: `npm run smoke`
+- [x] 3.6 E2E passes: `npx playwright test`
 
 #### Manual
 
-- [ ] 3.7 Break check (unit): CV_ACCEPT without .docx turns the test red; restored
-- [ ] 3.8 Break check (database): bucket file_size_limit = 1 fails cv_bucket.test.sql; restored
+- [x] 3.7 Break check (unit): CV_ACCEPT without .docx turns the test red; restored
+- [x] 3.8 Break check (database): bucket file_size_limit = 1 fails cv_bucket.test.sql; restored
 - [ ] 3.9 Label and file picker filter unchanged on /cv and the CV panel
