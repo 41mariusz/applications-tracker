@@ -44,15 +44,15 @@ A single candidate runs many recruitment processes at once; when HR calls unexpe
 
 ## At a glance
 
-| ID   | Change ID                  | Outcome (user can …)                                                           | Prerequisites | PRD refs | Status      |
-| ---- | -------------------------- | ------------------------------------------------------------------------------ | ------------- | -------- | ----------- |
-| S-06 | phone-friendly-list        | scan the application list on a 360 px phone without horizontal scrolling       | —             | MS-01    | done        |
-| S-07 | phone-friendly-form        | add and edit an application comfortably on a 360 px phone                      | —             | MS-01    | in-progress |
-| S-08 | phone-friendly-cv-library  | use the CV library and its preview comfortably on a 360 px phone               | —             | MS-01    | ready       |
-| S-09 | cv-preview-by-type         | preview both PDF and DOCX CVs, with a browser test proving each                | —             | MS-04    | ready       |
-| S-10 | cv-duplicate-by-error-code | re-upload a CV after a failed attempt and have the stored file reused reliably | —             | MS-02    | ready       |
-| S-11 | cv-owner-integrity         | trust that an application can only point at their own CV                       | —             | MS-03    | ready       |
-| S-12 | audit-findings-closed      | rely on every known error path being reported or consciously accepted          | —             | MS-05    | ready       |
+| ID   | Change ID                  | Outcome (user can …)                                                           | Prerequisites | PRD refs | Status |
+| ---- | -------------------------- | ------------------------------------------------------------------------------ | ------------- | -------- | ------ |
+| S-06 | phone-friendly-list        | scan the application list on a 360 px phone without horizontal scrolling       | —             | MS-01    | done   |
+| S-07 | phone-friendly-form        | add and edit an application comfortably on a 360 px phone                      | —             | MS-01    | done   |
+| S-08 | phone-friendly-cv-library  | use the CV library and its preview comfortably on a 360 px phone               | —             | MS-01    | ready  |
+| S-09 | cv-preview-by-type         | preview both PDF and DOCX CVs, with a browser test proving each                | —             | MS-04    | ready  |
+| S-10 | cv-duplicate-by-error-code | re-upload a CV after a failed attempt and have the stored file reused reliably | —             | MS-02    | ready  |
+| S-11 | cv-owner-integrity         | trust that an application can only point at their own CV                       | —             | MS-03    | ready  |
+| S-12 | audit-findings-closed      | rely on every known error path being reported or consciously accepted          | —             | MS-05    | ready  |
 
 ## Streams
 
@@ -103,7 +103,7 @@ None — every layer is present (see `## Baseline`); each slice below introduces
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** The form has the most fields and validation messages; sequenced after the list so it reuses the list's patterns.
-- **Status:** in-progress
+- **Status:** done
 
 ### S-08: Phone-friendly CV library
 
@@ -207,3 +207,4 @@ None — every layer is present (see `## Baseline`); each slice below introduces
 - **F-01: (foundation) a failing request in production leaves a record the owner sees without actively digging through live logs.** — Archived 2026-10-06 → `context/archive/2026-10-06-production-error-visibility/`. Lesson: Errors must leave a signal, not just a message.
 - **S-05: user can clear the demo data and start tracking their real applications.** — Archived 2026-10-10 → `context/archive/2026-10-10-switch-to-real-data/`. Lesson: —.
 - **S-06: user can scan the application list on a 360 px phone without horizontal scrolling or clipped text.** — Archived 2026-10-10 → `context/archive/2026-10-10-phone-friendly-list/`. Lesson: —.
+- **S-07: user can add and edit an application comfortably on a 360 px phone.** — Archived 2026-10-10 → `context/archive/2026-10-10-phone-friendly-form/`. Lesson: —.
