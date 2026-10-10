@@ -429,13 +429,13 @@ No database migration. The change is UI-only and backward-compatible with the AP
 
 #### Automated
 
-- [x] 4.1 `npx playwright test tests/e2e/phone-form.spec.ts` passes against the local stack
-- [x] 4.2 `npx playwright test` (full suite) passes
-- [x] 4.3 `npm run smoke` passes, including the new bad-edit-id step
-- [x] 4.4 `npm run lint` passes and fails when a literal is temporarily added to `ApplicationForm.tsx`
-- [x] 4.5 `npm test`, `npx astro check`, `npm run build` pass
+- [x] 4.1 `npx playwright test tests/e2e/phone-form.spec.ts` passes against the local stack — 8fc8b26
+- [x] 4.2 `npx playwright test` (full suite) passes — 8fc8b26
+- [x] 4.3 `npm run smoke` passes, including the new bad-edit-id step — 8fc8b26
+- [x] 4.4 `npm run lint` passes and fails when a literal is temporarily added to `ApplicationForm.tsx` — 8fc8b26
+- [x] 4.5 `npm test`, `npx astro check`, `npm run build` pass — 8fc8b26
 
 #### Manual
 
-- [x] 4.6 CLAUDE.md reads correctly and points at `form-classes.ts`, `/dev/ui` and the spec
-- [x] 4.7 `ui-quality-checklist` walked for this view
+- [x] 4.6 CLAUDE.md reads correctly and points at `form-classes.ts`, `/dev/ui` and the spec — 8fc8b26
+- [x] 4.7 `ui-quality-checklist` walked for this view — 8fc8b26

@@ -1,7 +1,7 @@
 ---
 change_id: phone-friendly-form
 title: Application form on design tokens and phone-friendly (/10x-ui)
-status: implementing
+status: implemented
 created: 2026-10-10
 updated: 2026-10-10
 archived_at: null
