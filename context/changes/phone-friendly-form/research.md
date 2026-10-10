@@ -147,6 +147,16 @@ grey sentence and no button, unlike the same mistake on the details page.
 
 User impact: rare, but a late-evening entry gets the wrong date silently, and an early tap can put form data in a URL.
 
+### Disposition (after implementation, 2026-10-10)
+
+- C1–C4: addressed (plan Phases 2–3; guards in Phase 4).
+- C5 pre-hydration submit: addressed — submit disabled until hydration (Phase 2).
+- C5 "today" default in UTC: **deferred** to S-12 — domain logic (a Warsaw "today" helper) outside this one-view
+  change; `ApplicationForm.tsx` still uses `toISOString()`.
+- Topbar `break-all` and 20 px links (S-06 follow-up, also visible on this view): **deferred** to S-12 — shared
+  component used by every page.
+- Details view closed state `line-through opacity-60` (S-06 follow-up): **deferred** to S-12 — another view.
+
 ## Detailed Findings
 
 ### Tokens and components (source → view)

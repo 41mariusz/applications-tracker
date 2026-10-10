@@ -19,6 +19,10 @@ const CLEAN_VIEWS = [
   "src/components/applications/list-classes.ts",
   "src/components/ErrorBoundary.tsx",
   "src/components/ErrorText.tsx",
+  "src/pages/applications/new.astro",
+  "src/pages/applications/[id]/edit.astro",
+  "src/components/applications/ApplicationForm.tsx",
+  "src/components/applications/form-classes.ts",
 ];
 
 const LITERAL =

@@ -528,6 +528,11 @@ const steps = [
     { status: 404, bodyIncludes: "Nie znaleziono" },
   ],
   [
+    "malformed application link to the edit page is not found",
+    () => request("/applications/abc/edit"),
+    { status: 404, bodyIncludes: "Nie znaleziono" },
+  ],
+  [
     // A mistyped id is "not found" before any query — not a logged 500 that would raise an alert.
     "malformed CV link in the API is not found",
     () => request("/api/cv/not-a-uuid"),

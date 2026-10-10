@@ -416,26 +416,26 @@ No database migration. The change is UI-only and backward-compatible with the AP
 
 #### Automated
 
-- [x] 3.1 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass
-- [x] 3.2 Hardcoded-value scan on the four view files and `src/pages/dev/ui.astro` returns 0 hits
+- [x] 3.1 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass — e4c75bf
+- [x] 3.2 Hardcoded-value scan on the four view files and `src/pages/dev/ui.astro` returns 0 hits — e4c75bf
 
 #### Manual
 
-- [x] 3.3 At 360 px, empty submit from the bottom: focus on "Firma", message visible, Alert above "Zapisz"
-- [x] 3.4 Accessibility tree names each invalid field's message via `aria-describedby`
-- [x] 3.5 `/dev/ui` "Formularz aplikacji" shows all 7 states (or N/A with reason) — screenshots at 1280 and 360 px saved
+- [x] 3.3 At 360 px, empty submit from the bottom: focus on "Firma", message visible, Alert above "Zapisz" — e4c75bf
+- [x] 3.4 Accessibility tree names each invalid field's message via `aria-describedby` — e4c75bf
+- [x] 3.5 `/dev/ui` "Formularz aplikacji" shows all 7 states (or N/A with reason) — screenshots at 1280 and 360 px saved — e4c75bf
 
 ### Phase 4: Guards — e2e, smoke, lint and rule
 
 #### Automated
 
-- [ ] 4.1 `npx playwright test tests/e2e/phone-form.spec.ts` passes against the local stack
-- [ ] 4.2 `npx playwright test` (full suite) passes
-- [ ] 4.3 `npm run smoke` passes, including the new bad-edit-id step
-- [ ] 4.4 `npm run lint` passes and fails when a literal is temporarily added to `ApplicationForm.tsx`
-- [ ] 4.5 `npm test`, `npx astro check`, `npm run build` pass
+- [x] 4.1 `npx playwright test tests/e2e/phone-form.spec.ts` passes against the local stack
+- [x] 4.2 `npx playwright test` (full suite) passes
+- [x] 4.3 `npm run smoke` passes, including the new bad-edit-id step
+- [x] 4.4 `npm run lint` passes and fails when a literal is temporarily added to `ApplicationForm.tsx`
+- [x] 4.5 `npm test`, `npx astro check`, `npm run build` pass
 
 #### Manual
 
-- [ ] 4.6 CLAUDE.md reads correctly and points at `form-classes.ts`, `/dev/ui` and the spec
-- [ ] 4.7 `ui-quality-checklist` walked for this view
+- [x] 4.6 CLAUDE.md reads correctly and points at `form-classes.ts`, `/dev/ui` and the spec
+- [x] 4.7 `ui-quality-checklist` walked for this view
