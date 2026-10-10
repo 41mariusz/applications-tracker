@@ -368,12 +368,12 @@ No data or schema change. No `db push`.
 
 #### Automated
 
-- [x] 3.1 Lint, types and unit tests pass
-- [x] 3.2 Smoke and E2E pass
-- [x] 3.3 The five "after" screenshots exist in the change folder
+- [x] 3.1 Lint, types and unit tests pass — 11d0879
+- [x] 3.2 Smoke and E2E pass — 11d0879
+- [x] 3.3 The five "after" screenshots exist in the change folder — 11d0879
 
 #### Manual
 
-- [x] 3.4 Tab at 1280 px shows a visible ring on add button, search, every chip and every company link
-- [x] 3.5 /dev/ui "Lista aplikacji" shows all 7 states (loading N/A with reason) at 1280 and 360 px
-- [ ] 3.6 Owner checks the list on their phone in production after deploy
+- [x] 3.4 Tab at 1280 px shows a visible ring on add button, search, every chip and every company link — 11d0879
+- [x] 3.5 /dev/ui "Lista aplikacji" shows all 7 states (loading N/A with reason) at 1280 and 360 px — 11d0879
+- [x] 3.6 Owner checks the list on their phone in production after deploy — 11d0879
