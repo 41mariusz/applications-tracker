@@ -511,12 +511,12 @@ S-09 must start after this change, because `CvPreview.tsx` render classes change
 
 #### Automated
 
-- [x] 4.1 `npm run lint`, `npm test`, `npx astro check` and `npm run build` pass
-- [x] 4.2 The hardcoded-value scan on `cv.astro`, `CvLibrary.tsx`, `CvPreview.tsx`, `CvFileActions.tsx` and `CvUploadBox.tsx` returns 0 lines
-- [x] 4.3 `npx playwright test` and `npm run smoke` pass
+- [x] 4.1 `npm run lint`, `npm test`, `npx astro check` and `npm run build` pass — 703d473
+- [x] 4.2 The hardcoded-value scan on `cv.astro`, `CvLibrary.tsx`, `CvPreview.tsx`, `CvFileActions.tsx` and `CvUploadBox.tsx` returns 0 lines — 703d473
+- [x] 4.3 `npx playwright test` and `npm run smoke` pass — 703d473
 
 #### Manual
 
-- [x] 4.4 `/dev/ui#ks-cv-library` shows every cell of the 7-state matrix, or its N/A reason, at 1280 and 360 px, and the highlight link works
-- [x] 4.5 Screenshots of `/cv` and `/dev/ui#ks-cv-library` at both widths are in `screenshots/`, with visual deltas explained
-- [x] 4.6 The CLAUDE.md rule and `follow-ups/hand-overs.md` read correctly
+- [x] 4.4 `/dev/ui#ks-cv-library` shows every cell of the 7-state matrix, or its N/A reason, at 1280 and 360 px, and the highlight link works — 703d473
+- [x] 4.5 Screenshots of `/cv` and `/dev/ui#ks-cv-library` at both widths are in `screenshots/`, with visual deltas explained — 703d473
+- [x] 4.6 The CLAUDE.md rule and `follow-ups/hand-overs.md` read correctly — 703d473

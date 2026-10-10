@@ -1,7 +1,7 @@
 ---
 change_id: phone-friendly-cv-library
 title: CV library usable on a 360 px phone (S-08)
-status: implementing
+status: implemented
 created: 2026-10-10
 updated: 2026-10-10
 archived_at: null
