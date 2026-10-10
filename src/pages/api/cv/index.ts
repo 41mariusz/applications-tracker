@@ -3,6 +3,7 @@ import { uploadCv } from "@/lib/services/cv";
 import { CV_TOO_LARGE_MESSAGE, isUploadRequestTooLarge } from "@/lib/domain/cv";
 import { failureResponse, readFormData } from "@/lib/http";
 import { logInfo } from "@/lib/log";
+import type { UploadCvResponse } from "@/types";
 
 export const prerender = false;
 
@@ -40,7 +41,9 @@ export const POST: APIRoute = async (context) => {
   try {
     const result = await uploadCv(supabase, user.id, file);
     if (!result.ok) return Response.json({ error: result.message }, { status: 400 });
-    return Response.json({ file: result.file, reused: result.reused }, { status: result.reused ? 200 : 201 });
+    return Response.json({ file: result.file, reused: result.reused } satisfies UploadCvResponse, {
+      status: result.reused ? 200 : 201,
+    });
   } catch (e) {
     return failureResponse(context, e, { op: OP, bytes: file.size }, "Nie udało się wgrać pliku. Spróbuj ponownie.");
   }

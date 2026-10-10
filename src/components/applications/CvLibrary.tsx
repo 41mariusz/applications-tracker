@@ -3,12 +3,13 @@ import { ChevronDown, ChevronRight, Download, Eye, EyeOff, FileText } from "luci
 import ErrorBoundary, { PreviewFallback } from "@/components/ErrorBoundary";
 import ErrorText from "@/components/ErrorText";
 import { apiRequest } from "@/lib/api-client";
+import { cvFileUrl } from "@/lib/cv-urls";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
 import { isClosed } from "@/lib/domain/status";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { STATUS_LABELS, type ApplicationStatus, type CvFile } from "@/types";
+import { STATUS_LABELS, type ApplicationStatus, type CvFile, type UploadCvResponse } from "@/types";
 
 // Loaded only when a preview is opened.
 const CvPreview = lazy(() => import("./CvPreview"));
@@ -48,7 +49,7 @@ function CvItem({ entry }: { entry: CvLibraryEntry }) {
             {previewOpen ? "Ukryj" : "Podgląd"}
           </button>
           <a
-            href={`/api/cv/${file.id}?download=1`}
+            href={cvFileUrl(file.id, { download: true })}
             className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-xs hover:bg-white/10"
           >
             <Download className="size-3.5" />
@@ -62,7 +63,7 @@ function CvItem({ entry }: { entry: CvLibraryEntry }) {
           op="cv.preview"
           entityId={file.id}
           mimeType={file.mime_type}
-          fallback={<PreviewFallback fileUrl={`/api/cv/${file.id}`} />}
+          fallback={<PreviewFallback fileUrl={cvFileUrl(file.id)} />}
         >
           <Suspense fallback={<p className="mt-3 text-xs text-blue-100/60">Wczytywanie podglądu…</p>}>
             <CvPreview cvId={file.id} mimeType={file.mime_type} />
@@ -128,7 +129,7 @@ function UploadToLibrary() {
     setPending(true);
     const body = new FormData();
     body.set("file", file);
-    const result = await apiRequest<{ file?: CvFile; reused?: boolean } | null>("/api/cv", {
+    const result = await apiRequest<UploadCvResponse | null>("/api/cv", {
       method: "POST",
       body,
       op: "cv.upload",

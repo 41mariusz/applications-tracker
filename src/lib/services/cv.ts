@@ -4,7 +4,15 @@ import { toServiceError } from "@/lib/services/errors";
 import type { CvFile } from "@/types";
 
 const BUCKET = "cvs";
-const CV_COLUMNS = "id, file_name, mime_type, size_bytes, created_at";
+// Every CvFile field, and nothing else: a field added to or removed from CvFile fails the type check here.
+const CV_FIELDS: Record<keyof CvFile, true> = {
+  id: true,
+  file_name: true,
+  mime_type: true,
+  size_bytes: true,
+  created_at: true,
+};
+const CV_COLUMNS = Object.keys(CV_FIELDS).join(", ");
 
 export type UploadCvResult =
   { ok: true; file: CvFile; reused: boolean } | { ok: false; code: "invalid"; message: string };

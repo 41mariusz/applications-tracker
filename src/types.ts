@@ -108,3 +108,15 @@ export interface CvFile {
   size_bytes: number;
   created_at: string;
 }
+
+// POST /api/cv (200 when the same file was already in the library, 201 when stored).
+export interface UploadCvResponse {
+  file: CvFile;
+  reused: boolean;
+}
+
+// POST /api/applications/[id]/cv (200); a null cv_file_id means the CV was detached.
+export interface AttachCvResponse {
+  id: string;
+  cv_file_id: string | null;
+}

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ErrorText from "@/components/ErrorText";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { apiRequest, reportClientError } from "@/lib/api-client";
+import { cvFileUrl } from "@/lib/cv-urls";
 import { buildReport, errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 
 interface Props {
@@ -46,7 +47,7 @@ export default function CvPreview({ cvId, mimeType }: Props) {
 
     void (async () => {
       // 1. The file (a server page instead of the file is reported by apiRequest).
-      const result = await apiRequest(`/api/cv/${cvId}`, {
+      const result = await apiRequest(cvFileUrl(cvId), {
         op: "cv.preview",
         parse: "bytes",
         signal: controller.signal,
@@ -89,7 +90,7 @@ export default function CvPreview({ cvId, mimeType }: Props) {
           <AlertDescription>
             <p>
               <ErrorText message={state.message} />{" "}
-              <a href={`/api/cv/${cvId}`} target="_blank" rel="noopener noreferrer" className="text-link underline">
+              <a href={cvFileUrl(cvId)} target="_blank" rel="noopener noreferrer" className="text-link underline">
                 Otwórz plik w nowej karcie
               </a>
               .

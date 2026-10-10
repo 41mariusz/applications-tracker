@@ -11,6 +11,7 @@ import CvPanel from "@/components/applications/CvPanel";
 import { PreviewFallback } from "@/components/ErrorBoundary";
 import ErrorText from "@/components/ErrorText";
 import { errorMessage } from "@/lib/domain/client-errors";
+import { cvFileUrl } from "@/lib/cv-urls";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -306,7 +307,7 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
                 </p>
               </AlertDescription>
             </Alert>
-            <PreviewFallback fileUrl={`/api/cv/${sampleCv.id}`} />
+            <PreviewFallback fileUrl={cvFileUrl(sampleCv.id)} />
           </div>
           <Card className="gap-2 rounded-xl p-4 text-sm shadow-none" data-ks="section-empty">
             <h2 class="font-semibold">Empty</h2>

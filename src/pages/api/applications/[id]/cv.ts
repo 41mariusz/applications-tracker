@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 import { setApplicationCv } from "@/lib/services/cv";
 import { failureResponse, readFormData, routeId } from "@/lib/http";
+import type { AttachCvResponse } from "@/types";
 
 export const prerender = false;
 
@@ -31,7 +32,7 @@ export const POST: APIRoute = async (context) => {
   try {
     const ok = await setApplicationCv(supabase, id, parsed.data.cv_file_id);
     if (!ok) return Response.json({ error: "Nie znaleziono aplikacji lub pliku." }, { status: 404 });
-    return Response.json({ id, cv_file_id: parsed.data.cv_file_id }, { status: 200 });
+    return Response.json({ id, cv_file_id: parsed.data.cv_file_id } satisfies AttachCvResponse, { status: 200 });
   } catch (e) {
     return failureResponse(context, e, { op: OP, entityId: id }, "Nie udało się podpiąć CV. Spróbuj ponownie.");
   }

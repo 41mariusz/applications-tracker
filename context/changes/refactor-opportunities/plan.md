@@ -344,31 +344,31 @@ No migration. The pgTAP pin reads the bucket the existing migration created.
 
 #### Automated
 
-- [x] 1.1 Unit tests pass: `npm test`
-- [x] 1.2 Lint and types pass: `npm run lint` and `npx astro check`
-- [x] 1.3 Smoke passes incl. the two malformed-id steps: `npm run smoke`
-- [x] 1.4 E2E passes: `npx playwright test`
+- [x] 1.1 Unit tests pass: `npm test` — 022ffbf
+- [x] 1.2 Lint and types pass: `npm run lint` and `npx astro check` — 022ffbf
+- [x] 1.3 Smoke passes incl. the two malformed-id steps: `npm run smoke` — 022ffbf
+- [x] 1.4 E2E passes: `npx playwright test` — 022ffbf
 
 #### Manual
 
-- [x] 1.5 Break check: guard removed from api/cv/[id].ts turns the malformed-id smoke step red; restored
-- [x] 1.6 Local preview logs show no error line for malformed-id requests
+- [x] 1.5 Break check: guard removed from api/cv/[id].ts turns the malformed-id smoke step red; restored — 022ffbf
+- [x] 1.6 Local preview logs show no error line for malformed-id requests — 022ffbf
 - [ ] 1.7 Production: /api/cv/abc shows 404 JSON and no Telegram alert
 
 ### Phase 2: CV HTTP types and URL helpers (K5)
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass incl. cv-urls.test.ts: `npm test`
-- [ ] 2.2 Lint and types pass: `npm run lint` and `npx astro check`
-- [ ] 2.3 No inline CV reply type or hand-built CV URL left (rg)
-- [ ] 2.4 Smoke passes: `npm run smoke`
-- [ ] 2.5 E2E passes: `npx playwright test`
+- [x] 2.1 Unit tests pass incl. cv-urls.test.ts: `npm test`
+- [x] 2.2 Lint and types pass: `npm run lint` and `npx astro check`
+- [x] 2.3 No inline CV reply type or hand-built CV URL left (rg)
+- [x] 2.4 Smoke passes: `npm run smoke`
+- [x] 2.5 E2E passes: `npx playwright test`
 
 #### Manual
 
-- [ ] 2.6 Break check: renaming `reused` in UploadCvResponse fails astro check; restored
-- [ ] 2.7 Upload, reuse, attach, preview and download behave as before
+- [x] 2.6 Break check: renaming `reused` in UploadCvResponse fails astro check; restored
+- [x] 2.7 Upload, reuse, attach, preview and download behave as before
 
 ### Phase 3: CV limits from one source (K1)
 

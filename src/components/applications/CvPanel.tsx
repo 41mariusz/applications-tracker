@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { apiRequest } from "@/lib/api-client";
+import { applicationCvUrl, cvFileUrl } from "@/lib/cv-urls";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
 import { checkCvFile, formatFileSize } from "@/lib/domain/cv";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { CvFile } from "@/types";
+import type { AttachCvResponse, CvFile, UploadCvResponse } from "@/types";
 
 // Loaded only when the preview is opened.
 const CvPreview = lazy(() => import("./CvPreview"));
@@ -24,7 +25,7 @@ interface Props {
 async function attach(applicationId: string, cvFileId: string): Promise<ClientMessage | null> {
   const body = new FormData();
   body.set("cv_file_id", cvFileId);
-  const result = await apiRequest(`/api/applications/${applicationId}/cv`, {
+  const result = await apiRequest<AttachCvResponse | null>(applicationCvUrl(applicationId), {
     method: "POST",
     body,
     op: "application.cv",
@@ -79,7 +80,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
       async () => {
         const body = new FormData();
         body.set("file", file);
-        const result = await apiRequest<{ file?: CvFile; reused?: boolean } | null>("/api/cv", {
+        const result = await apiRequest<UploadCvResponse | null>("/api/cv", {
           method: "POST",
           body,
           op: "cv.upload",
@@ -132,7 +133,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
               size="sm"
               className="border-input hover:bg-muted hover:text-foreground h-auto gap-1 rounded-lg bg-transparent px-3 py-1.5 text-xs font-normal shadow-none has-[>svg]:px-3"
             >
-              <a href={`/api/cv/${current.id}?download=1`}>
+              <a href={cvFileUrl(current.id, { download: true })}>
                 <Download className="size-3.5" />
                 Pobierz
               </a>
@@ -143,7 +144,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
               op="cv.preview"
               entityId={current.id}
               mimeType={current.mime_type}
-              fallback={<PreviewFallback fileUrl={`/api/cv/${current.id}`} />}
+              fallback={<PreviewFallback fileUrl={cvFileUrl(current.id)} />}
             >
               <Suspense fallback={<p className="text-muted-foreground mt-3 text-xs">Wczytywanie podglądu…</p>}>
                 <CvPreview cvId={current.id} mimeType={current.mime_type} />
