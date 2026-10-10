@@ -1,5 +1,6 @@
 ---
-// Kitchen sink for the details view (/applications/[id]): its components in the 7 states side by side.
+// Kitchen sink for the details view (/applications/[id]), the list (/dashboard) and the CV library (/cv): their
+// components in the 7 states side by side.
 // Dev only (404 in a production build) and not linked from the app. Islands render statically (no hydration);
 // hover and focus-visible are forced by the screenshot script on elements marked data-ks="hover-target" /
 // data-ks="focus-target". Token classes only.
@@ -17,10 +18,13 @@ import {
   FORM_LABEL_CLASS,
   FORM_TEXT_ACTION_CLASS,
 } from "@/components/applications/form-classes";
+import CvLibrary, { CvItem, type CvLibraryEntry } from "@/components/applications/CvLibrary";
+import CvUploadBox, { CvUploadStatus } from "@/components/applications/CvUploadBox";
 import { PreviewFallback } from "@/components/ErrorBoundary";
 import ErrorText from "@/components/ErrorText";
 import { errorMessage } from "@/lib/domain/client-errors";
 import { cvFileUrl } from "@/lib/cv-urls";
+import { cvAnchorId, CV_LIMITS_TEXT } from "@/lib/domain/cv";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -153,6 +157,45 @@ const formErrors: ApplicationFormErrors = {
   position: "Podaj stanowisko",
   posting_url: "Podaj pełny adres, np. https://…",
 };
+// CV library (/cv): one item per optional variant. Each id is unique, so every item has its own `cv-<id>` anchor.
+const usageOf = ({ id, company, position, status }: Application): CvLibraryEntry["applications"][number] => ({
+  id,
+  company,
+  position,
+  status,
+});
+const unusedCvEntry: CvLibraryEntry = {
+  file: {
+    ...sampleCv,
+    id: "00000000-0000-4000-8000-000000000051",
+    file_name: "CV_Anna_Kowalska_senior_frontend_developer_React_TypeScript_wersja_angielska_2026_final_v3.pdf",
+  },
+  applications: [],
+};
+const usedCvEntry: CvLibraryEntry = {
+  file: { ...otherCv, id: "00000000-0000-4000-8000-000000000052" },
+  applications: [usageOf(openApplication), usageOf(closedApplication)],
+};
+const collapsedCvEntry: CvLibraryEntry = {
+  file: { ...sampleCv, id: "00000000-0000-4000-8000-000000000053", file_name: "CV Anna — krótkie.pdf" },
+  applications: [usageOf(bareApplication)],
+};
+const uploadLabel = `Wgraj CV do biblioteki (${CV_LIMITS_TEXT}) — ten sam plik nie zapisze się drugi raz`;
+const uploadErrorMessage = errorMessage(
+  { kind: "network", name: "TypeError", message: "Failed to fetch" },
+  "Nie udało się wgrać pliku.",
+);
+const ignoreFile = () => undefined;
+// CvItem renders its own controls, so the hover/focus markers are set on them by a script below instead of
+// widening the shared component with kitchen-sink props: [selector, marker].
+const cvMarkers: [string, string][] = [
+  [`#${cvAnchorId(unusedCvEntry.file.id)} button`, "hover-target"],
+  [`#${cvAnchorId(collapsedCvEntry.file.id)} [data-testid="cv-usage"]`, "hover-target"],
+  [`#${cvAnchorId(usedCvEntry.file.id)} ul > li:nth-child(2) > a`, "hover-target"],
+  [`#${cvAnchorId(usedCvEntry.file.id)} button`, "focus-target"],
+  [`#${cvAnchorId(usedCvEntry.file.id)} [data-testid="cv-usage"]`, "focus-target"],
+  [`#${cvAnchorId(usedCvEntry.file.id)} ul > li:first-child > a`, "focus-target"],
+];
 ---
 
 {enabled ? (
@@ -604,6 +647,121 @@ const formErrors: ApplicationFormErrors = {
               </a>
             </div>
           </Card>
+        </section>
+
+        {/* CV library (/cv): the real exported pieces (CvItem, CvLibrary, CvUploadBox, CvUploadStatus) in the
+            7 states; the only copy is the failed-read banner, marked below. */}
+        <section class="space-y-4" id="ks-cv-library" data-ks="section-cv-library">
+          <h2 class="font-semibold">Biblioteka CV (/cv)</h2>
+          <Card className="gap-1 rounded-xl p-4 text-xs shadow-none">
+            <ul class="text-muted-foreground space-y-1">
+              <li>
+                default — pozycje poniżej (długa nazwa bez użycia, użycie rozwinięte z zamkniętą aplikacją, zwinięte).
+              </li>
+              <li>
+                hover / focus-visible — data-ks na „Podgląd”, przełączniku „Podpięte do aplikacji” i linku aplikacji.
+              </li>
+              <li>disabled — wybór pliku w trakcie wgrywania.</li>
+              <li>error — nieudany odczyt biblioteki (baner + samo pole wgrywania) i błąd wgrywania.</li>
+              <li>empty — pusta biblioteka.</li>
+              <li>
+                loading — „Wgrywanie…” (karta disabled) i „Wczytywanie podglądu…” (karta Loading wyżej). Sama lista: N/A
+                — renderuje się na serwerze, bez pobierania w przeglądarce.
+              </li>
+            </ul>
+            <a
+              href={`#${cvAnchorId(usedCvEntry.file.id)}`}
+              class="text-link focus-visible:ring-ring inline-flex min-h-10 items-center rounded-sm underline outline-none focus-visible:ring-2"
+            >
+              Pokaż wyróżnienie po wgraniu
+            </a>
+          </Card>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">default — długa nazwa bez spacji, bez użycia</p>
+              <ul>
+                <CvItem entry={unusedCvEntry} />
+              </ul>
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">default — użycie rozwinięte (otwarta i zamknięta aplikacja)</p>
+              <ul>
+                <CvItem entry={usedCvEntry} initialListOpen />
+              </ul>
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">default — użycie zwinięte</p>
+              <ul>
+                <CvItem entry={collapsedCvEntry} />
+              </ul>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">wgrywanie — default</p>
+              <CvUploadBox id="ks-cv-upload-default" label={uploadLabel} pending={false} onFile={ignoreFile} />
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">wgrywanie — disabled / loading</p>
+              <div>
+                <CvUploadBox id="ks-cv-upload-pending" label={uploadLabel} pending onFile={ignoreFile} />
+                <CvUploadStatus pending pendingLabel="Wgrywanie…" message={null} error={null} />
+              </div>
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">
+                wgrywanie — info (plik już w bibliotece; po wgraniu nowego ten sam wiersz potwierdza wgranie)
+              </p>
+              <div>
+                <CvUploadBox id="ks-cv-upload-info" label={uploadLabel} pending={false} onFile={ignoreFile} />
+                <CvUploadStatus
+                  pending={false}
+                  pendingLabel="Wgrywanie…"
+                  message={`Ten plik jest już w bibliotece jako „${otherCv.file_name}”.`}
+                  error={null}
+                />
+              </div>
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 text-sm shadow-none">
+              <p class="text-muted-foreground text-xs">wgrywanie — error</p>
+              <div>
+                <CvUploadBox id="ks-cv-upload-error" label={uploadLabel} pending={false} onFile={ignoreFile} />
+                <CvUploadStatus pending={false} pendingLabel="Wgrywanie…" message={null} error={uploadErrorMessage} />
+              </div>
+            </Card>
+          </div>
+          {/* The two islands below each render the library's own upload box, so the id "cv-library-upload" appears
+              twice on this page (static render, nothing is submitted). */}
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">empty — pusta biblioteka</p>
+              <CvLibrary entries={[]} />
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">error — nieudany odczyt (pole wgrywania zostaje)</p>
+              {/* Mirrors the failed-read banner of src/pages/cv.astro (page markup, not a component); keep the two
+                  in step when it changes. */}
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>
+                  <p>
+                    Nie udało się wczytać biblioteki CV.{" "}
+                    <a
+                      href="#ks-cv-library"
+                      class="text-link focus-visible:ring-ring inline-flex min-h-10 items-center rounded-sm underline outline-none focus-visible:ring-2"
+                    >
+                      Odśwież
+                    </a>
+                  </p>
+                </AlertDescription>
+              </Alert>
+              <CvLibrary entries={null} />
+            </div>
+          </div>
+          <script is:inline define:vars={{ cvMarkers }}>
+            for (const [selector, marker] of cvMarkers) {
+              document.querySelector(selector)?.setAttribute("data-ks", marker);
+            }
+          </script>
         </section>
 
         {/* Islands with sample props (static render; interaction states need the live page). */}

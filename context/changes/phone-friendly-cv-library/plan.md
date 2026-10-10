@@ -497,26 +497,26 @@ S-09 must start after this change, because `CvPreview.tsx` render classes change
 
 #### Automated
 
-- [x] 3.1 `npm test` passes, including the new `cvAnchorId` / `uploadedCvIdFromHash` cases
-- [x] 3.2 `npm run lint`, `npx astro check` and `npm run build` pass
-- [x] 3.3 `npm run smoke` and `npx playwright test` pass
+- [x] 3.1 `npm test` passes, including the new `cvAnchorId` / `uploadedCvIdFromHash` cases — c0b13f9
+- [x] 3.2 `npm run lint`, `npx astro check` and `npm run build` pass — c0b13f9
+- [x] 3.3 `npm run smoke` and `npx playwright test` pass — c0b13f9
 
 #### Manual
 
-- [x] 3.4 Uploading a new file on `/cv` (360 px, list longer than the screen) reloads onto the new item, highlighted, with "Wgrano plik „…”." above. A manual refresh afterwards shows no message.
-- [x] 3.5 Uploading an identical file shows the existing "Ten plik jest już w bibliotece…" message without a reload
-- [x] 3.6 With the read forced to fail locally (e.g. a temporary throw in the page's try block, reverted afterwards): the `Alert` with "Odśwież" shows, the upload box is usable, and an upload ends on the "wgrany, ale nie udało się wczytać listy" line
+- [x] 3.4 Uploading a new file on `/cv` (360 px, list longer than the screen) reloads onto the new item, highlighted, with "Wgrano plik „…”." above. A manual refresh afterwards shows no message. — c0b13f9
+- [x] 3.5 Uploading an identical file shows the existing "Ten plik jest już w bibliotece…" message without a reload — c0b13f9
+- [x] 3.6 With the read forced to fail locally (e.g. a temporary throw in the page's try block, reverted afterwards): the `Alert` with "Odśwież" shows, the upload box is usable, and an upload ends on the "wgrany, ale nie udało się wczytać listy" line — c0b13f9
 
 ### Phase 4: States, visual gate and rule
 
 #### Automated
 
-- [ ] 4.1 `npm run lint`, `npm test`, `npx astro check` and `npm run build` pass
-- [ ] 4.2 The hardcoded-value scan on `cv.astro`, `CvLibrary.tsx`, `CvPreview.tsx`, `CvFileActions.tsx` and `CvUploadBox.tsx` returns 0 lines
-- [ ] 4.3 `npx playwright test` and `npm run smoke` pass
+- [x] 4.1 `npm run lint`, `npm test`, `npx astro check` and `npm run build` pass
+- [x] 4.2 The hardcoded-value scan on `cv.astro`, `CvLibrary.tsx`, `CvPreview.tsx`, `CvFileActions.tsx` and `CvUploadBox.tsx` returns 0 lines
+- [x] 4.3 `npx playwright test` and `npm run smoke` pass
 
 #### Manual
 
-- [ ] 4.4 `/dev/ui#ks-cv-library` shows every cell of the 7-state matrix, or its N/A reason, at 1280 and 360 px, and the highlight link works
-- [ ] 4.5 Screenshots of `/cv` and `/dev/ui#ks-cv-library` at both widths are in `screenshots/`, with visual deltas explained
-- [ ] 4.6 The CLAUDE.md rule and `follow-ups/hand-overs.md` read correctly
+- [x] 4.4 `/dev/ui#ks-cv-library` shows every cell of the 7-state matrix, or its N/A reason, at 1280 and 360 px, and the highlight link works
+- [x] 4.5 Screenshots of `/cv` and `/dev/ui#ks-cv-library` at both widths are in `screenshots/`, with visual deltas explained
+- [x] 4.6 The CLAUDE.md rule and `follow-ups/hand-overs.md` read correctly
