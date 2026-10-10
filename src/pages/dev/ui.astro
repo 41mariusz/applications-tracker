@@ -10,6 +10,13 @@ import ApplicationCard from "@/components/applications/ApplicationCard.astro";
 import { FILTER_CHIP_CLASS } from "@/components/applications/list-classes";
 import NotesPanel from "@/components/applications/NotesPanel";
 import CvPanel from "@/components/applications/CvPanel";
+import ApplicationForm from "@/components/applications/ApplicationForm";
+import {
+  FORM_CONTROL_CLASS,
+  FORM_ERROR_CLASS,
+  FORM_LABEL_CLASS,
+  FORM_TEXT_ACTION_CLASS,
+} from "@/components/applications/form-classes";
 import { PreviewFallback } from "@/components/ErrorBoundary";
 import ErrorText from "@/components/ErrorText";
 import { errorMessage } from "@/lib/domain/client-errors";
@@ -24,6 +31,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type Application, type CvFile, type Note } from "@/types";
+import type { ApplicationFormErrors, ApplicationFormValues } from "@/lib/services/applications";
 
 // Production builds answer 404 with the regular not-found page.
 const enabled = import.meta.env.DEV;
@@ -127,6 +135,24 @@ const statusErrorMessage = errorMessage(
 const serverErrorMessage = errorMessage({ kind: "server", status: 503 }, "Nie udało się zapisać.");
 const pausedMessage = errorMessage({ kind: "paused", status: 503 }, "Nie udało się zapisać.");
 const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032", file_name: "CV Anna.docx" };
+// Application form (/applications/new, /applications/[id]/edit): edit values and the 400 field messages.
+const formValues: ApplicationFormValues = {
+  company: "Przedsiębiorstwo-Informatyczno-Usługowe-Bardzo-Długa-Nazwa-Sp-z-o-o",
+  position: "Senior Fullstack Developer (React, Node.js)",
+  posting_url: "https://example.com/oferty/senior-fullstack-developer-react-node",
+  salary_range: "18 000 – 24 000 PLN netto/mies. na B2B",
+  quoted_rate: "22 000 PLN",
+  hr_contact_name: "Jan Nowak",
+  hr_contact_phone: "500-600-700",
+  applied_on: "2026-10-01",
+  employment_type: "b2b",
+  work_mode: "remote",
+};
+const formErrors: ApplicationFormErrors = {
+  company: "Podaj nazwę firmy",
+  position: "Podaj stanowisko",
+  posting_url: "Podaj pełny adres, np. https://…",
+};
 ---
 
 {enabled ? (
@@ -471,6 +497,113 @@ const otherCv: CvFile = { ...sampleCv, id: "00000000-0000-4000-8000-000000000032
               </p>
             </Card>
           </div>
+        </section>
+
+        {/* Application form: the real island rendered on the server (no client:), seeded through its kitchen-sink
+            props (initialErrors, initialServerError, initialPending, initialQuotedRate). */}
+        <section class="space-y-4" id="ks-form" data-ks="section-form">
+          <h2 class="font-semibold">Formularz aplikacji (/applications/new, /applications/[id]/edit)</h2>
+          <p class="text-muted-foreground text-xs">
+            Render statyczny: wyspa nie jest hydratowana, więc „Zapisz” jest tu zawsze wyłączony (przed hydratacją
+            formularz nie ma akcji). Włączony przycisk pokazuje sekcja Button i wiersz hover / focus-visible poniżej.
+          </p>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Card className="gap-2 rounded-xl p-4 shadow-none">
+              <p class="text-muted-foreground text-xs">
+                default / empty — nowa aplikacja (puste pola, dzisiejsza data)
+              </p>
+              <ApplicationForm />
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 shadow-none">
+              <p class="text-muted-foreground text-xs">default — edycja z wartościami (długa nazwa zawija się)</p>
+              <ApplicationForm application={{ id: appId, values: formValues }} />
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 shadow-none">
+              <p class="text-muted-foreground text-xs">
+                error — błędy pól (aria-invalid, komunikat role="alert") i Alert „Popraw zaznaczone pola.”
+              </p>
+              <ApplicationForm initialErrors={formErrors} />
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 shadow-none">
+              <p class="text-muted-foreground text-xs">error — błąd serwera (Alert nad przyciskami)</p>
+              <ApplicationForm
+                application={{ id: appId, values: formValues }}
+                initialServerError={serverErrorMessage}
+              />
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 shadow-none">
+              <p class="text-muted-foreground text-xs">
+                disabled / loading — zapis w toku: „Zapisywanie…”, przycisk wyłączony, formularz aria-busy; pola zostają
+                aktywne (wyłączonych FormData by nie wysłał). Szkielet ładowania: N/A — formularz nie pobiera danych w
+                przeglądarce.
+              </p>
+              <ApplicationForm application={{ id: appId, values: formValues }} initialPending />
+            </Card>
+            <Card className="gap-2 rounded-xl p-4 shadow-none">
+              <p class="text-muted-foreground text-xs">edycja — zmieniona stawka: pole „Dlaczego zmieniasz stawkę?”</p>
+              <ApplicationForm application={{ id: appId, values: formValues }} initialQuotedRate="24 000 PLN" />
+            </Card>
+          </div>
+          {/* Hover and focus-visible are forced on these copies built from the same form classes. */}
+          <Card className="gap-3 rounded-xl p-4 shadow-none">
+            <p class="text-muted-foreground text-xs">
+              hover / focus-visible — te same klasy co formularz (form-classes.ts): pierścień ring na polu, liście,
+              przycisku i „Anuluj”.
+            </p>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div>
+                <Label htmlFor="ks-form-input-focus" className={FORM_LABEL_CLASS}>
+                  Firma * (focus)
+                </Label>
+                <Input
+                  id="ks-form-input-focus"
+                  defaultValue="Acme sp. z o.o."
+                  className={FORM_CONTROL_CLASS}
+                  data-ks="focus-target"
+                />
+              </div>
+              <div>
+                <Label htmlFor="ks-form-select-focus" className={FORM_LABEL_CLASS}>
+                  Tryb pracy (focus)
+                </Label>
+                <NativeSelect
+                  id="ks-form-select-focus"
+                  defaultValue=""
+                  wrapperClassName="w-full"
+                  className={FORM_CONTROL_CLASS}
+                  data-ks="focus-target"
+                >
+                  <NativeSelectOption value="">—</NativeSelectOption>
+                </NativeSelect>
+              </div>
+              <div>
+                <Label htmlFor="ks-form-input-error" className={FORM_LABEL_CLASS}>
+                  Stanowisko * (error + focus)
+                </Label>
+                <Input
+                  id="ks-form-input-error"
+                  aria-invalid="true"
+                  aria-describedby="ks-form-input-error-message"
+                  className={FORM_CONTROL_CLASS}
+                  data-ks="focus-target"
+                />
+                <p id="ks-form-input-error-message" class:list={FORM_ERROR_CLASS}>
+                  Podaj stanowisko
+                </p>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+              <Button size="lg" data-ks="hover-target">
+                Zapisz (hover)
+              </Button>
+              <Button size="lg" data-ks="focus-target">
+                Zapisz (focus)
+              </Button>
+              <a href="#ks-form" class:list={FORM_TEXT_ACTION_CLASS} data-ks="focus-target">
+                Anuluj
+              </a>
+            </div>
+          </Card>
         </section>
 
         {/* Islands with sample props (static render; interaction states need the live page). */}

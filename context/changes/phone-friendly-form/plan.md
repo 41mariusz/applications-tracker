@@ -400,30 +400,30 @@ No database migration. The change is UI-only and backward-compatible with the AP
 
 #### Automated
 
-- [x] 2.1 Hardcoded-value scan on `new.astro`, `[id]/edit.astro`, `ApplicationForm.tsx`, `form-classes.ts` returns 0 hits
-- [x] 2.2 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass
-- [x] 2.3 `npm run smoke` passes against a local preview
+- [x] 2.1 Hardcoded-value scan on `new.astro`, `[id]/edit.astro`, `ApplicationForm.tsx`, `form-classes.ts` returns 0 hits — 6191b27
+- [x] 2.2 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass — 6191b27
+- [x] 2.3 `npm run smoke` passes against a local preview — 6191b27
 
 #### Manual
 
-- [x] 2.4 At 360 px: no sideways scroll, every control and "Anuluj" ≥ 40 px, rows stacked; 1280 px side by side — screenshots saved
-- [x] 2.5 Select option lists are readable (light text on the dark popover) in Chromium
-- [x] 2.6 Keyboard: every control and the back/cancel links show the `ring` focus
-- [x] 2.7 Unknown-UUID edit URL shows the "Nie znaleziono" card with "Wróć do listy"
-- [x] 2.8 Create and edit still save and redirect as before
+- [x] 2.4 At 360 px: no sideways scroll, every control and "Anuluj" ≥ 40 px, rows stacked; 1280 px side by side — screenshots saved — 6191b27
+- [x] 2.5 Select option lists are readable (light text on the dark popover) in Chromium — 6191b27
+- [x] 2.6 Keyboard: every control and the back/cancel links show the `ring` focus — 6191b27
+- [x] 2.7 Unknown-UUID edit URL shows the "Nie znaleziono" card with "Wróć do listy" — 6191b27
+- [x] 2.8 Create and edit still save and redirect as before — 6191b27
 
 ### Phase 3: States — error, busy and the kitchen sink
 
 #### Automated
 
-- [ ] 3.1 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass
-- [ ] 3.2 Hardcoded-value scan on the four view files and `src/pages/dev/ui.astro` returns 0 hits
+- [x] 3.1 `npm run lint`, `npm test`, `npx astro check`, `npm run build` pass
+- [x] 3.2 Hardcoded-value scan on the four view files and `src/pages/dev/ui.astro` returns 0 hits
 
 #### Manual
 
-- [ ] 3.3 At 360 px, empty submit from the bottom: focus on "Firma", message visible, Alert above "Zapisz"
-- [ ] 3.4 Accessibility tree names each invalid field's message via `aria-describedby`
-- [ ] 3.5 `/dev/ui` "Formularz aplikacji" shows all 7 states (or N/A with reason) — screenshots at 1280 and 360 px saved
+- [x] 3.3 At 360 px, empty submit from the bottom: focus on "Firma", message visible, Alert above "Zapisz"
+- [x] 3.4 Accessibility tree names each invalid field's message via `aria-describedby`
+- [x] 3.5 `/dev/ui` "Formularz aplikacji" shows all 7 states (or N/A with reason) — screenshots at 1280 and 360 px saved
 
 ### Phase 4: Guards — e2e, smoke, lint and rule
 
