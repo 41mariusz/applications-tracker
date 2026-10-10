@@ -5,6 +5,18 @@ import { checkTransition, sortApplications } from "@/lib/domain/status";
 import { diffFields, TRACKED_FIELDS, type TrackedField } from "@/lib/domain/changes";
 import { toServiceError } from "@/lib/services/errors";
 
+// Maximum lengths of the form's text fields: the schema enforces them, the form sets them as maxLength
+// (so zod's default over-length message cannot be reached from the form).
+export const APPLICATION_FIELD_MAX = {
+  company: 200,
+  position: 200,
+  posting_url: 2000,
+  salary_range: 100,
+  quoted_rate: 100,
+  hr_contact_name: 200,
+  hr_contact_phone: 50,
+} as const;
+
 // Empty form fields arrive as "" — store them as null.
 const optionalText = (max: number) =>
   z
@@ -17,18 +29,18 @@ const optionalEnum = <T extends readonly [string, ...string[]]>(values: T) =>
   z.union([z.enum(values), z.literal("").transform(() => null)]);
 
 export const createApplicationSchema = z.object({
-  company: z.string().trim().min(1, "Podaj nazwę firmy").max(200),
-  position: z.string().trim().min(1, "Podaj stanowisko").max(200),
+  company: z.string().trim().min(1, "Podaj nazwę firmy").max(APPLICATION_FIELD_MAX.company),
+  position: z.string().trim().min(1, "Podaj stanowisko").max(APPLICATION_FIELD_MAX.position),
   posting_url: z
     .string()
     .trim()
-    .max(2000)
+    .max(APPLICATION_FIELD_MAX.posting_url)
     .refine((v) => v === "" || URL.canParse(v), "Podaj pełny adres, np. https://…")
     .transform((v) => (v === "" ? null : v)),
-  salary_range: optionalText(100),
-  quoted_rate: optionalText(100),
-  hr_contact_name: optionalText(200),
-  hr_contact_phone: optionalText(50),
+  salary_range: optionalText(APPLICATION_FIELD_MAX.salary_range),
+  quoted_rate: optionalText(APPLICATION_FIELD_MAX.quoted_rate),
+  hr_contact_name: optionalText(APPLICATION_FIELD_MAX.hr_contact_name),
+  hr_contact_phone: optionalText(APPLICATION_FIELD_MAX.hr_contact_phone),
   applied_on: z
     .string()
     .trim()
