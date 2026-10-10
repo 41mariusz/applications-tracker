@@ -25,6 +25,8 @@ const CLEAN_VIEWS = [
   "src/pages/applications/[id]/edit.astro",
   "src/components/applications/ApplicationForm.tsx",
   "src/components/applications/form-classes.ts",
+  "src/pages/cv.astro",
+  "src/components/applications/CvLibrary.tsx",
 ];
 
 const LITERAL =

@@ -1,87 +1,63 @@
-import React, { lazy, Suspense, useState } from "react";
-import { ChevronDown, ChevronRight, Download, Eye, EyeOff, FileText } from "lucide-react";
-import ErrorBoundary, { PreviewFallback } from "@/components/ErrorBoundary";
-import ErrorText from "@/components/ErrorText";
+import { useState } from "react";
+import { ChevronDown, ChevronRight, FileText } from "lucide-react";
+import CvFileActions from "@/components/applications/CvFileActions";
+import CvUploadBox, { CvUploadStatus } from "@/components/applications/CvUploadBox";
 import { apiRequest } from "@/lib/api-client";
-import { cvFileUrl } from "@/lib/cv-urls";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
-import { checkCvFile, CV_ACCEPT, CV_LIMITS_TEXT, formatFileSize } from "@/lib/domain/cv";
+import { checkCvFile, CV_LIMITS_TEXT, formatFileSize } from "@/lib/domain/cv";
 import { isClosed } from "@/lib/domain/status";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { STATUS_LABELS, type ApplicationStatus, type CvFile, type UploadCvResponse } from "@/types";
-
-// Loaded only when a preview is opened.
-const CvPreview = lazy(() => import("./CvPreview"));
 
 export interface CvLibraryEntry {
   file: CvFile;
   applications: { id: string; company: string; position: string; status: ApplicationStatus }[];
 }
 
-function CvItem({ entry }: { entry: CvLibraryEntry }) {
+interface CvItemProps {
+  entry: CvLibraryEntry;
+  /** Usage list expanded on first render (the kitchen sink shows it open); collapsed by default. */
+  initialListOpen?: boolean;
+}
+
+// Text-sized controls get a 40 px tall hit area for a thumb; keyboard focus draws the ring token.
+const TAP_CLASS =
+  "focus-visible:ring-ring inline-flex min-h-10 items-center rounded-sm outline-none hover:underline focus-visible:ring-2";
+
+// One file of the library, on the list card surface (as ApplicationCard). Phone: the actions sit under the
+// file name and each usage row stacks; names wrap anywhere, so an unbroken name cannot push the page sideways.
+export function CvItem({ entry, initialListOpen = false }: CvItemProps) {
   const { file, applications } = entry;
-  const [previewOpen, setPreviewOpen] = useState(false);
-  const [listOpen, setListOpen] = useState(false);
+  const [listOpen, setListOpen] = useState(initialListOpen);
 
   return (
-    <li className="rounded-xl border border-white/10 bg-white/10 p-4 backdrop-blur-xl" data-cv-id={file.id}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <p className="flex items-center gap-2 font-semibold">
-            <FileText className="size-4 text-purple-300" />
-            {file.file_name}
-          </p>
-          <p className="text-xs text-blue-100/60">
-            {formatFileSize(file.size_bytes)} · wgrano {formatDateTime(file.created_at)}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setPreviewOpen(!previewOpen);
-            }}
-            aria-expanded={previewOpen}
-            className="inline-flex items-center gap-1 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium hover:bg-purple-500"
-          >
-            {previewOpen ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-            {previewOpen ? "Ukryj" : "Podgląd"}
-          </button>
-          <a
-            href={cvFileUrl(file.id, { download: true })}
-            className="inline-flex items-center gap-1 rounded-lg border border-white/20 px-3 py-1.5 text-xs hover:bg-white/10"
-          >
-            <Download className="size-3.5" />
-            Pobierz
-          </a>
-        </div>
-      </div>
-
-      {previewOpen && (
-        <ErrorBoundary
-          op="cv.preview"
-          entityId={file.id}
-          mimeType={file.mime_type}
-          fallback={<PreviewFallback fileUrl={cvFileUrl(file.id)} />}
-        >
-          <Suspense fallback={<p className="mt-3 text-xs text-blue-100/60">Wczytywanie podglądu…</p>}>
-            <CvPreview cvId={file.id} mimeType={file.mime_type} />
-          </Suspense>
-        </ErrorBoundary>
-      )}
+    <li
+      id={`cv-${file.id}`}
+      className="border-border bg-muted rounded-xl border p-4 backdrop-blur-xl"
+      data-cv-id={file.id}
+    >
+      <CvFileActions cvId={file.id} mimeType={file.mime_type}>
+        <p className="flex items-start gap-2 font-semibold" data-testid="cv-file-name">
+          <FileText className="text-link mt-0.5 size-4 shrink-0" />
+          <span className="min-w-0 wrap-anywhere">{file.file_name}</span>
+        </p>
+        <p className="text-muted-foreground text-xs">
+          {formatFileSize(file.size_bytes)} · wgrano {formatDateTime(file.created_at)}
+        </p>
+      </CvFileActions>
 
       {applications.length === 0 ? (
-        <p className="mt-3 text-xs text-blue-100/50">Nie jest podpięte do żadnej aplikacji.</p>
+        <p className="text-muted-foreground mt-3 text-xs">Nie jest podpięte do żadnej aplikacji.</p>
       ) : (
-        <div className="mt-3">
+        <div className="mt-2">
           <button
             type="button"
             onClick={() => {
               setListOpen(!listOpen);
             }}
             aria-expanded={listOpen}
-            className="inline-flex items-center gap-1 text-sm text-purple-300 hover:underline"
+            className={cn(TAP_CLASS, "text-link gap-1 text-sm")}
             data-testid="cv-usage"
             data-usage-count={applications.length}
           >
@@ -89,21 +65,30 @@ function CvItem({ entry }: { entry: CvLibraryEntry }) {
             Podpięte do aplikacji: {applications.length}
           </button>
           {listOpen && (
-            <ul className="mt-2 space-y-1 text-sm">
-              {applications.map((a) => (
-                <li
-                  key={a.id}
-                  className="flex flex-wrap items-baseline justify-between gap-2 border-t border-white/10 pt-1"
-                >
-                  <a
-                    href={`/applications/${a.id}`}
-                    className={cn("hover:underline", isClosed(a.status) && "line-through opacity-60")}
+            <ul className="mt-1 text-sm">
+              {applications.map((a) => {
+                const closed = isClosed(a.status);
+                return (
+                  <li
+                    key={a.id}
+                    className="border-border flex flex-col border-t pb-1 sm:flex-row sm:items-center sm:justify-between sm:gap-2 sm:pb-0"
                   >
-                    {a.company} <span className="text-blue-100/60">— {a.position}</span>
-                  </a>
-                  <span className="text-xs text-blue-100/60">{STATUS_LABELS[a.status]}</span>
-                </li>
-              ))}
+                    {/* Closed: struck through and muted, never dimmed with opacity. */}
+                    <a
+                      href={`/applications/${a.id}`}
+                      className={cn(TAP_CLASS, "min-w-0", closed && "text-muted-foreground line-through")}
+                    >
+                      <span className="min-w-0 wrap-anywhere">
+                        {a.company}{" "}
+                        <span className={closed ? "text-muted-foreground" : "text-supporting-foreground"}>
+                          — {a.position}
+                        </span>
+                      </span>
+                    </a>
+                    <span className="text-muted-foreground text-xs sm:shrink-0">{STATUS_LABELS[a.status]}</span>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -147,32 +132,15 @@ function UploadToLibrary() {
     setPending(false);
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (file) void upload(file);
-  }
-
   return (
-    <div className="mb-4 rounded-xl border border-white/10 bg-white/5 p-4 text-sm">
-      <label htmlFor="cv-library-upload" className="mb-1 block text-xs text-blue-100/70">
-        {`Wgraj CV do biblioteki (${CV_LIMITS_TEXT}) — ten sam plik nie zapisze się drugi raz`}
-      </label>
-      <input
+    <div className="border-border bg-card mb-4 rounded-xl border p-4 text-sm">
+      <CvUploadBox
         id="cv-library-upload"
-        type="file"
-        disabled={pending}
-        accept={CV_ACCEPT}
-        onChange={handleChange}
-        className="block w-full text-xs text-blue-100/80 file:mr-3 file:rounded-lg file:border-0 file:bg-purple-600 file:px-3 file:py-1.5 file:text-white hover:file:bg-purple-500 disabled:opacity-60"
+        label={`Wgraj CV do biblioteki (${CV_LIMITS_TEXT}) — ten sam plik nie zapisze się drugi raz`}
+        pending={pending}
+        onFile={(file) => void upload(file)}
       />
-      {pending && <p className="mt-2 text-xs text-blue-100/60">Wgrywanie…</p>}
-      {message && <p className="mt-2 text-xs text-blue-100/70">{message}</p>}
-      {error && (
-        <p role="alert" className="text-destructive mt-2 text-xs">
-          <ErrorText message={error} />
-        </p>
-      )}
+      <CvUploadStatus pending={pending} pendingLabel="Wgrywanie…" message={message} error={error} />
     </div>
   );
 }
@@ -182,7 +150,7 @@ export default function CvLibrary({ entries }: { entries: CvLibraryEntry[] }) {
     <>
       <UploadToLibrary />
       {entries.length === 0 ? (
-        <p className="rounded-xl border border-white/10 bg-white/5 p-6 text-center text-blue-100/70">
+        <p className="border-border bg-card text-supporting-foreground rounded-xl border p-6 text-center">
           Biblioteka jest pusta. Wgraj CV powyżej albo przy aplikacji.
         </p>
       ) : (

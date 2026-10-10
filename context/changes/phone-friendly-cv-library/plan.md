@@ -466,32 +466,32 @@ S-09 must start after this change, because `CvPreview.tsx` render classes change
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes, with the three new entries in `CLEAN_VIEWS`
-- [x] 1.2 `npm test` and `npx astro check` pass
-- [x] 1.3 The hardcoded-value scan on `CvPreview.tsx`, `CvFileActions.tsx`, `CvUploadBox.tsx` and `CvPanel.tsx` returns 0 lines
-- [x] 1.4 `npm run build` succeeds, and `npm run smoke` passes against the local stack
+- [x] 1.1 `npm run lint` passes, with the three new entries in `CLEAN_VIEWS` — 4db4407
+- [x] 1.2 `npm test` and `npx astro check` pass — 4db4407
+- [x] 1.3 The hardcoded-value scan on `CvPreview.tsx`, `CvFileActions.tsx`, `CvUploadBox.tsx` and `CvPanel.tsx` returns 0 lines — 4db4407
+- [x] 1.4 `npm run build` succeeds, and `npm run smoke` passes against the local stack — 4db4407
 
 #### Manual
 
-- [x] 1.5 On the details view at 360 px, "Podgląd", "Pobierz" and the file picker are at least 40 px tall, and keyboard focus shows the ring on each
-- [x] 1.6 Opening a PDF preview shows the document on white with no empty white bar under "Wczytywanie podglądu…", and the page fits the width
-- [x] 1.7 Before/after screenshots of the details view's CV panel at 1280 and 360 px are saved in `screenshots/`
+- [x] 1.5 On the details view at 360 px, "Podgląd", "Pobierz" and the file picker are at least 40 px tall, and keyboard focus shows the ring on each — 4db4407
+- [x] 1.6 Opening a PDF preview shows the document on white with no empty white bar under "Wczytywanie podglądu…", and the page fits the width — 4db4407
+- [x] 1.7 Before/after screenshots of the details view's CV panel at 1280 and 360 px are saved in `screenshots/` — 4db4407
 
 ### Phase 2: /cv on the contract and on the phone
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes, with `cv.astro` and `CvLibrary.tsx` in `CLEAN_VIEWS`
-- [ ] 2.2 The hardcoded-value scan on `cv.astro` and `CvLibrary.tsx` returns 0 lines
-- [ ] 2.3 `npm test`, `npx astro check` and `npm run build` pass
-- [ ] 2.4 `npm run smoke` passes (`data-usage-count="1"` and the application id are still in the `/cv` HTML)
-- [ ] 2.5 `npx playwright test` passes, including the new `phone-cv.spec.ts`, `seed.spec.ts` and `phone-list.spec.ts`
+- [x] 2.1 `npm run lint` passes, with `cv.astro` and `CvLibrary.tsx` in `CLEAN_VIEWS`
+- [x] 2.2 The hardcoded-value scan on `cv.astro` and `CvLibrary.tsx` returns 0 lines
+- [x] 2.3 `npm test`, `npx astro check` and `npm run build` pass
+- [x] 2.4 `npm run smoke` passes (`data-usage-count="1"` and the application id are still in the `/cv` HTML)
+- [x] 2.5 `npx playwright test` passes, including the new `phone-cv.spec.ts`, `seed.spec.ts` and `phone-list.spec.ts`
 
 #### Manual
 
-- [ ] 2.6 At 360 px, `/cv` with a long file name and an expanded usage list has no sideways scroll, and the actions sit under the name; at 1280 px they sit to the right
-- [ ] 2.7 Keyboard Tab through `/cv` shows the ring on the upload input, each "Podgląd"/"Pobierz", the usage toggle and each application link
-- [ ] 2.8 Before/after screenshots of `/cv` at 1280 and 360 px are saved in `screenshots/`
+- [x] 2.6 At 360 px, `/cv` with a long file name and an expanded usage list has no sideways scroll, and the actions sit under the name; at 1280 px they sit to the right
+- [x] 2.7 Keyboard Tab through `/cv` shows the ring on the upload input, each "Podgląd"/"Pobierz", the usage toggle and each application link
+- [x] 2.8 Before/after screenshots of `/cv` at 1280 and 360 px are saved in `screenshots/`
 
 ### Phase 3: Upload confirmation and failed-read state
 

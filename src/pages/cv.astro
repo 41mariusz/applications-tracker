@@ -7,6 +7,7 @@ import { listApplications } from "@/lib/services/applications";
 import { listCvFiles } from "@/lib/services/cv";
 import { logError } from "@/lib/log";
 import { isProjectPaused } from "@/lib/supabase-paused";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const supabase = Astro.locals.supabase;
 let entries: CvLibraryEntry[] = [];
@@ -36,9 +37,13 @@ if (supabase) {
 <Layout title="Biblioteka CV">
   <div class="bg-cosmic min-h-screen p-4 sm:p-8">
     <Topbar />
-    <div class="mx-auto max-w-3xl text-white">
+    <div class="text-foreground mx-auto max-w-3xl">
       <h1 class="mb-4 text-2xl font-bold">Biblioteka CV</h1>
-      {loadError && <p class="rounded-lg bg-red-500/20 px-3 py-2 text-sm text-red-200">{loadError}</p>}
+      {loadError && (
+        <Alert variant="destructive">
+          <AlertDescription>{loadError}</AlertDescription>
+        </Alert>
+      )}
       {!loadError && <CvLibrary entries={entries} client:load />}
     </div>
   </div>
