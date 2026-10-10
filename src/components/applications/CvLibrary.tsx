@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import CvFileActions from "@/components/applications/CvFileActions";
 import CvUploadBox, { CvUploadStatus } from "@/components/applications/CvUploadBox";
 import { apiRequest } from "@/lib/api-client";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
-import { checkCvFile, CV_LIMITS_TEXT, formatFileSize } from "@/lib/domain/cv";
+import { checkCvFile, cvAnchorId, CV_LIMITS_TEXT, formatFileSize, uploadedCvIdFromHash } from "@/lib/domain/cv";
 import { isClosed } from "@/lib/domain/status";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -32,9 +32,10 @@ export function CvItem({ entry, initialListOpen = false }: CvItemProps) {
   const [listOpen, setListOpen] = useState(initialListOpen);
 
   return (
+    // After an upload the page reloads onto this anchor; `:target` draws the ring until the next navigation.
     <li
-      id={`cv-${file.id}`}
-      className="border-border bg-muted rounded-xl border p-4 backdrop-blur-xl"
+      id={cvAnchorId(file.id)}
+      className="border-border bg-muted target:ring-ring scroll-mt-4 rounded-xl border p-4 backdrop-blur-xl target:ring-2"
       data-cv-id={file.id}
     >
       <CvFileActions cvId={file.id} mimeType={file.mime_type}>
@@ -97,10 +98,28 @@ export function CvItem({ entry, initialListOpen = false }: CvItemProps) {
   );
 }
 
-function UploadToLibrary() {
+// What the upload box says after the reload that follows a new upload; null when the hash names no entry.
+function confirmationFor(id: string, entries: CvLibraryEntry[] | null): string | null {
+  if (entries === null) return "Plik został wgrany, ale nie udało się wczytać listy.";
+  const entry = entries.find((e) => e.file.id === id);
+  return entry ? `Wgrano plik „${entry.file.file_name}”.` : null;
+}
+
+function UploadToLibrary({ entries }: { entries: CvLibraryEntry[] | null }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
+
+  // Read after hydration (the server has no hash), then dropped so a manual refresh does not repeat it.
+  useEffect(() => {
+    const id = uploadedCvIdFromHash(window.location.hash);
+    if (!id) return;
+    // A reload restores the old scroll position instead of jumping to the hash, so scroll explicitly.
+    document.getElementById(cvAnchorId(id))?.scrollIntoView({ block: "start" });
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-off read of the URL after hydration
+    setMessage(confirmationFor(id, entries));
+  }, [entries]);
 
   async function upload(file: File) {
     setError(null);
@@ -126,6 +145,8 @@ function UploadToLibrary() {
     } else if (result.data.reused) {
       setMessage(`Ten plik jest już w bibliotece jako „${result.data.file.file_name}”.`);
     } else {
+      // A hash change alone does not reload: set it, then reload onto the new entry (see the effect above).
+      history.replaceState(null, "", `#${cvAnchorId(result.data.file.id)}`);
       window.location.reload();
       return;
     }
@@ -145,11 +166,12 @@ function UploadToLibrary() {
   );
 }
 
-export default function CvLibrary({ entries }: { entries: CvLibraryEntry[] }) {
+// `entries` is null when the page could not read the library: the upload box still works, with no list.
+export default function CvLibrary({ entries }: { entries: CvLibraryEntry[] | null }) {
   return (
     <>
-      <UploadToLibrary />
-      {entries.length === 0 ? (
+      <UploadToLibrary entries={entries} />
+      {entries === null ? null : entries.length === 0 ? (
         <p className="border-border bg-card text-supporting-foreground rounded-xl border p-6 text-center">
           Biblioteka jest pusta. Wgraj CV powyżej albo przy aplikacji.
         </p>

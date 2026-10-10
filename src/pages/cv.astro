@@ -10,7 +10,8 @@ import { isProjectPaused } from "@/lib/supabase-paused";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const supabase = Astro.locals.supabase;
-let entries: CvLibraryEntry[] = [];
+// null when the read failed: the island then shows the upload box only.
+let entries: CvLibraryEntry[] | null = [];
 let loadError: string | null = null;
 if (supabase) {
   try {
@@ -29,6 +30,7 @@ if (supabase) {
     if (isProjectPaused(e)) return Astro.redirect("/paused");
     logError(Astro, e, { op: "cv.library", status: 500 });
     loadError = "Nie udało się wczytać biblioteki CV.";
+    entries = null;
     Astro.response.status = 500;
   }
 }
@@ -40,11 +42,21 @@ if (supabase) {
     <div class="text-foreground mx-auto max-w-3xl">
       <h1 class="mb-4 text-2xl font-bold">Biblioteka CV</h1>
       {loadError && (
-        <Alert variant="destructive">
-          <AlertDescription>{loadError}</AlertDescription>
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>
+            <p>
+              {loadError}{" "}
+              <a
+                href="/cv"
+                class="text-link focus-visible:ring-ring inline-flex min-h-10 items-center rounded-sm underline outline-none focus-visible:ring-2"
+              >
+                Odśwież
+              </a>
+            </p>
+          </AlertDescription>
         </Alert>
       )}
-      {!loadError && <CvLibrary entries={entries} client:load />}
+      <CvLibrary entries={entries} client:load />
     </div>
   </div>
 </Layout>

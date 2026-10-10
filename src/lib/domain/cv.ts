@@ -1,5 +1,7 @@
 // CV rules (PRD FR-013). Pure functions — no I/O except hashing bytes already in memory.
 
+import { isUuid } from "@/lib/domain/ids";
+
 export const MAX_CV_BYTES = 5 * 1024 * 1024;
 export const CV_TOO_LARGE_MESSAGE = "Plik jest za duży (maksymalnie 5 MB).";
 
@@ -70,4 +72,19 @@ export function groupByCv<A extends { cv_file_id: string | null }>(
     if (application.cv_file_id) groups.get(application.cv_file_id)?.push(application);
   }
   return groups;
+}
+
+// Anchor of a library entry: the page reloads onto it after an upload, and `:target` highlights it.
+const CV_ANCHOR_PREFIX = "cv-";
+
+export function cvAnchorId(id: string): string {
+  return `${CV_ANCHOR_PREFIX}${id}`;
+}
+
+// The CV id named by a location hash such as "#cv-<uuid>"; null for any other hash.
+export function uploadedCvIdFromHash(hash: string): string | null {
+  const prefix = `#${CV_ANCHOR_PREFIX}`;
+  if (!hash.startsWith(prefix)) return null;
+  const id = hash.slice(prefix.length);
+  return isUuid(id) ? id : null;
 }

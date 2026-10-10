@@ -4,6 +4,7 @@ import {
   CV_ACCEPT,
   CV_LIMITS_TEXT,
   CV_TYPES,
+  cvAnchorId,
   cvStoragePath,
   formatFileSize,
   groupByCv,
@@ -11,6 +12,7 @@ import {
   MAX_CV_BYTES,
   MAX_CV_REQUEST_BYTES,
   sha256Hex,
+  uploadedCvIdFromHash,
 } from "@/lib/domain/cv";
 
 const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -126,5 +128,26 @@ describe("CV_ACCEPT / CV_LIMITS_TEXT", () => {
       expect(accepted).toContain(mimeType);
       expect(accepted).toContain(`.${extension}`);
     }
+  });
+});
+
+describe("cvAnchorId / uploadedCvIdFromHash", () => {
+  const ID = "3f2b8c1e-9a4d-4e6f-8b7a-1c2d3e4f5a6b";
+
+  it("builds the anchor of a library entry", () => {
+    expect(cvAnchorId(ID)).toBe(`cv-${ID}`);
+  });
+
+  it("reads the CV id back from its own anchor", () => {
+    expect(uploadedCvIdFromHash(`#${cvAnchorId(ID)}`)).toBe(ID);
+  });
+
+  it("returns null for anything that is not #cv-<uuid>", () => {
+    expect(uploadedCvIdFromHash(`cv-${ID}`)).toBeNull();
+    expect(uploadedCvIdFromHash("#cv-not-a-uuid")).toBeNull();
+    expect(uploadedCvIdFromHash("")).toBeNull();
+    expect(uploadedCvIdFromHash("#")).toBeNull();
+    expect(uploadedCvIdFromHash(`#cv-${ID}-extra`)).toBeNull();
+    expect(uploadedCvIdFromHash(`#ks-${ID}`)).toBeNull();
   });
 });

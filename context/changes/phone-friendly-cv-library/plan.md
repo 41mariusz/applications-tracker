@@ -481,31 +481,31 @@ S-09 must start after this change, because `CvPreview.tsx` render classes change
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes, with `cv.astro` and `CvLibrary.tsx` in `CLEAN_VIEWS`
-- [x] 2.2 The hardcoded-value scan on `cv.astro` and `CvLibrary.tsx` returns 0 lines
-- [x] 2.3 `npm test`, `npx astro check` and `npm run build` pass
-- [x] 2.4 `npm run smoke` passes (`data-usage-count="1"` and the application id are still in the `/cv` HTML)
-- [x] 2.5 `npx playwright test` passes, including the new `phone-cv.spec.ts`, `seed.spec.ts` and `phone-list.spec.ts`
+- [x] 2.1 `npm run lint` passes, with `cv.astro` and `CvLibrary.tsx` in `CLEAN_VIEWS` — 4629d66
+- [x] 2.2 The hardcoded-value scan on `cv.astro` and `CvLibrary.tsx` returns 0 lines — 4629d66
+- [x] 2.3 `npm test`, `npx astro check` and `npm run build` pass — 4629d66
+- [x] 2.4 `npm run smoke` passes (`data-usage-count="1"` and the application id are still in the `/cv` HTML) — 4629d66
+- [x] 2.5 `npx playwright test` passes, including the new `phone-cv.spec.ts`, `seed.spec.ts` and `phone-list.spec.ts` — 4629d66
 
 #### Manual
 
-- [x] 2.6 At 360 px, `/cv` with a long file name and an expanded usage list has no sideways scroll, and the actions sit under the name; at 1280 px they sit to the right
-- [x] 2.7 Keyboard Tab through `/cv` shows the ring on the upload input, each "Podgląd"/"Pobierz", the usage toggle and each application link
-- [x] 2.8 Before/after screenshots of `/cv` at 1280 and 360 px are saved in `screenshots/`
+- [x] 2.6 At 360 px, `/cv` with a long file name and an expanded usage list has no sideways scroll, and the actions sit under the name; at 1280 px they sit to the right — 4629d66
+- [x] 2.7 Keyboard Tab through `/cv` shows the ring on the upload input, each "Podgląd"/"Pobierz", the usage toggle and each application link — 4629d66
+- [x] 2.8 Before/after screenshots of `/cv` at 1280 and 360 px are saved in `screenshots/` — 4629d66
 
 ### Phase 3: Upload confirmation and failed-read state
 
 #### Automated
 
-- [ ] 3.1 `npm test` passes, including the new `cvAnchorId` / `uploadedCvIdFromHash` cases
-- [ ] 3.2 `npm run lint`, `npx astro check` and `npm run build` pass
-- [ ] 3.3 `npm run smoke` and `npx playwright test` pass
+- [x] 3.1 `npm test` passes, including the new `cvAnchorId` / `uploadedCvIdFromHash` cases
+- [x] 3.2 `npm run lint`, `npx astro check` and `npm run build` pass
+- [x] 3.3 `npm run smoke` and `npx playwright test` pass
 
 #### Manual
 
-- [ ] 3.4 Uploading a new file on `/cv` (360 px, list longer than the screen) reloads onto the new item, highlighted, with "Wgrano plik „…”." above. A manual refresh afterwards shows no message.
-- [ ] 3.5 Uploading an identical file shows the existing "Ten plik jest już w bibliotece…" message without a reload
-- [ ] 3.6 With the read forced to fail locally (e.g. a temporary throw in the page's try block, reverted afterwards): the `Alert` with "Odśwież" shows, the upload box is usable, and an upload ends on the "wgrany, ale nie udało się wczytać listy" line
+- [x] 3.4 Uploading a new file on `/cv` (360 px, list longer than the screen) reloads onto the new item, highlighted, with "Wgrano plik „…”." above. A manual refresh afterwards shows no message.
+- [x] 3.5 Uploading an identical file shows the existing "Ten plik jest już w bibliotece…" message without a reload
+- [x] 3.6 With the read forced to fail locally (e.g. a temporary throw in the page's try block, reverted afterwards): the `Alert` with "Odśwież" shows, the upload box is usable, and an upload ends on the "wgrany, ale nie udało się wczytać listy" line
 
 ### Phase 4: States, visual gate and rule
 
