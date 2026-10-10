@@ -84,7 +84,7 @@ export default function CvPreview({ cvId, mimeType }: Props) {
 
   return (
     <div className="mt-3">
-      {state.kind === "loading" && <p className="text-xs text-blue-100/60">Wczytywanie podglądu…</p>}
+      {state.kind === "loading" && <p className="text-muted-foreground text-xs">Wczytywanie podglądu…</p>}
       {state.kind === "error" && (
         <Alert variant="destructive" data-testid="cv-preview-error">
           <AlertDescription>
@@ -98,9 +98,11 @@ export default function CvPreview({ cvId, mimeType }: Props) {
           </AlertDescription>
         </Alert>
       )}
+      {/* Paper: the rendered document assumes a white page. While empty (loading) it drops its padding, so no
+          blank bar shows; it is never hidden, because renderPdf measures its width once at the start. */}
       <div
         ref={container}
-        className="max-h-[75vh] overflow-auto rounded-lg bg-white p-2 text-black"
+        className="bg-paper text-paper-foreground max-h-[75vh] overflow-auto rounded-lg p-2 empty:p-0"
         hidden={state.kind === "error"}
         data-testid="cv-preview"
       />

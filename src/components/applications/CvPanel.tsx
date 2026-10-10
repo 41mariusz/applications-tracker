@@ -1,20 +1,17 @@
-import React, { lazy, Suspense, useState } from "react";
-import { Download, Eye, EyeOff, FileText } from "lucide-react";
-import ErrorBoundary, { PreviewFallback } from "@/components/ErrorBoundary";
-import ErrorText from "@/components/ErrorText";
-import { Button } from "@/components/ui/button";
+import type React from "react";
+import { useState } from "react";
+import { FileText } from "lucide-react";
+import CvFileActions from "@/components/applications/CvFileActions";
+import CvUploadBox, { CvUploadStatus } from "@/components/applications/CvUploadBox";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { apiRequest } from "@/lib/api-client";
-import { applicationCvUrl, cvFileUrl } from "@/lib/cv-urls";
+import { applicationCvUrl } from "@/lib/cv-urls";
 import { errorMessage, type ClientMessage } from "@/lib/domain/client-errors";
-import { checkCvFile, CV_ACCEPT, CV_LIMITS_TEXT, formatFileSize } from "@/lib/domain/cv";
+import { checkCvFile, CV_LIMITS_TEXT, formatFileSize } from "@/lib/domain/cv";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { AttachCvResponse, CvFile, UploadCvResponse } from "@/types";
-
-// Loaded only when the preview is opened.
-const CvPreview = lazy(() => import("./CvPreview"));
 
 interface Props {
   applicationId: string;
@@ -40,7 +37,6 @@ export default function CvPanel({ applicationId, current, library }: Props) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<ClientMessage | null>(null);
   const [pending, setPending] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
 
   // reloadDelayMs is read after the action, so the action can decide whether a message needs reading time.
   async function run(action: () => Promise<ClientMessage | null>, reloadDelayMs: () => number = () => 0) {
@@ -64,10 +60,7 @@ export default function CvPanel({ applicationId, current, library }: Props) {
     if (id) void run(() => attach(applicationId, id));
   }
 
-  function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
+  function handleUpload(file: File) {
     // Same rule as the server: a file that would be refused is not sent at all.
     const check = checkCvFile(file);
     if (!check.ok) {
@@ -106,52 +99,17 @@ export default function CvPanel({ applicationId, current, library }: Props) {
     <section className="bg-card rounded-xl border p-4 text-sm" data-testid="cv-panel">
       <h2 className="mb-2 font-semibold">CV</h2>
       {current ? (
-        <>
-          <p className="flex flex-wrap items-center gap-2">
-            <FileText className="text-link size-4" />
-            <span data-testid="cv-current" className="min-w-0 break-words">
-              {current.file_name}
+        <CvFileActions cvId={current.id} mimeType={current.mime_type}>
+          <p className="flex items-start gap-2">
+            <FileText className="text-link mt-0.5 size-4 shrink-0" />
+            <span className="min-w-0 wrap-anywhere">
+              <span data-testid="cv-current">{current.file_name}</span>{" "}
+              <span className="text-muted-foreground text-xs whitespace-nowrap">
+                {formatFileSize(current.size_bytes)}
+              </span>
             </span>
-            <span className="text-muted-foreground text-xs">{formatFileSize(current.size_bytes)}</span>
           </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Button
-              type="button"
-              size="sm"
-              onClick={() => {
-                setPreviewOpen(!previewOpen);
-              }}
-              aria-expanded={previewOpen}
-              className="h-auto gap-1 rounded-lg px-3 py-1.5 text-xs has-[>svg]:px-3"
-            >
-              {previewOpen ? <EyeOff className="size-3.5" /> : <Eye className="size-3.5" />}
-              {previewOpen ? "Ukryj podgląd" : "Podgląd"}
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="sm"
-              className="border-input hover:bg-muted hover:text-foreground h-auto gap-1 rounded-lg bg-transparent px-3 py-1.5 text-xs font-normal shadow-none has-[>svg]:px-3"
-            >
-              <a href={cvFileUrl(current.id, { download: true })}>
-                <Download className="size-3.5" />
-                Pobierz
-              </a>
-            </Button>
-          </div>
-          {previewOpen && (
-            <ErrorBoundary
-              op="cv.preview"
-              entityId={current.id}
-              mimeType={current.mime_type}
-              fallback={<PreviewFallback fileUrl={cvFileUrl(current.id)} />}
-            >
-              <Suspense fallback={<p className="text-muted-foreground mt-3 text-xs">Wczytywanie podglądu…</p>}>
-                <CvPreview cvId={current.id} mimeType={current.mime_type} />
-              </Suspense>
-            </ErrorBoundary>
-          )}
-        </>
+        </CvFileActions>
       ) : (
         <p className="text-muted-foreground">Nie dołączono CV.</p>
       )}
@@ -184,30 +142,14 @@ export default function CvPanel({ applicationId, current, library }: Props) {
             </NativeSelect>
           </div>
         )}
-        <div className="min-w-0">
-          <Label
-            htmlFor={`cv-upload-${applicationId}`}
-            className="text-supporting-foreground mb-1 block text-xs font-normal"
-          >
-            {`Wgraj nowe (${CV_LIMITS_TEXT})`}
-          </Label>
-          <input
-            id={`cv-upload-${applicationId}`}
-            type="file"
-            disabled={pending}
-            accept={CV_ACCEPT}
-            onChange={handleUpload}
-            className="text-supporting-foreground focus-visible:ring-ring file:bg-primary file:text-primary-foreground hover:file:bg-primary/90 block w-full rounded-lg text-xs outline-none file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-1.5 focus-visible:ring-2"
-          />
-        </div>
+        <CvUploadBox
+          id={`cv-upload-${applicationId}`}
+          label={`Wgraj nowe (${CV_LIMITS_TEXT})`}
+          pending={pending}
+          onFile={handleUpload}
+        />
       </div>
-      {pending && !message && <p className="text-muted-foreground mt-2 text-xs">Zapisywanie…</p>}
-      {message && <p className="text-supporting-foreground mt-2 text-xs">{message}</p>}
-      {error && (
-        <p role="alert" className="text-destructive mt-2 text-xs">
-          <ErrorText message={error} />
-        </p>
-      )}
+      <CvUploadStatus pending={pending} pendingLabel="Zapisywanie…" message={message} error={error} />
     </section>
   );
 }

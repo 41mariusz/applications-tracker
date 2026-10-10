@@ -44,6 +44,11 @@
   --input: oklch(1 0 0 / 20%);
   /* Focus: ring-purple-400. */
   --ring: oklch(71.4% 0.203 305.504);
+  /* Paper: the white page a rendered document (CV preview: pdf.js canvas, docx-preview) is drawn for.
+     For rendered documents only, never UI surfaces. */
+  --paper: oklch(1 0 0);
+  /* Text on paper: black, as docx-preview's own styles assume. Rendered documents only. */
+  --paper-foreground: oklch(0 0 0);
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -85,6 +90,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-paper: var(--paper);
+  --color-paper-foreground: var(--paper-foreground);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
