@@ -11,6 +11,7 @@
   },
   "scripts": {
     "review": "tsx --env-file-if-exists=.env src/index.ts",
+    "eval:sync": "tsx src/eval-sync.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/review.js \"--banner:js=import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);\""

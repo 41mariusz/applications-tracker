@@ -1,0 +1,49 @@
+{
+  "type": "object",
+  "properties": {
+    "implementationCorrectness": {
+      "type": "number",
+      "description": "Poprawność implementacji (skala 1-10). 1: logika jest błędna, pomija oczywiste przypadki brzegowe lub po cichu psuje istniejące zachowania. 10: poprawny na ścieżce głównej, w przypadkach brzegowych i w obsłudze błędów, bez regresji."
+    },
+    "idiomaticity": {
+      "type": "number",
+      "description": "Idiomatyczność (skala 1-10). 1: walczy z idiomami stacku i wzorcami repozytorium. 10: nie do odróżnienia od dobrze napisanego kodu wokół."
+    },
+    "complexity": {
+      "type": "number",
+      "description": "Złożoność (skala 1-10). 1: przekombinowane lub splątane, przypadkowa złożoność zasłania intencję. 10: najprostszy projekt, który w pełni rozwiązuje problem."
+    },
+    "testRiskCoverage": {
+      "type": "number",
+      "description": "Pokrycie testami proporcjonalne do ryzyka (skala 1-10). 1: ryzykowna logika bez testów albo testy, które nic nie sprawdzają. 10: najbardziej ryzykowne ścieżki są przetestowane celowo i dobrze."
+    },
+    "documentation": {
+      "type": "number",
+      "description": "Dokumentacja (skala 1-10). 1: brak komentarzy i dokumentacji tam, gdzie są potrzebne; intencję trzeba odtwarzać. 10: tyle dokumentacji, ile trzeba, by wyjaśnić „dlaczego”, bez powtarzania oczywistości."
+    },
+    "securitySafety": {
+      "type": "number",
+      "description": "Bezpieczeństwo (skala 1-10). 1: podatność, wyciek sekretów lub niebezpieczne zaufanie do danych z zewnątrz. 10: wejście walidowane, sekrety obsłużone poprawnie, brak nowej powierzchni ataku."
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "fail"],
+      "description": "Wiążący werdykt dla całej zmiany; czyta go bramka w CI"
+    },
+    "summary": {
+      "type": "string",
+      "description": "Podsumowanie w Markdown, gotowe jako komentarz do PR-a"
+    }
+  },
+  "required": [
+    "implementationCorrectness",
+    "idiomaticity",
+    "complexity",
+    "testRiskCoverage",
+    "documentation",
+    "securitySafety",
+    "verdict",
+    "summary"
+  ],
+  "additionalProperties": false
+}
