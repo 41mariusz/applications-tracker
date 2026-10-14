@@ -95,6 +95,8 @@ export default defineConfig(
   includeIgnoreFile(gitignorePath),
   // Course skills and their scripts are managed by @przeprogramowani/10x-cli, not by this project.
   globalIgnores([".claude/"]),
+  // Standalone package with its own deps and `npm run typecheck`; the app's CI does not install them.
+  globalIgnores(["tools/code-reviewer/"]),
   baseConfig,
   reactConfig,
   eslintPluginAstro.configs["flat/recommended"],
