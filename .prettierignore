@@ -1,0 +1,5 @@
+# Managed by 10x-cli: reformatting breaks its manifest hashes (files then show as conflicts on the next get/sync).
+.claude/.10x-cli-manifest.json
+.claude/skills/
+.claude/prompts/
+.claude/config-templates/
