@@ -17,7 +17,6 @@
   # Test stack
 
   ## E2E
-
   ...
   ```
 
@@ -53,19 +52,19 @@ Field labels are fixed; readers look them up by label. Keep the order.
 
 ## Required fields
 
-| Label                 | Meaning                                                                                                                                                                                                                       |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `runner`              | Runner name and the installed `@playwright/test` version                                                                                                                                                                      |
-| `config`              | Path of the Playwright config                                                                                                                                                                                                 |
-| `single-spec command` | How to run one spec file                                                                                                                                                                                                      |
-| `full-suite command`  | How to run everything                                                                                                                                                                                                         |
-| `base URL`            | The URL tests and `playwright-cli` open                                                                                                                                                                                       |
-| `port`                | The detected port, where it came from, and the `E2E_PORT` override                                                                                                                                                            |
-| `web server command`  | What the app `webServer` entry (the one serving the base URL) starts: its build + preview command. Mock-server entries and mock hooks `/10x-e2e` adds are not recorded here, so they never make a re-run rewrite this section |
-| `auth setup project`  | Setup project name + file + where credentials come from, or `none`                                                                                                                                                            |
-| `storageState`        | Path of the saved session, or `none`                                                                                                                                                                                          |
-| `seed`                | Seed spec path and the risk it protects                                                                                                                                                                                       |
-| `updated`             | Date of the last change to this section                                                                                                                                                                                       |
+| Label | Meaning |
+| --- | --- |
+| `runner` | Runner name and the installed `@playwright/test` version |
+| `config` | Path of the Playwright config |
+| `single-spec command` | How to run one spec file |
+| `full-suite command` | How to run everything |
+| `base URL` | The URL tests and `playwright-cli` open |
+| `port` | The detected port, where it came from, and the `E2E_PORT` override |
+| `web server command` | What the app `webServer` entry (the one serving the base URL) starts: its build + preview command. Mock-server entries and mock hooks `/10x-e2e` adds are not recorded here, so they never make a re-run rewrite this section |
+| `auth setup project` | Setup project name + file + where credentials come from, or `none` |
+| `storageState` | Path of the saved session, or `none` |
+| `seed` | Seed spec path and the risk it protects |
+| `updated` | Date of the last change to this section |
 
 `browser CLI` is optional; the others are required. Values are facts found in
 the project, never placeholders — if a value is unknown, the setup is not

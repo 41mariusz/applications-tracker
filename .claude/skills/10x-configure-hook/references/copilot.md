@@ -17,13 +17,13 @@ Copilot has **three runtimes with different schemas**. Find out which one the us
 
 ## Runtimes at a glance
 
-|                | Copilot CLI                                                                                                                    | VS Code agent mode ("Local" harness)                                                                                                                                                                     | Cloud coding agent                                                   |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Config         | `.github/hooks/*.json`, `~/.copilot/hooks/`, `.github/copilot/settings*.json`; also reads `.claude/settings*.json` in the repo | `.github/hooks/*.json`, `~/.copilot/hooks/*.json`, `.agent.md` frontmatter; `.claude/settings*.json` only with `chat.useClaudeHooks` (off by default); `chat.hookFilesLocations` adds/disables locations | `.github/hooks/*.json` **on the default branch**; no `settings.json` |
-| Events         | camelCase: `postToolUse`, `agentStop`, … (PascalCase names also accepted)                                                      | 8 PascalCase: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreCompact`, `SubagentStart`, `SubagentStop`, `Stop`                                                                     | CLI set; most events fire                                            |
-| Matchers       | Regex on `toolName` (`^(?:PATTERN)$`); Claude matcher semantics documented only for `PreToolUse`/`PermissionRequest`           | **Ignored** for Claude-format files — every command for the event runs                                                                                                                                   | As CLI                                                               |
-| Command fields | `bash`, `powershell`, `command` (cross-platform fallback), `cwd`, `env`                                                        | `command`, `windows` / `linux` / `osx`, `cwd`, `env`                                                                                                                                                     | Only `bash` (or `command`); `powershell` ignored                     |
-| Timeout        | `timeoutSec` (alias `timeout`), **seconds**, default 30                                                                        | `timeout`, **seconds**, default 30                                                                                                                                                                       | As CLI                                                               |
+| | Copilot CLI | VS Code agent mode ("Local" harness) | Cloud coding agent |
+| --- | --- | --- | --- |
+| Config | `.github/hooks/*.json`, `~/.copilot/hooks/`, `.github/copilot/settings*.json`; also reads `.claude/settings*.json` in the repo | `.github/hooks/*.json`, `~/.copilot/hooks/*.json`, `.agent.md` frontmatter; `.claude/settings*.json` only with `chat.useClaudeHooks` (off by default); `chat.hookFilesLocations` adds/disables locations | `.github/hooks/*.json` **on the default branch**; no `settings.json` |
+| Events | camelCase: `postToolUse`, `agentStop`, … (PascalCase names also accepted) | 8 PascalCase: `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreCompact`, `SubagentStart`, `SubagentStop`, `Stop` | CLI set; most events fire |
+| Matchers | Regex on `toolName` (`^(?:PATTERN)$`); Claude matcher semantics documented only for `PreToolUse`/`PermissionRequest` | **Ignored** for Claude-format files — every command for the event runs | As CLI |
+| Command fields | `bash`, `powershell`, `command` (cross-platform fallback), `cwd`, `env` | `command`, `windows` / `linux` / `osx`, `cwd`, `env` | Only `bash` (or `command`); `powershell` ignored |
+| Timeout | `timeoutSec` (alias `timeout`), **seconds**, default 30 | `timeout`, **seconds**, default 30 | As CLI |
 
 VS Code sessions that run on the **Copilot harness** (Agent Host) use the CLI implementation, not the Local schema.
 
@@ -36,10 +36,10 @@ VS Code sessions that run on the **Copilot harness** (Agent Host) use the CLI im
 
 ## Signal channel — what reaches the agent
 
-|               | Per edit                                                                                                                                                                        | End of turn                                                                                                                                                             |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CLI / cloud   | Exit `0` + JSON `{"additionalContext": "..."}` — appended to the tool result, capped at 10 KB. **Exit `2` is only a warning** for `postToolUse`; other non-zero exits fail open | `agentStop`: exit `0` + `{"decision": "block", "reason": "..."}` forces another turn with `reason` as the prompt; the CLI overrides the hook after 8 consecutive blocks |
-| VS Code Local | Exit `2` + stderr is shown to the model, or exit `0` + `hookSpecificOutput.additionalContext`                                                                                   | `Stop`: `{"hookSpecificOutput": {"hookEventName": "Stop", "decision": "block", "reason": "..."}}` (nested, unlike CLI)                                                  |
+| | Per edit | End of turn |
+| --- | --- | --- |
+| CLI / cloud | Exit `0` + JSON `{"additionalContext": "..."}` — appended to the tool result, capped at 10 KB. **Exit `2` is only a warning** for `postToolUse`; other non-zero exits fail open | `agentStop`: exit `0` + `{"decision": "block", "reason": "..."}` forces another turn with `reason` as the prompt; the CLI overrides the hook after 8 consecutive blocks |
+| VS Code Local | Exit `2` + stderr is shown to the model, or exit `0` + `hookSpecificOutput.additionalContext` | `Stop`: `{"hookSpecificOutput": {"hookEventName": "Stop", "decision": "block", "reason": "..."}}` (nested, unlike CLI) |
 
 Only one JSON object may be printed on stdout. The example scripts below print one object that carries both the CLI field and the VS Code field, so one script serves both runtimes. The docs do not say that either runtime tolerates the other's extra fields — prove it in the runtime you configure.
 
@@ -79,7 +79,6 @@ CLI: `powershell` field (PowerShell 7+ on PATH). VS Code: `windows` field, chose
 `.github/hooks/lint-edited-file.sh`:
 
 <!-- proof: lint-edited-file.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # postToolUse / PostToolUse: lint the edited file(s); errors go back as additionalContext.
@@ -125,7 +124,6 @@ exit 0
 `.github/hooks/end-of-turn.sh`:
 
 <!-- proof: end-of-turn.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # agentStop / Stop: sweep everything this turn changed, send the agent back once.

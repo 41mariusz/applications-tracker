@@ -36,7 +36,7 @@ Examples:
 You can list active changes with: `ls context/changes/`
 ```
 
-Then **wait** for the user to provide an argument.
+   Then **wait** for the user to provide an argument.
 
 ## Argument Parsing
 
@@ -107,13 +107,12 @@ Collect the following warnings, then present them all at once with a single conf
    - **If the plan uses Auto/Manual subsections** (any `### Phase N:` block contains a `#### Automated` or `#### Manual` heading) and `<N> > 0`, queue: `<N> Progress items still pending (<X> automated, <Y> manual): <comma-separated list of "N.M <title>" tokens, truncated to 5 with "…" if longer>.` Order the combined token list by automated items first (in document order), then manual items (in document order); the truncation cap of 5 applies to the combined list.
    - **Legacy fallback**: if no `### Phase N:` block in Progress contains either `#### Automated` or `#### Manual` heading, fall back to the original behavior — count `- [ ]` lines under `### Phase` sub-headers; if any remain, queue: `<N> Progress items still pending: <comma-separated list of "N.M <title>" tokens, truncated to 5 with "…" if longer>.` (no parenthetical breakdown). This preserves zero behavior change for plans authored before workflow-v2.
    - If `plan.md` is missing, queue: `No plan.md found in change folder.` and skip the Progress count.
-
 3. **Review coverage check**: collect every phase number from `## Progress` (including pending phases), then read `reviews/impl-review*.md` and union the phase numbers actually reviewed for this plan. New reports declare `Reviewed phases`; a full report listing all phases covers them just like several phase reports. For older reports accept unambiguous scope such as `Phase 3 of 4` (covers only 3), an explicit range/list, or a full review whose body establishes exactly which phases were checked. A filename, `impl_reviewed` status, verdict, or bare “Full plan” label alone is not evidence. Ignore reports for other plans. Conflicting or unclear scope → queue `Uncertain review coverage: <report paths and reason>` without guessing phase numbers. Queue `Missing review coverage for phases: <numbers>` for the difference between Progress and confirmed coverage. If no reports exist, also queue `No impl-review found at reviews/impl-review*.md.` If Progress is absent or unparseable, warn that coverage cannot be determined; do not claim full coverage.
 4. **Missing-SHA check**: parse the `## Progress` section of `plan.md` (if it exists). Count `- [x]` rows whose line does NOT end with ` — <sha>` where `<sha>` is 7+ hexadecimal characters (i.e., the regex ` — [0-9a-f]{7,}$` does not match). If the count is non-zero, queue: `<N> Progress rows missing SHA suffix: <comma-separated "N.M <title>" tokens, truncated to 5 with "…" if longer>.` SHA-less rows are legitimate for empty-diff phases and for plans that completed before the SHA contract shipped — this is a soft signal, not a defect. Skip silently if `plan.md` is missing (the Pending Progress check already covered that case).
 
 5. **SHA history check**: follow [SHA diagnosis and repointing](references/archive-sha.md) for completed rows with existing SHA suffixes. Collect its diagnostics with the warnings above. Finish all read-only diagnosis and candidate confirmation before making any file edits.
 
-If at least one warning was queued, print:
+If at least one warning was queued, write this as plain assistant text in the same response, before any question tool call (a response that opens with the question tool call here is wrong). This is required, not optional: the user decides on these warnings, so every unmet condition must be on screen first. Name each unmet condition with its concrete state (which rows, which phases, which status), and every commit by short SHA and subject (`git log -1 --format='%h %s' <sha>`; say "object missing" when it cannot be resolved):
 
 ```
 ⚠ /10x-archive warnings for <change-id>:
@@ -121,13 +120,18 @@ If at least one warning was queued, print:
   - <warning 1>
   - <warning 2>
   - <warning 3>
+
+Archiving creates commit: chore(archive): close <change-id>
+  (git mv context/changes/<change-id>/ → context/archive/<created>-<change-id>/, stamps change.md; omit both lines without git)
 ```
 
-If a verified repoint mapping is ready, show the problem, target branch, old → new SHA mapping, commit title/change scope, affected row IDs and total row count, together with all warnings. Ask once: **Update and archive / Archive without repointing / Cancel** (Polish: **Zaktualizuj i archiwizuj / Archiwizuj bez podmiany / Anuluj**). Explicit approval is required even when the PR proves the mapping. Update and archive → carry only that approved mapping into “Move and stamp”; Archive without repointing → leave Progress unchanged; Cancel → STOP with no file changes. This replaces the ordinary warning prompt below; never treat candidate confirmation as edit approval. With incomplete diagnostics or no verified mapping, do not offer or recommend an update; use the ordinary warning prompt.
+If a verified repoint mapping is ready, show the problem, target branch, old → new SHA mapping with both subjects (`<old sha> "<old subject>" → <new sha> "<new subject>"`), change scope, affected row IDs and total row count, together with all warnings. Ask once: **Update and archive / Archive without repointing / Cancel** (Polish: **Zaktualizuj i archiwizuj / Archiwizuj bez podmiany / Anuluj**). Explicit approval is required even when the PR proves the mapping. Update and archive → carry only that approved mapping into “Move and stamp”; Archive without repointing → leave Progress unchanged; Cancel → STOP with no file changes. This replaces the ordinary warning prompt below; never treat candidate confirmation as edit approval. With incomplete diagnostics or no verified mapping, do not offer or recommend an update; use the ordinary warning prompt.
 
 Otherwise use `AskUserQuestion`. **Manual-only nudge**: if the Pending Progress check above queued a warning whose breakdown was exactly `0 automated, <Y> manual` with `<Y> ≥ 1`, append ` (Recommended)` to the `Continue archiving` label so the prompt visibly nudges toward archive — manual checks are often deferred-by-design, and archiving is the expected path. In all other cases (mixed pending, automated-only, legacy-fallback warning, or no Progress warning), present the labels verbatim.
 
-- question: `Archive "<change-id>" anyway?`
+Repeat the warnings in the question text (one short line each), so they are visible even where the host shows only the dialog. Without a native question tool, ask the same question as plain text after the warnings message and wait for the answer.
+
+- question: `Archive "<change-id>" anyway? Unmet: <warning 1>; <warning 2>; … Commit: chore(archive): close <change-id>`
   header: `Archive`
   options:
   - label: `Continue archiving`
@@ -136,7 +140,7 @@ Otherwise use `AskUserQuestion`. **Manual-only nudge**: if the Pending Progress 
     description: `Don't archive. Suggest /10x-implement <change-id> next.`
   - label: `Cancel`
     description: `Don't archive. Exit cleanly without further action.`
-    multiSelect: false
+  multiSelect: false
 
 - **Continue archiving** → proceed to "Move and stamp" below.
 - **Resume implementation** → print `→ /10x-implement <change-id>` and copy that to clipboard via `pbcopy 2>/dev/null || clip.exe 2>/dev/null || xclip -selection clipboard 2>/dev/null || true` (or `Set-Clipboard` on PowerShell) (best effort, cross-platform). STOP.
@@ -166,7 +170,7 @@ If no warnings were queued and no repoint mapping is proposed, skip the prompt a
 
 4. **Stage the stamp into the rename.** The Edit in step 2 modified `change.md` in the working tree, but `git mv` only stages the rename with the file's HEAD content. Run `git add "$DEST/change.md"` so the frontmatter stamp lands in the same commit as the rename. If repointing was approved, also run `git add "$DEST/plan.md" "$DEST/reviews/archive-sha-repoint.md"`. Verify the staged diff includes the approved suffix replacements and mapping note, as well as the move; `git mv` alone does not capture these edits or the new note.
 
-5. **Close the matching roadmap item.** Run this on **every** archive — the roadmap lookup is mandatory. "Best effort" scopes only the _edits_: a missing roadmap or an edit target that isn't found is skipped silently and never blocks, rolls back, or prompts the archive. It does NOT mean "assume there's no roadmap and skip the check." Not looking is a defect — the confirmation (step 7) must report the outcome either way.
+5. **Close the matching roadmap item.** Run this on **every** archive — the roadmap lookup is mandatory. "Best effort" scopes only the *edits*: a missing roadmap or an edit target that isn't found is skipped silently and never blocks, rolls back, or prompts the archive. It does NOT mean "assume there's no roadmap and skip the check." Not looking is a defect — the confirmation (step 7) must report the outcome either way.
 
    1. `test -f context/foundation/roadmap.md`. If absent, skip this step silently.
    2. Capture whether the file is already dirty: `ROADMAP_PREDIRTY=$(git status --porcelain context/foundation/roadmap.md 2>/dev/null)`. (Used in sub-step 7 to decide whether to stage it into the archive commit.)
@@ -175,8 +179,7 @@ If no warnings were queued and no repoint mapping is proposed, skip the prompt a
       - and in the `## Foundations` / `## Slices` bodies — the `### <ID>: …` block that contains a `- **Change ID:** <change-id>` line.
 
       `<ID>` is that item's roadmap-local id (`F-NN` or `S-NN`); `<Outcome>` is the text of its `- **Outcome:**` line (keep a leading `(foundation) ` if present).
-
-   4. **No match** → print `ℹ context/foundation/roadmap.md has no item with Change ID "<change-id>" — roadmap left untouched.` and skip the rest of this step. Match is exact-string only; a roadmap slice can spawn several changes, so a near-miss is intentionally _not_ closed.
+   4. **No match** → print `ℹ context/foundation/roadmap.md has no item with Change ID "<change-id>" — roadmap left untouched.` and skip the rest of this step. Match is exact-string only; a roadmap slice can spawn several changes, so a near-miss is intentionally *not* closed.
    5. **Match found** → apply the three edits below with the Edit tool. Each is independent and best effort: if a target isn't where the `/10x-roadmap` template puts it (hand-edited roadmap, older format), skip that sub-edit, keep going, and note what was skipped — never abort the archive over roadmap shape. Touch only the fields named here; leave `Outcome`, `Prerequisites`, `Parallel with`, `Risk`, etc. alone.
       1. **`## At a glance`** — in the matched table row, set the **Status** column cell to `done`.
       2. **Item body** — in the `### <ID>: …` block, rewrite the `- **Status:**` line to `- **Status:** done`.

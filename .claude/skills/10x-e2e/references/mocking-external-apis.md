@@ -28,7 +28,7 @@ nothing changes; the E2E run points it at the mock:
 ```typescript
 // OPENROUTER_BASE_URL is unset in production. Local E2E runs point it at the
 // mock in tests/e2e/mocks/openrouter-mock.mjs.
-const OPENROUTER_URL = `${OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1"}/chat/completions`;
+const OPENROUTER_URL = `${OPENROUTER_BASE_URL ?? 'https://openrouter.ai/api/v1'}/chat/completions`;
 ```
 
 - This edits production code, so show the user the diff and wait for their
@@ -115,7 +115,7 @@ server (e.g. read `dist/server/.dev.vars`, or watch the mock's log for the
 request). A wrong wiring silently calls the real API, which costs money and makes
 the test non-deterministic.
 
-Also look for what the flow _consumes_, not only the rows it writes: a free-tier
+Also look for what the flow *consumes*, not only the rows it writes: a free-tier
 counter or credit balance the generate route decrements is test residue too.
 Check it before and after a run, and prefer a test user whose runs aren't metered.
 

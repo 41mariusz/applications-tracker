@@ -29,12 +29,12 @@ For each capability:
 - **Criticality** — from the inventory (high / medium / low, with criteria).
 - **Buzz** — from independent signal families, each high / medium / low
   relative to the other capabilities:
-  - _change_: activity and a rising trend (history);
-  - _fix pressure_: fix share and reverts (history);
-  - _friction_: human review rounds, reverts, second attempts, open bugs,
+  - *change*: activity and a rising trend (history);
+  - *fix pressure*: fix share and reverts (history);
+  - *friction*: human review rounds, reverts, second attempts, open bugs,
     closed-unmerged PRs (discussion);
-  - _attention_: planning artifacts and prose about it (discussion);
-  - _reach_: runtime blast radius and real cycles (structure).
+  - *attention*: planning artifacts and prose about it (discussion);
+  - *reach*: runtime blast radius and real cycles (structure).
 - **Independence check** — before counting two families as agreement, ask
   whether one cause explains both (false-signal rule 4). Count a shared cause
   once and say so.
@@ -43,7 +43,7 @@ A capability is a risk zone when criticality is high and buzz is high in at
 least two independent families, or criticality is medium and buzz is high in
 three. Report **as many risk zones as qualify, at most six** — never fill a
 quota. A capability that misses the bar narrowly may be listed once as
-_watch_, clearly separated. Apply [false-signals.md](false-signals.md) once
+*watch*, clearly separated. Apply [false-signals.md](false-signals.md) once
 more: mechanical signals never put a capability in a risk zone; they go to
 "Looks hot, is not".
 
@@ -91,7 +91,7 @@ evidence: context/map/evidence/
    pairs, contracts; each with its source and whether it is mechanical.
 4. **Risk zones** — the qualifying capabilities (or a capability's
    sub-area), each: one line of why, the independent signals behind it, the
-   files where it lives. Then _watch_ items if any, and a short **Looks hot,
+   files where it lives. Then *watch* items if any, and a short **Looks hot,
    is not** list for demoted signals.
 5. **Whom to ask** — per zone: 1–2 people with topic match, against the
    team-size baseline.

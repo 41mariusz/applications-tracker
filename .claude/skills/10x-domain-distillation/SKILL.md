@@ -47,16 +47,16 @@ ranking; choosing what to change next stays with the user.
 All outputs live under `<repo-root>/context/domain/`, also when `--root`
 narrows the code scope.
 
-| Path                                           | What                                                                               |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `context/domain/domain-distillation.md`        | **The report** — the only file meant to be read by people and later work           |
-| `context/domain/glossary.md`                   | Compact glossary for agents and people: term, meaning, name in code, don't call it |
-| `context/domain/evidence/0-sources.md`         | Code scope, stack and layers, exclusions — no domain vocabulary                    |
-| `context/domain/evidence/0-documents.md`       | Domain documents and product goals                                                 |
-| `context/domain/evidence/1-docs-language.md`   | Terms, definitions, lifecycles, rules and goals stated in the documents            |
-| `context/domain/evidence/2-code-language.md`   | Domain names in the code: types, tables, states, operations, events                |
-| `context/domain/evidence/3-code-rules*.md`     | Business rules the code guards: where, at which layer, how strictly                |
-| `context/archive/<stamp>-domain-distillation/` | Earlier report, glossary and evidence, moved here on replace                       |
+| Path                                         | What                                                                      |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| `context/domain/domain-distillation.md`      | **The report** — the only file meant to be read by people and later work |
+| `context/domain/glossary.md`               | Compact glossary for agents and people: term, meaning, name in code, don't call it |
+| `context/domain/evidence/0-sources.md`       | Code scope, stack and layers, exclusions — no domain vocabulary           |
+| `context/domain/evidence/0-documents.md`     | Domain documents and product goals                                        |
+| `context/domain/evidence/1-docs-language.md` | Terms, definitions, lifecycles, rules and goals stated in the documents  |
+| `context/domain/evidence/2-code-language.md` | Domain names in the code: types, tables, states, operations, events      |
+| `context/domain/evidence/3-code-rules*.md`   | Business rules the code guards: where, at which layer, how strictly      |
+| `context/archive/<stamp>-domain-distillation/` | Earlier report, glossary and evidence, moved here on replace           |
 
 ## 1. Preflight
 
@@ -106,11 +106,11 @@ repository root, the code scope, the inventory files it may read, its output
 path, the report language and the rules below. Tell each sub-agent to read its
 brief first.
 
-| Sub-agent     | Brief                                                                  | Reads                | Question                                                   |
-| ------------- | ---------------------------------------------------------------------- | -------------------- | ---------------------------------------------------------- |
-| docs-language | [references/agent-docs-language.md](references/agent-docs-language.md) | both inventory files | Which words, lifecycles and rules does the business state? |
-| code-language | [references/agent-code-language.md](references/agent-code-language.md) | `0-sources.md` only  | Which words does the code use, and for what?               |
-| code-rules    | [references/agent-code-rules.md](references/agent-code-rules.md)       | `0-sources.md` only  | Which rules does the code actually guard, and where?       |
+| Sub-agent     | Brief                                                                  | Reads                     | Question                                                    |
+| ------------- | ---------------------------------------------------------------------- | ------------------------- | ----------------------------------------------------------- |
+| docs-language | [references/agent-docs-language.md](references/agent-docs-language.md) | both inventory files      | Which words, lifecycles and rules does the business state? |
+| code-language | [references/agent-code-language.md](references/agent-code-language.md) | `0-sources.md` only       | Which words does the code use, and for what?                |
+| code-rules    | [references/agent-code-rules.md](references/agent-code-rules.md)       | `0-sources.md` only       | Which rules does the code actually guard, and where?        |
 
 **Large code scope.** When the code scope holds more than ~1,500 source
 files, split code-rules into one agent per group of layers or top-level
@@ -152,11 +152,11 @@ candidates and policies with each invariant's status (**enforced**,
 **declared**, **ignored**, **contradicted**; **undocumented** for
 exposures no document covers), the model-vs-code drift list,
 and the ranking — then make it operational as `report.md` describes: stable
-IDs, a fix side for every drift row, a _done when_ for every ranked item,
+IDs, a fix side for every drift row, a *done when* for every ranked item,
 questions with an owner, changes since the previous run, and
 `context/domain/glossary.md`.
 
-Before calling a documented rule _ignored_ or a term _missing in code_, run a
+Before calling a documented rule *ignored* or a term *missing in code*, run a
 targeted search yourself (`rg` over the term, its variants and synonyms in
 the layer where it should live). Batch them per layer and cite each batch's
 scope once.

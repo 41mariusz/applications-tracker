@@ -21,33 +21,33 @@ allowed-tools:
   - TaskGet
 ---
 
-# Przegląd implementacji (CI/CD)
+# Implementation Review (CI/CD)
 
-Uruchamiaj w GitHub Actions (zwykle za pośrednictwem Claude Code Action) dla pull requesta. Analizuj zmiany w PR względem planu, który według deklaracji implementuje. Twórz ślad audytowy jako zatwierdzony plik raportu oraz zwięzły komentarz do PR.
+Run inside GitHub Actions (typically via Claude Code Action) on a pull request. Analyze the PR's changes against the plan it claims to implement. Emit an audit trail as a committed report file plus a concise PR comment.
 
-**Ta umiejętność nie prowadzi interakcji i nie edytuje kodu.** Bez pytań, bez pętli triage, bez edycji źródeł. Czyta, analizuje, zapisuje jeden plik raportu, zatwierdza go, publikuje komentarze przeglądu inline przy oznaczonych wierszach oraz publikuje podsumowujący komentarz do PR. To całe zadanie.
+**This skill does not interact and does not edit code.** No questions, no triage loop, no source edits. It reads, analyzes, writes one report file, commits it, posts inline review comments on flagged lines, and posts a summary PR comment. That's the whole job.
 
-**Kryteria przeglądu — jak porównywać implementację z planem, jak oceniać każdy wymiar i jak formułować ustalenia — znajdują się w `references/impl-review-instructions.md`. Przeczytaj ten plik raz po załadowaniu tej umiejętności; Kroki 1–5 orkiestrują go (zbierają dowody, uruchamiają kontrole, normalizują ustalenia) i odwołują się do niego zamiast powtarzać kryteria.** Poniższe kroki obejmują tylko mechanikę harnessu: odkrywanie planu, diff, delegowanie do subagentów, kontrakt pliku raportu, commit oraz publikowanie komentarzy inline/podsumowujących.
+**The review criteria — how to compare the implementation against the plan, how to grade each dimension, and how to shape findings — live in `references/impl-review-instructions.md`. Read that file once when this skill loads; Steps 1–5 orchestrate it (gather evidence, run checks, normalize findings) and point into it rather than restating the criteria.** The steps below own only the harness mechanics: plan discovery, the diff, subagent dispatch, the report-file contract, the commit, and the inline/summary comment posting.
 
-## Kontekst operacyjny
+## Operating context
 
-Załóż, że działasz nieinteraktywnie na efemerycznym runnerze Linux z:
+Assume you're running non-interactively on an ephemeral Linux runner with:
 
-- **Historią Git** — `origin/<base-ref>` jest pobrany; merge-base PR jest możliwy do ustalenia.
-- **CLI `gh`** — uwierzytelnionym przez `GH_TOKEN`/`GITHUB_TOKEN`; może odczytywać metadane PR i publikować komentarze.
-- **Łańcuchem narzędzi projektu** — zainstalowanym przed uruchomieniem tej umiejętności (Node/pnpm, Python, Go, cokolwiek wykorzystuje projekt). Polecenia testów i lintowania powinny działać.
-- **Zmiennymi środowiskowymi** — `PR_NUMBER`, `GITHUB_BASE_REF` (gałąź bazowa) oraz wszystkim, co eksportuje workflow.
-- **Subagentami** — możesz uruchamiać agentów `general-purpose` do równoległego zbierania dowodów.
+- **Git history** — `origin/<base-ref>` is fetched; the PR's merge-base is resolvable.
+- **`gh` CLI** — authenticated via `GH_TOKEN`/`GITHUB_TOKEN`; can read PR metadata, post comments.
+- **Project toolchain** — installed before this skill runs (Node/pnpm, Python, Go, whatever the project uses). Test and lint commands should work.
+- **Environment variables** — `PR_NUMBER`, `GITHUB_BASE_REF` (base branch), plus anything the workflow exports.
+- **Subagents** — you can spawn `general-purpose` agents for parallel evidence gathering.
 
-Żaden użytkownik nie obserwuje procesu. Nigdy nie wywołuj `AskUserQuestion` — nie ma nikogo, kto mógłby odpowiedzieć. Jeśli coś jest niejednoznaczne, wybierz konserwatywną interpretację i odnotuj ją w raporcie.
+No user is watching. Never call `AskUserQuestion` — there's nobody to answer. If anything is ambiguous, pick the conservative interpretation and note it in the report.
 
-## Krok 0: Znajdź plan
+## Step 0: Find the plan
 
-TaskCreate: "Impl-Review (CI)" / activeForm "Odkrywanie planu"
+TaskCreate: "Impl-Review (CI)" / activeForm "Discovering plan"
 
-Plan jest źródłem prawdy — przegląd porównuje PR z deklarowaną intencją planu. Bez planu nie ma sensownego przeglądu.
+The plan is the ground truth — the review compares the PR against the plan's declared intent. No plan means no meaningful review.
 
-**Główne źródło: konwencja.** Projekty korzystające z workflow opartego na planach przechowują pliki planów w `context/changes/<change-id>/plan.md` w gałęzi PR — w katalogu głównym repozytorium lub, w monorepo, pod poddrzewem workspace (np. `projects/<app>/context/changes/<change-id>/plan.md`). Znajdź najnowszy plik będący częścią tego PR:
+**Primary source: convention.** Projects that use a plan-driven workflow keep plan files at `context/changes/<change-id>/plan.md` in the PR branch — at the repo root, or, in a monorepo, under a workspace subtree (e.g. `projects/<app>/context/changes/<change-id>/plan.md`). Find the newest one that's part of this PR:
 
 ```bash
 BASE="${GITHUB_BASE_REF:-master}"
@@ -59,9 +59,9 @@ PLAN=$(git diff --name-only "origin/${BASE}...HEAD" -- ':(glob)**/context/change
   | head -1)
 ```
 
-Sortowanie odwrotnie leksykograficzne wybiera ostatnio zmodyfikowany folder zmiany (`<change-id>` zazwyczaj ma prefiks daty dla aktywnej pracy, a porządek alfabetyczny jest wystarczający jako rozstrzygnięcie remisu; w monorepo faworyzuje również workspace, którego ścieżka sortuje się jako ostatnia, co jest akceptowalnym rozstrzygnięciem remisu).
+Reverse-lexicographic sort picks the most recently modified change folder (`<change-id>` slugs are typically date-prefixed for active work, and the alphabetic order is good enough as a tiebreaker; in a monorepo it also biases toward the workspace whose path sorts last, an acceptable tiebreaker).
 
-**Nadpisanie: jawne odwołanie w treści PR.** Jeśli opis PR zawiera wiersz taki jak `Plan: context/changes/<change-id>/plan.md`, ma on pierwszeństwo przed konwencją. Obsługuje to połączone PR, wskrzeszone starsze plany oraz PR reorganizujące pliki planów, ale implementujące inny plan:
+**Override: explicit PR body reference.** If the PR description contains a line like `Plan: context/changes/<change-id>/plan.md`, it wins over the convention. This handles bundled PRs, revived older plans, and PRs that reorganize plan files but implement a different one:
 
 ```bash
 PR_BODY=$(gh pr view "$PR_NUMBER" --json body -q .body 2>/dev/null || echo "")
@@ -72,7 +72,7 @@ OVERRIDE=$(printf '%s' "$PR_BODY" \
 [ -n "$OVERRIDE" ] && PLAN="$OVERRIDE"
 ```
 
-**Łagodne zakończenie, gdy nie znaleziono planu.** Większość PR w dojrzałym repozytorium nie jest oparta na planach (dokumentacja, commity chore, hotfixy). Nie powoduj niepowodzenia workflow — opublikuj neutralny komentarz i zakończ kodem 0:
+**Graceful exit when no plan found.** Most PRs in a mature repo aren't plan-driven (docs, chore commits, hotfixes). Don't fail the workflow — post a neutral comment and exit 0:
 
 ```bash
 if [ -z "$PLAN" ] || [ ! -f "$PLAN" ]; then
@@ -83,15 +83,15 @@ To enable a review, include a \`Plan: context/changes/<change-id>/plan.md\` line
 fi
 ```
 
-Zapisz ustaloną ścieżkę planu — każdy kolejny krok się do niej odwołuje.
+Record the resolved plan path — every later step references it.
 
-## Krok 1: Załaduj i przeanalizuj plan
+## Step 1: Load and parse the plan
 
-TaskUpdate: activeForm "Ładowanie planu"
+TaskUpdate: activeForm "Loading plan"
 
-Przeczytaj cały plik planu (bez offsetu, bez limitu) i wyodrębnij jego zobowiązania — planowane ścieżki plików, Automated/Manual Verification, wyłączenia, decyzje architektoniczne — zgodnie z **"Read the plan as the baseline"** w `references/impl-review-instructions.md` (anatomia planu i pięć celów ekstrakcji). PR zawsze jest przeglądany jako całość — częściowe przeglądy CI faz są podatne na błędy bez plików stanu i rzadko przydatne w praktyce.
+Read the plan file fully (no offset, no limit) and extract its commitments — planned file paths, Automated/Manual Verification, exclusions, architectural decisions — following **"Read the plan as the baseline"** in `references/impl-review-instructions.md` (plan anatomy and the five extraction targets). The PR is always reviewed as a whole — partial-phase CI reviews are error-prone without state files and rarely useful in practice.
 
-### Oblicz diff
+### Compute the diff
 
 ```bash
 BASE="${GITHUB_BASE_REF:-master}"
@@ -99,47 +99,47 @@ git fetch origin "$BASE" --depth=50 2>/dev/null || true
 CHANGED_FILES=$(git diff --name-only "origin/${BASE}...HEAD")
 ```
 
-Zakres z trzema kropkami daje diff merge-base — to, co ten PR rzeczywiście dodaje, a nie wszystko, co wydarzyło się od rozdzielenia gałęzi.
+The three-dot range gives you the merge-base diff — what this PR actually adds, not everything that has happened since branch divergence.
 
-Porównaj zmienione pliki z planowanymi plikami:
+Cross-reference changed files against planned files:
 
-- **W planie ORAZ w diffie** → oczekiwana zmiana; zweryfikuj, czy intencja się zgadza.
-- **W diffie, ale NIE w planie** → nieplanowany dodatek; sprawdź względem listy wyłączeń, a następnie oznacz jako scope creep, jeśli nie jest jawnie wyłączony.
-- **W planie, ale NIE w diffie** → możliwie brakująca implementacja; oznacz.
+- **In plan AND in diff** → expected change; verify intent matches.
+- **In diff but NOT in plan** → unplanned addition; check against the exclusions list, then flag as scope creep if not explicitly excluded.
+- **In plan but NOT in diff** → possibly missing implementation; flag.
 
-Nie wczytuj wstępnie każdego zmienionego pliku źródłowego do głównego kontekstu. Deleguj to subagentom poniżej — utrzymuj główny kontekst zawierający tylko tekst planu i podsumowanie diffu.
+Don't pre-read every changed source file into your main context. Delegate that to the subagents below — keep the main context holding only the plan text and the diff summary.
 
-## Krok 2: Równoległe zbieranie dowodów
+## Step 2: Parallel evidence gathering
 
-TaskUpdate: activeForm "Zbieranie dowodów"
+TaskUpdate: activeForm "Gathering evidence"
 
-Uruchom równolegle trzech subagentów, każdego z ukierunkowanym kontekstem. Nie przekazuj całego planu wszystkim — każdy agent potrzebuje tylko tego, co jest istotne dla jego pytania. Kryteria oceny stosowane przez każdego agenta znajdują się w `references/impl-review-instructions.md` pod **"The review dimensions"** — przekaż każdemu agentowi jego dane wejściowe i wskaż jego wymiar; powinien raportować ustalenia w formacie dla danego wymiaru określonym przez referencję.
+Spawn three subagents in parallel, each with targeted context. Don't dump the whole plan into all of them — each agent only needs what's relevant to its question. The judgment criteria each agent applies live in `references/impl-review-instructions.md` under **"The review dimensions"** — give each agent its inputs and point it at its dimension; it reports findings in the per-dimension shape the reference specifies.
 
-### Agent 1 — Wykrywanie rozbieżności z planem
-
-`subagent_type: "general-purpose"`
-
-Przekaż mu: wyodrębniony tekst "Changes Required" (dla każdej fazy) oraz listę planowanych ścieżek plików. Stosuje **wymiar 1 (Plan drift)** — MATCH / DRIFT / MISSING / EXTRA dla każdej planowanej zmiany.
-
-### Agent 2 — Bezpieczeństwo, jakość i zgodność ze wzorcami
+### Agent 1 — Plan drift detection
 
 `subagent_type: "general-purpose"`
 
-Przekaż mu: listę zmienionych plików źródłowych (z wyłączeniem plików testowych i samego pliku planu) oraz katalog główny projektu. Stosuje **wymiar 2** — bezpieczeństwo / wydajność / niezawodność / bezpieczeństwo danych oraz porównanie ze wzorcami sąsiednimi skalowane do rozmiaru zmiany.
+Give it: the extracted "Changes Required" text (per phase) and the list of planned file paths. It applies **dimension 1 (Plan drift)** — MATCH / DRIFT / MISSING / EXTRA per planned change.
 
-### Agent 3 — Pokrycie testami
+### Agent 2 — Safety, quality, and pattern compliance
 
 `subagent_type: "general-purpose"`
 
-Przekaż mu: sekcję Success Criteria planu (wyodrębnij tekst przed uruchomieniem), listę plików diffu podzieloną na `source_files` i `test_files`, katalog główny projektu oraz listę "What We're NOT Doing". Stosuje **wymiar 3** — wyodrębnia zobowiązania testowe, dopasowuje je do artefaktów, skanuje pod kątem niepokrytego zachowania, uruchamia polecenia testowe z planu i respektuje jawne rezygnacje.
+Give it: the list of changed source files (exclude test files and the plan file itself) and the project root. It applies **dimension 2** — security / performance / reliability / data safety, plus sibling-pattern comparison scaled to change size.
 
-Jeśli raport subagenta staje się zbyt obszerny, poproś go o zwrócenie tylko ustaleń o najwyższej wadze, a nie pełnego śladu dochodzenia.
+### Agent 3 — Test coverage
 
-## Krok 3: Zweryfikuj nietestowe automatyczne kontrole
+`subagent_type: "general-purpose"`
 
-TaskUpdate: activeForm "Weryfikowanie automatycznych kontroli"
+Give it: the plan's Success Criteria section (extract the text before spawning), the diff file list split into `source_files` and `test_files`, the project root, and the "What We're NOT Doing" list. It applies **dimension 3** — extract test commitments, match them to artifacts, scan for uncovered behavior, run the plan's test commands, and respect explicit opt-outs.
 
-Agent 3 uruchomił już polecenia Automated Verification związane z testami. Teraz uruchom wszystko inne — lint, build, kontrolę formatu, typecheck i wszelkie inne polecenia nietestowe z checkboxów. Dla każdego:
+If a subagent's report gets unwieldy, ask it to return only the highest-severity findings, not the full investigation trace.
+
+## Step 3: Verify non-test automated checks
+
+TaskUpdate: activeForm "Verifying automated checks"
+
+Agent 3 already ran the test-related Automated Verification commands. Now run everything else — lint, build, format-check, typecheck, any other non-test commands from the checkboxes. For each:
 
 ```bash
 echo "→ running: $cmd"
@@ -147,39 +147,38 @@ $cmd
 echo "exit: $?"
 ```
 
-Zapisz polecenie, status powodzenia/niepowodzenia, skrócone wyjście (zwykle wystarczy pierwszych 40 i ostatnich 20 wierszy). Aby ustalić, jak interpretowane są checkboxy Manual Verification i jak nieudane kontrole mapują się na oceny, postępuj zgodnie z **"Verify the success criteria"** w referencji.
+Record command, pass/fail, truncated output (first 40 and last 20 lines is usually enough). For how Manual Verification checkboxes are read and how failing checks map to grades, follow the reference's **"Verify the success criteria"**.
 
-## Krok 4: Oceń każdy wymiar
+## Step 4: Grade each dimension
 
-TaskUpdate: activeForm "Ocenianie"
+TaskUpdate: activeForm "Grading"
 
-Przypisz PASS / WARNING / FAIL do każdego z siedmiu wymiarów i wyprowadź ogólny werdykt (APPROVED / NEEDS ATTENTION / REJECTED), korzystając z reguł w **"Grade each dimension"** i **"Overall verdict"** referencji.
+Assign PASS / WARNING / FAIL to each of the seven dimensions and derive the overall verdict (APPROVED / NEEDS ATTENTION / REJECTED) using the rules in the reference's **"Grade each dimension"** and **"Overall verdict"**.
 
-## Krok 5: Skompiluj ustalenia
+## Step 5: Compile findings
 
-TaskUpdate: activeForm "Kompilowanie ustaleń"
+TaskUpdate: activeForm "Compiling findings"
 
-Znormalizuj wyniki subagentów do jednej listy ustaleń. Posortuj według wagi (CRITICAL → WARNING → OBSERVATION). Ogranicz do łącznie 10 — konsoliduj powiązane problemy (np. "6 files use the wrong case convention" → jedno ustalenie, nie sześć). Zastosuj format ustalenia, gramatykę wpływu i gramatykę opcji naprawy z **"Express the findings"** referencji.
+Normalize the subagents' output into a single findings list. Sort by severity (CRITICAL → WARNING → OBSERVATION). Cap at 10 total — consolidate related issues (e.g., "6 files use the wrong case convention" → one finding, not six). Apply the finding shape, impact grammar, and fix-options grammar from the reference's **"Express the findings"**.
 
-**Jeden specyficzny dodatek harnessu, którego nie zawiera referencja:** każde ustalenie w zapisanym raporcie otrzymuje również pole `- **Decision**: PENDING` (wypełnia je narzędzie downstream do triage). Jest ono częścią kontraktu wyjściowego w Kroku 6 — nie pomijaj go.
+**One harness-specific addition the reference doesn't carry:** every finding in the saved report also gets a `- **Decision**: PENDING` field (downstream triage tooling fills it in). It's part of the output contract in Step 6 — don't omit it.
 
-## Krok 6: Zapisz raport
+## Step 6: Save the report
 
-TaskUpdate: activeForm "Zapisywanie raportu"
+TaskUpdate: activeForm "Saving report"
 
-Wyprowadź katalog zmiany z ustalonej ścieżki planu — jest to folder nadrzędny planu (`$(dirname "$PLAN")`), który wskazuje `context/changes/<change-id>` w katalogu głównym repozytorium albo `projects/<app>/context/changes/<change-id>` w monorepo. Zapisz raport do `<change-dir>/reviews/impl-review.md`. Zaktualizuj także `<change-dir>/change.md` in-place: ustaw `status: impl_reviewed` oraz `updated: <today>` — commit CI w Kroku 7 przenosi to z powrotem do gałęzi PR obok przeglądu.
+Derive the change directory from the resolved plan path — it's the plan's parent folder (`$(dirname "$PLAN")`), which resolves to `context/changes/<change-id>` at the repo root or `projects/<app>/context/changes/<change-id>` in a monorepo. Write the report to `<change-dir>/reviews/impl-review.md`. Also update `<change-dir>/change.md` in-place: set `status: impl_reviewed` and `updated: <today>` — the CI commit in Step 7 carries this back to the PR branch alongside the review.
 
-**Katalog jest wyprowadzany z planu, a nie wybierany: raport trafia do folderu `reviews/` obok `change.md` planu (`<…>/context/changes/<change-id>/reviews/impl-review.md`).** NIE zapisuj raportu w `.claude-pr/`, `.github/`, katalogu głównym repozytorium ani w żadnym innym miejscu — nawet jeśli domyślny prompt Claude Code Action sugeruje inne. Narzędzie downstream do triage odczytuje dane wyłącznie z tej wyprowadzonej ścieżki. Formatowanie musi odpowiadać otaczającym przeglądom: zgodne z oxfmt (projekt uruchamia `oxfmt --check .` w CI).
+**The directory is derived from the plan, not chosen: the report goes in the `reviews/` folder beside the plan's `change.md` (`<…>/context/changes/<change-id>/reviews/impl-review.md`).** Do NOT write the report to `.claude-pr/`, `.github/`, the repo root, or any other location — even if the Claude Code Action's default prompt suggests one. Downstream triage tooling reads only from this derived path. Formatting must match the surrounding reviews: oxfmt-compatible (the project runs `oxfmt --check .` in CI).
 
-### Kontrakt wyjściowy (kluczowy)
+### Output contract (load-bearing)
 
-Plik **musi** zaczynać się od znacznika komentarza HTML `<!-- IMPL-REVIEW-REPORT -->` w pierwszym wierszu oraz **musi** zawierać `- **Decision**: PENDING` dla każdego ustalenia. Narzędzia downstream odczytują ten format, aby przekierować raport do workflow triage. Nie pomijaj żadnego z nich.
+The file **must** start with the HTML comment marker `<!-- IMPL-REVIEW-REPORT -->` on its first line, and **must** include `- **Decision**: PENDING` on every finding. Downstream tooling reads this shape to route the report into a triage workflow. Don't omit either.
 
-### Szablon
+### Template
 
 ```markdown
 <!-- IMPL-REVIEW-REPORT -->
-
 # Implementation Review: [Plan Title]
 
 - **Plan**: `context/changes/<change-id>/plan.md`
@@ -191,15 +190,15 @@ Plik **musi** zaczynać się od znacznika komentarza HTML `<!-- IMPL-REVIEW-REPO
 
 ## Verdicts
 
-| Dimension           | Verdict               |
-| ------------------- | --------------------- |
-| Plan Adherence      | PASS / WARNING / FAIL |
-| Scope Discipline    | PASS / WARNING / FAIL |
-| Safety & Quality    | PASS / WARNING / FAIL |
-| Architecture        | PASS / WARNING / FAIL |
+| Dimension | Verdict |
+|-----------|---------|
+| Plan Adherence | PASS / WARNING / FAIL |
+| Scope Discipline | PASS / WARNING / FAIL |
+| Safety & Quality | PASS / WARNING / FAIL |
+| Architecture | PASS / WARNING / FAIL |
 | Pattern Consistency | PASS / WARNING / FAIL |
-| Test Coverage       | PASS / WARNING / FAIL |
-| Success Criteria    | PASS / WARNING / FAIL |
+| Test Coverage | PASS / WARNING / FAIL |
+| Success Criteria | PASS / WARNING / FAIL |
 
 ## Findings
 
@@ -218,24 +217,23 @@ Plik **musi** zaczynać się od znacznika komentarza HTML `<!-- IMPL-REVIEW-REPO
 - **Decision**: PENDING
 
 ### F2 — [Next finding]
-
 …
 
 <!-- End of report -->
 ```
 
-Sekcje z zerową liczbą ustaleń mogą zostać pominięte na liście Findings, ale tabela Verdicts zawsze pokazuje wszystkie siedem wymiarów.
+Sections with zero findings can be omitted from the Findings list, but the Verdicts table always shows all seven dimensions.
 
-### Ikony wagi/wpływu (w parze ze słowami)
+### Severity/impact icons (paired with words)
 
-- Waga: ❌ CRITICAL · ⚠️ WARNING · 👁 OBSERVATION
-- Wpływ: 🏃 LOW · 🔎 MEDIUM · 🔬 HIGH
+- Severity: ❌ CRITICAL · ⚠️ WARNING · 👁 OBSERVATION
+- Impact: 🏃 LOW · 🔎 MEDIUM · 🔬 HIGH
 
-Nigdy nie używaj samej ikony bez etykiety — zmusza to czytelnika do zapamiętywania znaczenia każdego symbolu.
+Never use a bare icon without its label — it forces the reader to memorize what each glyph means.
 
-## Krok 7: Zatwierdź raport
+## Step 7: Commit the report
 
-TaskUpdate: activeForm "Zatwierdzanie przeglądu"
+TaskUpdate: activeForm "Committing review"
 
 ```bash
 # Derive every path from the plan's own directory so this works at the
@@ -276,30 +274,30 @@ if [ "$PUSH_FAILED" = "1" ]; then
 fi
 ```
 
-**Znacznik `[skip ci]` jest kluczowy.** Bez niego push ponownie uruchamia ten sam workflow i tworzy pętlę. Zawsze go uwzględniaj.
+**The `[skip ci]` marker is load-bearing.** Without it, the push triggers this same workflow again and loops. Always include it.
 
-**Idempotencja: nie stosuj amend, zawsze twórz nowy commit.** Jeśli ten workflow zostanie uruchomiony ponownie (np. przez ponowne uruchomienie z UI GHA lub późniejszy push go wywoła), plik przeglądu pod tą samą ścieżką zostanie nadpisany, a nowy commit zapisze nowy przegląd. Poprzednie przeglądy pozostają w historii git — to ślad audytowy. Amend by go usunął.
+**Idempotency: don't amend, always create a new commit.** If this workflow re-runs (e.g., rerun from the GHA UI, or a later push retriggers it), the review file at the same path is overwritten, and the new commit records the new review. Previous reviews live in the git history — that's the audit trail. Amending would erase it.
 
-## Krok 8: Opublikuj komentarze przeglądu inline
+## Step 8: Post inline review comments
 
-TaskUpdate: activeForm "Publikowanie przeglądu inline"
+TaskUpdate: activeForm "Posting inline review"
 
-Ustalenia, których `Location` jest konkretnym `file:line` **i** których wiersz znajduje się w diffie PR, stają się komentarzami przeglądu inline — zakotwiczonymi przy dokładnym wierszu w zakładce "Files changed". Ustalenia bez kotwicy wiersza (lub których wiersz znajduje się poza diffem) są odkładane do podsumowującego komentarza w kolejnym kroku.
+Findings whose `Location` is a concrete `file:line` **and** whose line sits inside the PR's diff become inline review comments — anchored to the exact line in the "Files changed" tab. Findings without a line anchor (or whose line is outside the diff) are deferred to the summary comment in the next step.
 
-**Użyj narzędzia MCP, nie `gh api`.** claude-code-action v1 udostępnia `mcp__github_inline_comment__create_inline_comment` przez wbudowany serwer MCP. Opakowuje ono endpoint dla pojedynczego komentarza (`POST /pulls/:n/comments`), który zgłasza **głośno** błędy nieprawidłowych pozycji wierszy — w przeciwieństwie do wsadowego endpointu przeglądu, który po cichu odrzuca nieprawidłowe wpisy i pozostawia pustą powłokę przeglądu. Publikuj każde ustalenie jako osobne wywołanie narzędzia, z `confirmed: true`, aby klasyfikator Haiku akcji nie buforował, a następnie filtrował (jest to właściwe dla deterministycznego recenzenta CI — każde emitowane przez nas ustalenie jest już decyzją triage).
+**Use the MCP tool, not `gh api`.** claude-code-action v1 exposes `mcp__github_inline_comment__create_inline_comment` via its built-in MCP server. It wraps the per-comment endpoint (`POST /pulls/:n/comments`), which errors **loudly** on bad line positions — unlike the batched review endpoint, which silently drops invalid entries and leaves you with an empty review shell. Post each finding as its own tool call, with `confirmed: true` so the action's Haiku classifier doesn't buffer-then-filter (appropriate for a deterministic CI reviewer — every finding we emit is already the triage decision).
 
-### Ustal URL pliku przeglądu
+### Resolve the review file URL
 
-Treści komentarzy inline zawierają link do zatwierdzonego raportu dla pełnego uzasadnienia Strength / Tradeoff / Confidence / Blind spot. Zbuduj `REVIEW_URL` względem właśnie wypchniętego commita:
+Inline comment bodies link back to the committed report for the full Strength / Tradeoff / Confidence / Blind spot reasoning. Build `REVIEW_URL` against the just-pushed commit:
 
 ```bash
 SHA=$(git rev-parse HEAD)
 REVIEW_URL="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}/blob/${SHA}/${REVIEW_PATH}"
 ```
 
-### Klasyfikuj ustalenia: inline vs. tylko podsumowanie
+### Classify findings: inline vs. summary-only
 
-GitHub Reviews API odrzuca komentarze do wierszy poza diffem, więc zweryfikuj to przed publikacją. Dla każdego ustalenia przeanalizuj `Location`; jeśli to `file:line`, sprawdź, czy `line` znajduje się wewnątrz hunka `+` dla `file`:
+The GitHub Reviews API rejects comments on lines not in the diff, so verify before posting. For each finding, parse `Location`; if it's `file:line`, check that `line` is inside a `+` hunk for `file`:
 
 ```bash
 line_in_diff() {
@@ -316,16 +314,16 @@ line_in_diff() {
 }
 ```
 
-Kieruj każde ustalenie:
+Route each finding:
 
-- **kwalifikujące się inline** → `Location` ma `file:line`, `file` jest w diffie PR, a `line_in_diff` zwraca true.
-- **tylko podsumowanie** → wszystko inne: brak kotwicy wiersza, plik nie jest w diffie lub wiersz znajduje się poza hunkami diffu (częste dla MISSING TEST, MISSING IMPL i ustaleń na poziomie wymiaru).
+- **inline-eligible** → `Location` has `file:line`, `file` is in the PR diff, and `line_in_diff` returns true.
+- **summary-only** → anything else: no line anchor, file not in diff, or line outside diff hunks (common for MISSING TEST, MISSING IMPL, and dimension-level findings).
 
-Śledź liczniki: `N_INLINE`, `N_SUMMARY_ONLY`. Krok 9 używa obu w nagłówku podsumowania.
+Track counters: `N_INLINE`, `N_SUMMARY_ONLY`. Step 9 uses both in the summary header.
 
-### Skomponuj treść każdego komentarza inline
+### Compose each inline comment body
 
-Utrzymuj treści inline łatwe do przeskanowania — recenzenci czytają je szybko podczas przewijania diffu. Jednowierszowy znacznik wagi, tytuł, szczegół, jednowierszowe podsumowanie naprawy, link do pełnego raportu. Zakończ **niewidocznym znacznikiem**, aby następne uruchomienie mogło znaleźć i usunąć ten komentarz podczas zastępowania:
+Keep inline bodies scannable — reviewers read them fast while scrolling the diff. One-line severity tag, title, detail, one-line fix summary, link to the full report. End with an **invisible marker** so the next run can find and delete this comment when superseding:
 
 ```markdown
 ❌ **CRITICAL** · Safety & Quality · **F1 — SQL query built with string concatenation**
@@ -334,22 +332,22 @@ Plan specified parameterized queries in Phase 2; actual implementation uses temp
 
 **Fix:** Replace the template literal with a parameterized query using `db.query($1, [value])`.
 
-_See [full report](REVIEW_URL) for reasoning (Strength / Tradeoff / Confidence / Blind spot)._
+_See [full report](<REVIEW_URL>) for reasoning (Strength / Tradeoff / Confidence / Blind spot)._
 
 <!-- impl-review-ci:marker -->
 ```
 
-Znacznik musi być obecny w **każdej** treści komentarza inline — w ten sposób podsekcja "Clean up prior run" poniżej identyfikuje artefakty do usunięcia. Pełna gramatyka opcji Fix (Strength / Tradeoff / Confidence / Blind spot) pozostaje w zatwierdzonym pliku raportu — umieszczanie jej inline zaśmieca widok diffu i powiela treść.
+The marker must be present in **every** inline comment body — it's how the "Clean up prior run" subsection below identifies artifacts to retire. The full Fix-options grammar (Strength / Tradeoff / Confidence / Blind spot) stays in the committed report file — putting it inline clutters the diff view and duplicates content.
 
-### Opublikuj każde ustalenie przez narzędzie MCP
+### Post each finding via the MCP tool
 
-**Przed** pierwszym wywołaniem MCP zapisz znacznik czasu UTC — poniższa podsekcja czyszczenia używa go do rozróżnienia komentarzy z "poprzednich uruchomień" od tych, które zaraz utworzysz:
+**Before** the first MCP call, capture a UTC timestamp — the cleanup subsection below uses it to tell "prior runs' comments" apart from the ones you're about to create:
 
 ```bash
 NOW_ISO=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 ```
 
-Dla każdego ustalenia kwalifikującego się inline wywołaj `mcp__github_inline_comment__create_inline_comment` **raz**. Wywołanie jest synchroniczne — publikuje natychmiast po ustawieniu `confirmed: true`. Śledź powodzenia i niepowodzenia dla każdego ustalenia:
+For every inline-eligible finding, invoke `mcp__github_inline_comment__create_inline_comment` **once**. The call is synchronous — it posts immediately when `confirmed: true` is set. Track successes and failures per finding:
 
 ```
 mcp__github_inline_comment__create_inline_comment({
@@ -361,25 +359,25 @@ mcp__github_inline_comment__create_inline_comment({
 })
 ```
 
-Dlaczego `confirmed: true`: domyślnie akcja buforuje niepotwierdzone wywołania, przepuszcza je przez klasyfikator Haiku ("is this a real review or a test?") i publikuje tylko prawdziwe w post-stepie. Jest to przydatne dla konwersacyjnych przepływów przeglądu, gdzie Claude prowadzi eksplorację. W tej umiejętności każde ustalenie jest już decyzją triage — chcemy, aby były publikowane w niezmienionej postaci, synchronicznie, by krok sprawdzania werdyktu workflow widział stan końcowy.
+Why `confirmed: true`: the action's default is to buffer unconfirmed calls, run them through a Haiku classifier ("is this a real review or a test?"), and post only the reals in a post-step. That's useful for conversational review flows where Claude is exploring. For this skill every finding is already a triage decision — we want them posted as-is, synchronously, so the workflow's verdict-check step sees the final state.
 
-**Śledź wyniki:**
+**Track outcomes:**
 
-- Każde udane wywołanie → zwiększ `N_INLINE_POSTED`.
-- Każde niepowodzenie → zmniejsz planowaną liczbę, zaloguj file:line i dodaj ustalenie do listy tylko-podsumowanie, aby nadal dotarło do recenzentów. Nie próbuj ponownie — komunikat błędu narzędzia MCP wyjaśnia dlaczego (wiersz przesunął się poza diff, plik został przemianowany, przejściowy problem API), a ponowne próby rzadko pomagają.
-- Jeśli **każde** wywołanie inline nie powiedzie się: ustaw `INLINE_POST_FAILED=1`. Ścieżka awaryjna Kroku 9 pokazuje wszystkie ustalenia w podsumowującym komentarzu z widocznym ostrzeżeniem.
+- Each successful call → increment `N_INLINE_POSTED`.
+- Each failure → decrement the planned count, log the file:line, and add the finding to the summary-only list so it still reaches reviewers. Don't retry — the MCP tool's error message tells you why (line drifted out of diff, file was renamed, transient API issue) and retries rarely help.
+- If **every** inline call failed: set `INLINE_POST_FAILED=1`. Step 9's fallback path shows all findings in the summary comment with a visible warning.
 
-Po powrocie wszystkich wywołań dla pojedynczych ustaleń ustaw `N_INLINE = N_INLINE_POSTED` i przeklasyfikuj ustalenia z nieudanym inline jako tylko-podsumowanie. Krok 9 używa końcowych liczników.
+After all per-finding calls return, set `N_INLINE = N_INLINE_POSTED` and re-classify the failed-inline findings as summary-only. Step 9 uses the final counts.
 
-**Nie używaj `gh api POST /pulls/:n/reviews` z tablicą `comments[]`.** Ten endpoint po cichu odrzuca komentarze, których wiersz nie znajduje się w prawidłowej pozycji hunka diffu — kończysz z powłoką przeglądu i zerową liczbą zakotwiczonych komentarzy. Narzędzie MCP używa endpointu dla pojedynczego komentarza, który głośno zgłasza błąd, dzięki czemu wiemy, które ustalenie się nie powiodło i dlaczego.
+**Don't use `gh api POST /pulls/:n/reviews` with a `comments[]` array.** That endpoint silently drops comments whose line isn't in a valid diff hunk position — you end up with a review shell and zero anchored comments. The MCP tool uses the per-comment endpoint, which errors loudly so we know which finding failed and why.
 
-**Pomiń całą podsekcję, jeśli `N_INLINE == 0`** — brak ustaleń kwalifikujących się inline, nic do publikacji. Krok 9 renderuje wszystko jako tylko-podsumowanie.
+**Skip the whole subsection if `N_INLINE == 0`** — no inline-eligible findings, nothing to post. Step 9 renders everything as summary-only.
 
-### Usuń komentarze inline z poprzedniego uruchomienia
+### Clean up prior run's inline comments
 
-Dopiero gdy przynajmniej jedno wywołanie MCP **powiedzie się** w tym uruchomieniu — usuń wcześniejsze komentarze inline bota zidentyfikowane przez znacznik. Kolejność publikuj-nowe-potem-usuwaj-stare jest celowa: jeśli publikacja wszystkich nowych nie powiedzie się, wcześniejsze komentarze pozostają widoczne, aby recenzenci nie zostali z niczym.
+Only after at least one MCP call **succeeded** this run — delete prior bot inline comments identified by the marker. Post-new-then-delete-old is intentional: if all new posts failed, prior comments stay visible so reviewers aren't left with nothing.
 
-Zapisz `NOW_ISO` **przed** pierwszym wywołaniem MCP, aby niezawodnie poprzedzał każdy komentarz utworzony w tym uruchomieniu; użyj go poniżej, aby wyłączyć te komentarze z listy usuwania.
+Capture `NOW_ISO` **before** the first MCP call so it reliably precedes every comment this run just created; use it below to exclude those comments from the deletion list.
 
 ```bash
 # NOW_ISO was captured earlier, before the first create_inline_comment call:
@@ -395,28 +393,28 @@ if [ "$N_INLINE_POSTED" -gt 0 ]; then
 fi
 ```
 
-`|| true` przy usuwaniu jest celowe — przejściowe niepowodzenie API dla jednego komentarza nie powinno przerwać czyszczenia pozostałych. Pozostałe zaległości zostaną usunięte przy następnym uruchomieniu.
+The `|| true` on delete is deliberate — a transient API failure on one comment shouldn't abort cleanup of the rest. Leftover stragglers will get retired on the next run.
 
-**Dlaczego `created_at < NOW_ISO` zamiast przechwytywania identyfikatorów komentarzy nowego przeglądu?** To prostsze i odporne na wyścigi, w których POST się powiódł, ale format odpowiedzi API się zmienia. Każdy komentarz utworzony przed "teraz" z definicji pochodzi z poprzedniego uruchomienia.
+**Why `created_at < NOW_ISO` instead of capturing the new review's comment IDs?** Simpler, and robust to races where the POST succeeded but the API response shape changes. Any comment created before "now" is by definition from a prior run.
 
-### Niepowodzenie nie jest krytyczne
+### Failure is non-fatal
 
-Niepowodzenia MCP dla poszczególnych ustaleń (wiersz się przesunął, plik przemianowano, przejściowy problem API) są już obsłużone powyżej — nieudane ustalenie przechodzi do tylko-podsumowanie. Jedynym pozostałym katastrofalnym przypadkiem jest niepowodzenie **wszystkich** wywołań inline, które ustawia `INLINE_POST_FAILED=1`:
+Per-finding MCP failures (line drifted, file renamed, transient API issue) are already handled above — the failed finding moves to summary-only. The only remaining catastrophic case is **all** inline calls failing, which sets `INLINE_POST_FAILED=1`:
 
-- Jeśli `INLINE_POST_FAILED=1`, Krok 9 uwzględnia **wszystkie** ustalenia w podsumowującym komentarzu z ostrzeżeniem na górze: `⚠️ Inline review failed to post; all findings shown below.`
-- W przeciwnym razie Krok 9 wymienia tylko ustalenia wyłącznie podsumowujące (te inline znajdują się przy diffie).
+- If `INLINE_POST_FAILED=1`, Step 9 includes **all** findings in the summary comment with a warning at the top: `⚠️ Inline review failed to post; all findings shown below.`
+- Otherwise, Step 9 lists only the summary-only findings (the inline ones live on the diff).
 
-Nigdy nie kończ workflow kodem niezerowym z powodu błędu publikacji inline — raport jest zatwierdzony, podsumowanie zostanie opublikowane, recenzenci nadal mają wszystko. Głośne ostrzeżenie jest lepsze niż czerwony workflow.
+Never exit non-zero from the workflow over an inline-post failure — the report is committed, the summary will post, reviewers still have everything. A loud warning beats a red workflow.
 
-## Krok 9: Opublikuj podsumowujący komentarz PR
+## Step 9: Post the summary PR comment
 
-TaskUpdate: activeForm "Publikowanie komentarza podsumowującego"
+TaskUpdate: activeForm "Posting summary comment"
 
-Zatwierdzony plik zawiera pełne szczegóły; komentarze inline zakotwiczają ustalenia do konkretnych wierszy; to podsumowanie jest łatwym do przeskanowania punktem wejścia na osi czasu PR — werdykt, tabela wymiarów i wszelkie ustalenia, których nie można było opublikować inline.
+The committed file has full detail; inline comments anchor findings to specific lines; this summary is the scannable entry point in the PR timeline — verdict, dimension table, and any findings that couldn't be posted inline.
 
-### Skomponuj i opublikuj
+### Compose and post
 
-Sekcje treści (w kolejności): baner bramki REJECTED (warunkowo), nagłówek werdyktu, linki do planu i pliku przeglądu, liczniki inline/podsumowania, uwaga awaryjna (warunkowo), tabela wymiarów, lista ustaleń (warunkowo), wiersz końcowy, **znacznik**:
+Body sections (in order): REJECTED gate banner (conditional), verdict header, plan + review file links, inline/summary counts, fallback note (conditional), dimension table, findings list (conditional), closing line, **marker**:
 
 ```bash
 # REJECTED verdict → prepend a visible gate banner. The workflow step
@@ -476,18 +474,18 @@ EOF
 )" && SUMMARY_POSTED=1
 ```
 
-Renderuj każde ustalenie wymienione w podsumowaniu jako jeden zwarty wiersz (bez szczegółów opcji Fix — znajdują się w pliku):
+Render each summary-listed finding as one compact line (no Fix-options detail — that's in the file):
 
 ```
 - **F3** `WARNING` · Test Coverage · `src/api/routes.ts` — new `/status` endpoint has no test. Plan listed `pnpm test -- src/api/routes.test.ts` in Success Criteria but that file wasn't modified.
 - **F5** `CRITICAL` · Plan Adherence · _(no file)_ — migration in Phase 3 is missing from the diff entirely.
 ```
 
-Ogranicz listę podsumowania do 5. Jeśli jest ich więcej, dopisz `…and N more in the full report.`
+Cap the summary list at 5. If more exist, append `…and N more in the full report.`
 
-### Usuń podsumowujący komentarz z poprzedniego uruchomienia
+### Clean up prior run's summary comment
 
-Ten sam wzorzec publikuj-nowe-potem-usuwaj-stare jak przy czyszczeniu inline. Usuwaj wcześniejsze podsumowania tylko wtedy, gdy nowe zostało pomyślnie opublikowane:
+Same post-new-then-delete-old pattern as inline cleanup. Only retire prior summaries if the new one posted successfully:
 
 ```bash
 if [ "$SUMMARY_POSTED" = "1" ]; then
@@ -500,23 +498,23 @@ if [ "$SUMMARY_POSTED" = "1" ]; then
 fi
 ```
 
-Zwróć uwagę na różnicę endpointów: komentarze podsumowujące w zakładce Conversation znajdują się pod `/issues/:n/comments` (komentarze podsumowujące PR są pod maską GitHub issues), podczas gdy komentarze przeglądu inline w Kroku 8 znajdują się pod `/pulls/:n/comments`.
+Note the endpoint difference: summary comments on the Conversation tab live under `/issues/:n/comments` (PR summary comments are GitHub-issues under the hood), while the inline review comments in Step 8 live under `/pulls/:n/comments`.
 
-### Przypadki brzegowe
+### Edge cases
 
-- `N_SUMMARY_ONLY == 0` i `INLINE_POST_FAILED == 0` → całkowicie pomiń sekcję "Findings without a line anchor". Wystarczy werdykt + tabela wymiarów + liczba inline; bez pustej listy.
-- `N_INLINE == 0` i `N_SUMMARY_ONLY == 0` → brak jakichkolwiek ustaleń. Nadal opublikuj podsumowanie (tabela werdyktów potwierdza PASS we wszystkich wymiarach); pomiń sekcję ustaleń.
+- `N_SUMMARY_ONLY == 0` and `INLINE_POST_FAILED == 0` → omit the "Findings without a line anchor" section entirely. Verdict + dimension table + inline count is enough; no empty list.
+- `N_INLINE == 0` and `N_SUMMARY_ONLY == 0` → no findings at all. Still post the summary (verdict table confirms PASS across dimensions); skip the findings section.
 
-Oznacz zadanie przeglądu CI jako `completed`. Gotowe — krok verdict-check workflow (po claude-code-action) odczytuje werdykt z zatwierdzonego raportu i powoduje niepowodzenie kontroli, gdy jest `REJECTED`, respektując etykietę `impl-review-override`.
+Mark the CI review task `completed`. You're done — the workflow's verdict-check step (after claude-code-action) reads the committed report's verdict and fails the check when `REJECTED`, respecting the `impl-review-override` label.
 
-## Uwagi operacyjne
+## Operational notes
 
-- **Znacznik raportu jest kluczowy.** Komentarz pierwszego wiersza `<!-- IMPL-REVIEW-REPORT -->` i pola `Decision: PENDING` dla każdego ustalenia stanowią kontrakt wyjściowy z narzędziami downstream. Nie zmieniaj ich formatu.
-- **Nigdy nie edytuj kodu źródłowego.** Wszystkie zmiany kodu przechodzą przez osobny krok implementacji po triage. Umiejętność przeglądu czyta, analizuje i zapisuje raport — nic więcej.
-- **Przegląd inline ma charakter doradczy, nigdy blokujący.** Narzędzie MCP tworzy komentarze przeglądu (przez `POST /pulls/:n/comments`), a nie formalne decyzje przeglądu PR — więc nie ma powierzchni `event: APPROVE` / `REQUEST_CHANGES`, o którą umiejętność mogłaby się potknąć. Jeżeli przyszła wersja kiedykolwiek wyśle formalny przegląd, musi użyć `event: COMMENT`: umiejętność nie ma mandatu do zatwierdzania, a request-changes jest decyzją ludzkiego zarządzania. Bramka REJECTED — która _jest_ blokująca — znajduje się w kroku verdict-check workflow, a nie w żadnym zgłoszeniu przeglądu po stronie Claude.
-- **Werdykt `REJECTED` jest sygnałem bramkującym.** Krok workflow po przeglądzie analizuje werdykt z zatwierdzonego pliku raportu (`- **Verdict**: REJECTED`) i kończy się kodem niezerowym, chyba że PR ma etykietę `impl-review-override`. To **jedyny** sposób, w jaki ta umiejętność powoduje niepowodzenie kontroli — sama umiejętność kończy się kodem 0 nawet wtedy, gdy werdykt to REJECTED, ponieważ bramka znajduje się w workflow, a nie w turze Claude. To rozdzielenie jest istotne: niepowodzenie po stronie Claude pominęłoby także komentarz PR i zdezorientowało recenzentów; bramka po stronie workflow kończy się poprawnie po opublikowaniu wszystkich artefaktów.
-- **Znacznik deduplikacji jest kluczowy.** Każda treść komentarza inline oraz komentarz podsumowujący kończą się `<!-- impl-review-ci:marker -->`. Następne uruchomienie używa tego znacznika do znajdowania i usuwania wcześniejszych artefaktów, zapobiegając ich kumulowaniu podczas ponownych uruchomień. Czyszczenie stosuje kolejność publikuj-nowe-potem-usuwaj-stare: jeśli nowa publikacja się nie powiedzie, poprzedni artefakt pozostaje widoczny, aby recenzenci nigdy nie widzieli zerowego pokrycia.
-- **Nie wypisuj sekretów.** Subagenci są tylko do odczytu/grep/bash, ale mimo to: nigdy nie zrzucaj zmiennych środowiskowych do raportu ani komentarza. Jeśli ustalenie odwołuje się do ujawnionego sekretu (zakodowany na stałe token, poświadczenie w kodzie), ukryj rzeczywistą wartość — napisz `<REDACTED token matching pattern X>`, a nie dosłowny ciąg.
-- **Koszt uruchamiania testów.** Agent 3 uruchamia polecenia testowe z planu. W przypadku dużych zestawów jest to czasochłonne. Jeśli projekt chce pominąć wykonywanie określonych zestawów, plan powinien pomijać te polecenia z Automated Verification — ta umiejętność uruchamia tylko to, co deklaruje plan, więc plan jest powierzchnią kontroli.
-- **Niestandardowy format planu.** Jeśli plik planu istnieje, ale nie stosuje oczekiwanej anatomii (brak Success Criteria, brak Changes Required itd.), wykonaj przegląd na podstawie tego, co da się wyodrębnić, i odnotuj braki strukturalne w raporcie. Nie odmawiaj uruchomienia — częściowy sygnał jest lepszy niż brak sygnału.
-- **Budżety tokenów subagentów.** Trzej subagenci pracują równolegle, więc główny kontekst pozostaje szczupły — zawiera tylko tekst planu, podsumowanie diffu i końcowy raport ustaleń każdego agenta. Jeśli raport subagenta staje się zbyt obszerny, poproś go o zwrócenie tylko ustaleń o najwyższej wadze, które zidentyfikował, a nie pełnego śladu dochodzenia.
+- **Report marker is load-bearing.** The `<!-- IMPL-REVIEW-REPORT -->` first-line comment and the per-finding `Decision: PENDING` fields are the output contract with downstream tooling. Don't change their shape.
+- **Never edit source code.** All code changes flow through a separate implementation step after triage. The review skill reads, analyzes, and writes the report — nothing else.
+- **Inline review is advisory, never blocking.** The MCP tool creates review comments (via `POST /pulls/:n/comments`), not formal PR review decisions — so there's no `event: APPROVE` / `REQUEST_CHANGES` surface for the skill to trip over. Should a future version ever submit a formal review, it must use `event: COMMENT`: the skill has no standing to approve, and request-changes is a human governance decision. The REJECTED gate — which *is* blocking — lives in the workflow's verdict-check step, not in any Claude-side review submission.
+- **The `REJECTED` verdict is the gating signal.** The workflow's post-review step parses the verdict from the committed report file (`- **Verdict**: REJECTED`) and exits non-zero unless the PR has the `impl-review-override` label. That's the **only** way this skill fails a check — the skill itself exits 0 even when the verdict is REJECTED, because the gate lives in the workflow, not in Claude's turn. This separation matters: a Claude-side failure would also skip the PR comment and confuse reviewers; a workflow-side gate fails cleanly after all artifacts are posted.
+- **Dedup marker is load-bearing.** Every inline comment body and the summary comment end with `<!-- impl-review-ci:marker -->`. The next run uses this marker to find and delete prior artifacts, preventing accumulation across re-runs. Cleanup follows post-new-then-delete-old order: if the new post fails, the prior artifact stays visible so reviewers never see zero coverage.
+- **Don't echo secrets.** Subagents are read/grep/bash-only, but still: never dump environment variables into the report or comment. If a finding references a leaked secret (hardcoded token, credential in code), redact the actual value — write `<REDACTED token matching pattern X>`, not the literal string.
+- **Cost of running tests.** Agent 3 runs the plan's test commands. For large suites this is time-consuming. If a project wants to skip execution for specific suites, the plan should omit those commands from Automated Verification — this skill only runs what the plan declares, so the plan is the control surface.
+- **Non-standard plan shape.** If the plan file exists but doesn't follow the expected anatomy (no Success Criteria, no Changes Required, etc.), do the review with whatever you can extract, and note the structural gaps in the report. Don't refuse to run — partial signal beats no signal.
+- **Subagent token budgets.** The three subagents work in parallel, so the main context stays lean — it only holds the plan text, the diff summary, and each agent's final findings report. If a subagent's report gets unwieldy, ask it to return only the highest-severity findings it identified, not the full investigation trace.

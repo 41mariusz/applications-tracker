@@ -26,7 +26,9 @@ Layers merge; higher-precedence layers do not replace lower ones. JSON shape (sa
 ```json
 {
   "hooks": {
-    "PostToolUse": [{ "matcher": "apply_patch", "hooks": [{ "type": "command", "command": "...", "timeout": 30 }] }]
+    "PostToolUse": [
+      { "matcher": "apply_patch", "hooks": [{ "type": "command", "command": "...", "timeout": 30 }] }
+    ]
   }
 }
 ```
@@ -84,22 +86,14 @@ Codex records trust against the hook definition's **hash**. New or changed non-m
       {
         "matcher": "apply_patch",
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$(git rev-parse --show-toplevel)/.codex/hooks/lint-edited-file.sh\"",
-            "timeout": 30
-          }
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)/.codex/hooks/lint-edited-file.sh\"", "timeout": 30 }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$(git rev-parse --show-toplevel)/.codex/hooks/end-of-turn.sh\"",
-            "timeout": 120
-          }
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel)/.codex/hooks/end-of-turn.sh\"", "timeout": 120 }
         ]
       }
     ]
@@ -110,7 +104,6 @@ Codex records trust against the hook definition's **hash**. New or changed non-m
 `.codex/hooks/lint-edited-file.sh`:
 
 <!-- proof: lint-edited-file.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # PostToolUse (apply_patch): lint every JS/TS file named in the patch.
@@ -146,7 +139,6 @@ exit 0
 `.codex/hooks/end-of-turn.sh`:
 
 <!-- proof: end-of-turn.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # Stop: sweep everything this turn changed, send the agent back once.

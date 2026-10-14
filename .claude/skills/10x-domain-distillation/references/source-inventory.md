@@ -27,15 +27,12 @@ sub-agents' job.
 - path_alias: <optional, e.g. app/ = apps/shop/src/>
 
 ## Stack
-
 <language and framework, one line each>
 
 ## Layers
-
 | layer | path patterns | notes |
 
 ## Excluded
-
 | path | reason |
 ```
 
@@ -64,7 +61,7 @@ without a separate domain layer is a finding, not a gap.
 - developer tooling that is not the product: build and release scripts,
   internal code-review or lint tools, CI helpers, agent configuration —
   except agent instruction files that describe the product (`CLAUDE.md`,
-  `AGENTS.md` explaining business flows): list those as _reference_
+  `AGENTS.md` explaining business flows): list those as *reference*
   documents, read by the docs agent only;
 - generated code and vendored dependencies.
 
@@ -108,15 +105,12 @@ description and usage. Without any goals, write "no stated goals".
 - documents: <n requirements, n narrative, n reference, n engineering>
 
 ## Domain documents
-
 | path | kind | what it is about |
 
 ## Product goals
-
 <quotes with path:line, or "no stated goals">
 
 ## Change goals
-
 <goals of single changes, quotes with path:line — not used to judge the Core>
 
 ## Limitations

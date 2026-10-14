@@ -1,57 +1,57 @@
-## Ogólna koncepcja
+## Overall concept
 
-- uruchomienie workflow GHA dla każdego nowego pull requesta do master
-- composite action dla samego review, aby główny workflow był łatwy do zrozumienia
+- GHA workflow run for every new pull request to master
+- composite action for the review itself so that main workflow is easy to reason about
 
-## Parametry wejściowe
+## Input parameters
 
-- tytuł pull requesta
-- opis pull requesta (?? kompromis kosztowy)
+- pull request title
+- pull request description (?? cost tradeoff)
 - git diff
 
-## Kryteria Code Review
+## Code Review Criteria
 
-Każde kryterium jest oceniane w skali 1–10, gdzie 1 oznacza najgorszy wynik, a 10 najlepszy.
+Each criterion is scored on a 1–10 scale, where 1 is the worst outcome and 10 is the best.
 
-1. **poprawność implementacji** — czy kod faktycznie robi to, co deklaruje, obsługując przypadki brzegowe i ścieżki błędów bez wprowadzania regresji?
-   - _1_: logika jest uszkodzona, pomija oczywiste przypadki brzegowe/błędy lub po cichu powoduje regresję istniejącego zachowania.
-   - _10_: działa poprawnie dla ścieżki szczęśliwej, przypadków brzegowych i trybów awarii, bez regresji.
+1) **implementation correctness** — does the code actually do what it claims, handling edge cases and error paths without introducing regressions?
+   - _1_: logic is broken, misses obvious edge/error cases, or silently regresses existing behavior.
+   - _10_: behaves correctly across happy path, edge cases, and failure modes with no regressions.
 
-2. **idiomatyczność** — czy kod przestrzega konwencji języka, frameworka i projektu, których oczekiwałby biegły czytelnik?
-   - _1_: walczy z idiomami stosu technologicznego i ustalonymi wzorcami repozytorium, brzmi obco.
-   - _10_: nieodróżnialny od dobrze napisanego kodu otaczającego, naturalnie wykorzystuje właściwe idiomy.
+2) **idiomaticity** — does the code follow the language, framework, and project conventions a fluent reader would expect?
+   - _1_: fights the stack's idioms and the repo's established patterns, reads as foreign.
+   - _10_: indistinguishable from well-written surrounding code, uses the right idioms naturally.
 
-3. **złożoność** — czy rozwiązanie jest tak proste, jak pozwala problem, bez zbędnej abstrakcji lub komplikacji?
-   - _1_: przeinżynierowane lub zagmatwane — trudne do zrozumienia, z przypadkową złożonością zaciemniającą intencję.
-   - _10_: minimalne i jasne, najprostszy projekt, który całkowicie rozwiązuje problem.
+3) **complexity** — is the solution as simple as the problem allows, without needless abstraction or convolution?
+   - _1_: over-engineered or tangled — hard to follow, with accidental complexity that obscures intent.
+   - _10_: minimal and clear, the simplest design that solves the problem completely.
 
-4. **pokrycie testami / ryzyka** — czy istotne zachowania i ryzykowne ścieżki są sprawdzane testami proporcjonalnie do ich ryzyka?
-   - _1_: ryzykowna logika trafia do wydania bez testów; testy są nieobecne, trywialne lub nie sprawdzają nic użytecznego.
-   - _10_: pokrycie ważone ryzykiem — części najbardziej podatne na awarie są testowane celowo i dobrze.
+4) **test / risk coverage** — are the meaningful behaviors and risky paths exercised by tests proportional to their risk?
+   - _1_: risky logic ships untested; tests are absent, trivial, or assert nothing useful.
+   - _10_: risk-weighted coverage — the parts most likely to break are tested deliberately and well.
 
-5. **dokumentacja** — czy nieoczywiste decyzje, publiczne interfejsy i trudny kod są wyjaśnione tam, gdzie czytelnik tego potrzebuje?
-   - _1_: nieprzejrzyste — brak komentarzy lub dokumentacji tam, gdzie są potrzebne, intencję trzeba odtwarzać metodą inżynierii wstecznej.
-   - _10_: wystarczająco dużo dokumentacji/komentarzy, aby wyjaśnić „dlaczego”, bez powtarzania oczywistości.
+5) **documentation** — are non-obvious decisions, public surfaces, and tricky code explained where a reader would need it?
+   - _1_: opaque — no comments or docs where they're needed, intent must be reverse-engineered.
+   - _10_: just enough docs/comments to explain the "why" without restating the obvious.
 
-6. **bezpieczeństwo i ochrona** — czy zmiana unika wprowadzania podatności, ujawniania sekretów lub niebezpiecznej obsługi niezaufanych danych wejściowych?
-   - _1_: wprowadza podatność możliwą do wykorzystania, ujawnia sekrety lub niebezpiecznie ufa niezaufanym danym wejściowym.
-   - _10_: dane wejściowe są walidowane, sekrety są obsługiwane poprawnie i nie zostaje otwarta żadna nowa powierzchnia ataku.
+6) **security and safety** — does the change avoid introducing vulnerabilities, leaking secrets, or unsafe handling of untrusted input?
+   - _1_: introduces an exploitable flaw, leaks secrets, or trusts untrusted input unsafely.
+   - _10_: input is validated, secrets are handled correctly, and no new attack surface is opened.
 
-## Werdykt
+## Verdict
 
-- wiążący `verdict`: `pass` | `fail`, obok sześciu ocen oraz Markdown `summary` (kontrakt: `m5l2-review-schema.ts.template`)
-- bramka merge odczytuje wyłącznie `verdict`
+- binding `verdict`: `pass` | `fail`, next to the six scores and a Markdown `summary` (contract: `m5l2-review-schema.ts.template`)
+- the merge gate reads only `verdict`
 
-## Odłożone na później
+## Parked for later
 
-- zgodność biznesowa (wymaga szerszego kontekstu)
-- dopasowanie architektoniczne (wymaga szerszego kontekstu)
+- business alignment (require broader context)
+- architectural fit (require broader context)
 
-## Oczekiwane skutki uboczne
+## Expected side-effects
 
-- komentarz PR z podsumowaniem
-- etykiety: `ai-cr:failed` (czerwona) LUB `ai-cr:passed` (zielona)
+- PR comment with summary
+- labels: `ai-cr:failed` (red) OR `ai-cr:passed` (green)
 
-## Oczekiwane zachowanie
+## Expected behavior
 
-- ponowna próba na żądanie po dodaniu etykiety `ai-cr:review`
+- on-demand retry when label `ai-cr:review` is added

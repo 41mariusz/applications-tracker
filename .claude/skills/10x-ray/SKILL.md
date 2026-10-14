@@ -40,7 +40,7 @@ absolute path everywhere; the worker needs it too. Requires Node 18+.
 ## 1. Parse the invocation
 
 - Leading `--mode <terminal|html>` (or `--mode=<…>`) picks where the view is
-  shown; default `terminal`. Only a mode flag _before_ the skill name counts;
+  shown; default `terminal`. Only a mode flag *before* the skill name counts;
   anything after the skill name belongs to the skill.
 - Next token = target skill name (strip a leading `/`). Everything after it
   = `ARGS` for that skill, passed through verbatim.
@@ -109,7 +109,7 @@ URL), then end your turn.
 
 - The first line is an `x-ray tick …` status line, which the host already
   shows in its notification row. Drop it and output the rest verbatim inside
-  a ` ```text ` fence. Notifications arrive HTML-escaped: turn `&amp;`
+  a ```` ```text ```` fence. Notifications arrive HTML-escaped: turn `&amp;`
   `&lt;` `&gt;` back into `&` `<` `>`. Change nothing else. The frames
   carry the teaching (concept per step, notes for outcomes), so add at most
   one short line under the fence, only when a frame needs context the user

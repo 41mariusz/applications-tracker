@@ -50,7 +50,7 @@ deeper, focused investigation should start.
 
 | Path                                   | What                                                                               |
 | -------------------------------------- | ---------------------------------------------------------------------------------- |
-| `context/map/repo-map.md`              | **The report** — the only file meant to be read by people and by later work        |
+| `context/map/repo-map.md`              | **The report** — the only file meant to be read by people and by later work       |
 | `context/map/evidence/1-history.md`    | Change activity, fix pressure and co-change per capability                         |
 | `context/map/evidence/2-discussion.md` | PRs, reviews, reverts, issues, planning artifacts and debt markers per capability  |
 | `context/map/evidence/3-structure.md`  | Dependency graph between and inside capabilities: blast radius, cycles, boundaries |
@@ -102,12 +102,12 @@ this skill directory (`<loaded-skill-dir>` in the briefs), its brief path, the
 scan contract and capabilities paths, its output path, the false-signal list
 path, and the rules below. Tell each sub-agent to read its brief first.
 
-| Sub-agent  | Brief                                                            | Question                                              |
-| ---------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
-| history    | [references/agent-history.md](references/agent-history.md)       | What changes, what gets fixed, what changes together? |
-| discussion | [references/agent-discussion.md](references/agent-discussion.md) | Where do attention, friction and second attempts go?  |
-| structure  | [references/agent-structure.md](references/agent-structure.md)   | How far does a change reach; which boundaries break?  |
-| people     | [references/agent-people.md](references/agent-people.md)         | Who carries each capability?                          |
+| Sub-agent  | Brief                                                            | Question                                               |
+| ---------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| history    | [references/agent-history.md](references/agent-history.md)       | What changes, what gets fixed, what changes together?  |
+| discussion | [references/agent-discussion.md](references/agent-discussion.md) | Where do attention, friction and second attempts go?   |
+| structure  | [references/agent-structure.md](references/agent-structure.md)   | How far does a change reach; which boundaries break?   |
+| people     | [references/agent-people.md](references/agent-people.md)         | Who carries each capability?                           |
 
 In Claude Code dispatch with the `Agent` tool (`Task` in older versions),
 `subagent_type: "general-purpose"` — they need Bash and Write. In other hosts

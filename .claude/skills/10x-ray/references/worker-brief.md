@@ -40,9 +40,9 @@ Two constraints of running as a subagent:
      The parent sees this immediately and puts the question to the user.
   3. Make that your last tool call and end your turn with a final message
      that starts with `NEEDS_INPUT` followed by the payload path.
-     When the answer arrives via SendMessage, emit a `resume` event that names
-     the choice, then continue from exactly where you stopped. Don't invent
-     answers to questions the skill wants a human to decide.
+  When the answer arrives via SendMessage, emit a `resume` event that names
+  the choice, then continue from exactly where you stopped. Don't invent
+  answers to questions the skill wants a human to decide.
 - **You may not be able to spawn agents.** If the skill tells you to fan out
   subagents and the Agent/Task tool is unavailable, do that work yourself,
   lane by lane, and emit one `warn` event saying so.
@@ -70,7 +70,7 @@ node {{XRAY}} emit {{LOG}} <kind> <node-id> "<title>" "<detail>" [--iter i/n]
 - `--iter i/n`: on every event inside a `loop` or `fan-out` step or its
   children, which round or lane this is (`2/4`). Use `i/?` if n is unknown.
 - `kind`: one of `load read search think plan edit run delegate check
-resume decide result warn done fail`. Outcomes (`result`, `decide`,
+  resume decide result warn done fail`. Outcomes (`result`, `decide`,
   `edit`, `warn`, `delegate`, `check`) are shown to the user as notes;
   the rest only update the "now" line. `start` is already emitted for you;
   interactions go through `ask`, never `emit ask`.

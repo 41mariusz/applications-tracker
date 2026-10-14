@@ -1,28 +1,25 @@
-# GitHub Packages CI/CD — Wymagania
+# GitHub Packages CI/CD — Requirements
 
-> **Domyślna ścieżka dla Zadania 3.** Ta specyfikacja publikuje pakiet zestawu narzędzi AI do
-> GitHub Packages. Celowo unika AWS, Terraform, ról IAM oraz
+> **Default path for Zadanie 3.** This spec publishes the AI toolkit package to
+> GitHub Packages. It deliberately avoids AWS, Terraform, IAM roles and
 > CodeArtifact.
 
-## Cel
+## Goal
+Create a GitHub Actions workflow that validates and publishes the AI toolkit npm
+package to GitHub Packages.
 
-Utwórz workflow GitHub Actions, który waliduje i publikuje pakiet npm zestawu
-narzędzi AI do GitHub Packages.
+## Configuration
+- Workflow file: `.github/workflows/publish-ai-toolkit.yml`
+- Package location: repository root, unless the agent generated a monorepo
+  layout; if so, use `packages/ai-toolkit/`
+- Branch: support both `main` and `master`
+- Node version: `24` (package `engines`: `>=22`)
+- Registry: `https://npm.pkg.github.com`
+- Package scope: `@twoj-zespol`
 
-## Konfiguracja
-
-- Plik workflow: `.github/workflows/publish-ai-toolkit.yml`
-- Lokalizacja pakietu: katalog główny repozytorium, chyba że agent wygenerował układ
-  monorepo; w takim przypadku użyj `packages/ai-toolkit/`
-- Gałąź: obsługuj zarówno `main`, jak i `master`
-- Wersja Node: `24` (pakiet `engines`: `>=22`)
-- Rejestr: `https://npm.pkg.github.com`
-- Zakres pakietu: `@twoj-zespol`
-
-## Uprawnienia
-
-Do publikowania użyj tymczasowego tokenu GitHub Actions. Zachowaj domyślne
-uprawnienia workflow tylko do odczytu i przyznaj `packages: write` wyłącznie zadaniu publikowania:
+## Permissions
+Use the ephemeral GitHub Actions token for publishing. Keep the workflow default
+read-only and grant `packages: write` only to the publish job:
 
 ```yaml
 permissions:
@@ -35,34 +32,30 @@ jobs:
       packages: write
 ```
 
-Przypnij każdą akcję zewnętrzną do pełnego SHA commita, z tagiem w komentarzu.
+Pin every third-party action to a full commit SHA with the tag in a comment.
 
-Nie wymagaj `AWS_ACCOUNT_ID`, `AWS_ROLE_ARN`, `id-token: write` ani żadnego
-kroku logowania do CodeArtifact.
+Do not require `AWS_ACCOUNT_ID`, `AWS_ROLE_ARN`, `id-token: write`, or any
+CodeArtifact login step.
 
-## Zadanie walidacji
+## Validation job
+Before publishing, validate:
+1. `package.json` exists and has `name`, `version`, `publishConfig.registry`.
+2. `skills/code-review/SKILL.md` exists.
+3. `SKILL.md` has YAML frontmatter with `name` and `description`.
+4. The frontmatter `name` matches the skill directory name.
+5. `npm pack --dry-run` succeeds.
 
-Przed publikacją zweryfikuj:
+The starter package has no dependencies and no lockfile, so do not run `npm ci`.
 
-1. Istnieje `package.json` i zawiera `name`, `version`, `publishConfig.registry`.
-2. Istnieje `skills/code-review/SKILL.md`.
-3. `SKILL.md` ma frontmatter YAML z `name` oraz `description`.
-4. Wartość `name` we frontmatter odpowiada nazwie katalogu umiejętności.
-5. `npm pack --dry-run` kończy się powodzeniem.
+## Publish job
+On push to `main` or `master`:
+1. Check out the repository.
+2. Set up Node with GitHub Packages registry and the package scope.
+3. Skip publishing when `name@version` from `package.json` is already in the
+   registry (`npm view`), so a push without a version bump does not fail on 409.
+4. Publish with `NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}`.
 
-Początkowy pakiet nie ma zależności ani pliku lockfile, więc nie uruchamiaj `npm ci`.
-
-## Zadanie publikowania
-
-Przy push do `main` lub `master`:
-
-1. Pobierz repozytorium.
-2. Skonfiguruj Node z rejestrem GitHub Packages i zakresem pakietu.
-3. Pomiń publikowanie, gdy `name@version` z `package.json` znajduje się już w
-   rejestrze (`npm view`), aby push bez zwiększenia wersji nie kończył się błędem 409.
-4. Opublikuj za pomocą `NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}`.
-
-Struktura początkowa:
+Starter shape:
 
 ```yaml
 name: Publish AI Toolkit
@@ -106,8 +99,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## Uwaga dotycząca CI konsumentów
-
-Repozytoria konsumentów, które instalują ten prywatny pakiet, potrzebują uwierzytelniania
-do odczytu. Użyj osobnego sekretu `GH_PKG_TOKEN` dla CI podmiotów trzecich lub konsumentów z innych organizacji. GitHub Actions w tej samej organizacji może zamiast tego
-korzystać z uprawnień repozytorium/pakietu, ale nie zakładaj, że każda platforma buildowa może uzyskać dostęp do tokenu GitHub.
+## Consumer CI note
+Consumer repositories that install this private package need read auth. Use a
+separate `GH_PKG_TOKEN` secret for third-party CI or cross-org consumers. Same-org
+GitHub Actions may be able to use repository/package permissions instead, but do
+not assume every build platform can see GitHub's token.

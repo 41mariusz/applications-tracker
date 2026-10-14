@@ -13,27 +13,27 @@ the evidence tables whole.
 
 1. **Documents first.** Where the documents conflict, the newest statement
    is the model the code is compared with; superseded statements go to the
-   short _Stale documents_ list, not to the drift table.
+   short *Stale documents* list, not to the drift table.
 2. **Terms.** Match each documented term to a code concept (exact name,
    variant, or clear synonym). Unmatched: a targeted search (batched per
    layer, scope cited). Still unmatched → **missing in code**. Code concepts
-   with no documented term → _code-only_, each marked _searched in docs_ or
-   _not in the docs sample_ — a thin sample is not evidence of a gap.
+   with no documented term → *code-only*, each marked *searched in docs* or
+   *not in the docs sample* — a thin sample is not evidence of a gap.
    Findings resting only on code comments are weaker than identifiers; say
    so where it decides a match.
 3. **Rules.** Match each documented rule to the guards. Status:
-   - **enforced** — guarded _hard (data)_ or _hard (app)_ on every path the
-     rule constrains (writes, and reads for visibility rules). For _hard
-     (app)_, put the missing data-store guard in the gap column;
-   - **declared** — guarded _soft_ or _client-only_, or only some of its
+   - **enforced** — guarded *hard (data)* or *hard (app)* on every path the
+     rule constrains (writes, and reads for visibility rules). For *hard
+     (app)*, put the missing data-store guard in the gap column;
+   - **declared** — guarded *soft* or *client-only*, or only some of its
      conditions, or named in code (a type, a comment, a test) without
      stopping a violation. Client-only on state that lives on the client by
      design is noted as such in the gap column;
    - **ignored** — no guard after a targeted search; cite the scope;
    - **contradicted** — some code actively does the opposite (an override,
      a reset, a back door). Every contradicted rule also gets a drift row.
-     Guards with no documented rule → _code-only rules_: often business
-     knowledge nobody wrote down.
+   Guards with no documented rule → *code-only rules*: often business
+   knowledge nobody wrote down.
 4. **Meanings.** Merge the multiple-meaning findings from both language
    agents. A word with two meanings is a likely boundary between two
    contexts; name both contexts.
@@ -49,14 +49,14 @@ the evidence tables whole.
   change-only and judge from the product description and usage. More than
   one Core subdomain is allowed.
 - **Candidates.** Two kinds are ranked together:
-  - _aggregate candidates_ — a concept with identity, a lifecycle and at
+  - *aggregate candidates* — a concept with identity, a lifecycle and at
     least one invariant binding several of its parts or children. Implicit
     concepts (no type of their own) qualify and are often the most valuable;
-  - _policies_ — product-wide rules (privacy, access, retention, limits)
+  - *policies* — product-wide rules (privacy, access, retention, limits)
     that are ignored or contradicted;
-  - _undocumented exposures_ — a code-only rule or its absence that exposes
+  - *undocumented exposures* — a code-only rule or its absence that exposes
     data, money or access (an endpoint answering for any user without a
-    session). Status **undocumented**; it ranks with _ignored_.
+    session). Status **undocumented**; it ranks with *ignored*.
 - **Ranking.** Order by status first, then by subdomain:
   contradicted > ignored > declared > enforced, and within a status Core >
   Supporting > Generic; break ties by how spread the guards are across
@@ -83,9 +83,9 @@ them usable after the first read.
      folder, an ADR, a commit message says so — cite it) and the documents
      were never updated;
    - **decision** — the evidence cannot tell which side is intended, or the
-     answer lives outside the repository. Every _decision_ row has a
-     question in _Questions_.
-     Never mark _docs_ without citing the later decision.
+     answer lives outside the repository. Every *decision* row has a
+     question in *Questions*.
+   Never mark *docs* without citing the later decision.
 3. **Done when.** Every ranked item gets one observable condition that would
    show it is fixed — a test that would pass, a query that would return
    nothing, a search that would return only one place: "a failed second
@@ -98,7 +98,7 @@ them usable after the first read.
    a decision — becomes a question with the role that can answer it
    (product owner, operator, whoever owns the infrastructure or the
    integration) and the IDs it unblocks. Unknowns no person can settle stay
-   in _Limitations_.
+   in *Limitations*.
 5. **A glossary agents can load.** Write `context/domain/glossary.md` from
    the same data (format below): short, no evidence, meant to be referenced
    from agent instruction files and read before naming anything in code.
@@ -129,63 +129,52 @@ glossary: context/domain/glossary.md
 # Domain distillation: <product name>
 
 ## Summary
-
 5–8 sentences: what the domain is, the Core, how many Core and Supporting
 terms are missing in code, the strongest drift, #1 and why. One more line
 with the counts of drift by fix side (code / docs / decision) and of open
 questions.
 
 ## Changes since the previous run
-
 Only when a previous report exists: closed, opened, status changes.
 
 ## Ubiquitous language
-
 One row per term; variants in "other names". Every Core and Supporting
 term; Generic and peripheral terms as counts only. Under the table: totals
 in the evidence vs in the table, and missing-in-code counts by kind
-(entities, states, measures… — _thesis_ terms are listed, not counted).
+(entities, states, measures… — *thesis* terms are listed, not counted).
 
 | id | term | kind | definition (quoted) | source | in code (path:line) or **missing in code** | other names in code |
 
-Code-only concepts in a short list below, each marked _searched in docs_ or
-_not in the docs sample_.
+Code-only concepts in a short list below, each marked *searched in docs* or
+*not in the docs sample*.
 
 ## Multiple meanings and context boundaries
-
 | id | word | meaning A (context, source) | meaning B (context, source) | suggested names |
 
 ## Subdomains
-
 | subdomain | class | concepts | why (goal quote, or description and usage) |
 
 ## Invariants and policies
-
 | id | candidate | invariant (quoted) | source | status | guarded at | gap |
 
 With more than three candidates, one subheading per candidate with its own
 table. Code-only rules in a short list at the end.
 
 ## Model vs code drift
-
 | id | the documents say (newest) | the code does | evidence (path:line) | consequence | fix: code / docs / decision |
 
 ## Stale documents
-
 Superseded statements, each with the newer one that replaced it — the
-starting list for documentation edits, together with the _docs_ drift rows.
+starting list for documentation edits, together with the *docs* drift rows.
 
 ## Ranking
-
 | # | candidate | kind | subdomain | status | related IDs | reason | done when |
 **#1:** <three lines>
 
 ## Questions
-
 | id | question | who can answer | unblocks |
 
 ## Unknowns and limitations
-
 Documents missing, thin or change-only; the narrative sample; code areas
 not searched; rules whose status could not be settled; configuration
 outside the repository that no question covers.
@@ -217,7 +206,7 @@ is a separate decision.
 - One row per Core and Supporting term; Generic terms only when the code
   names them inconsistently.
 - **means** — one sentence in plain words (not a quote); **name in code** —
-  the dominant identifier, or _missing in code_; **don't call it** — the
+  the dominant identifier, or *missing in code*; **don't call it** — the
   other names found in code and conversation that mean the same thing, plus
   the other meanings of an overloaded word with the context they belong to.
 - Each context boundary (`B-…`) becomes a heading, so an overloaded word
@@ -231,11 +220,11 @@ Before presenting, check the written report once:
 - every term in the table has a code location or **missing in code** with
   the scope searched; no row has both;
 - every invariant and policy has one of the statuses above (enforced,
-  declared, ignored, contradicted, undocumented); every _ignored_
-  row cites the scope searched, every _contradicted_ row has a drift row;
-- every drift row has a fix side; every _docs_ row cites the later decision;
-  every _decision_ row has a question;
-- every ranked item has a _done when_ that states a condition, not a design;
+  declared, ignored, contradicted, undocumented); every *ignored*
+  row cites the scope searched, every *contradicted* row has a drift row;
+- every drift row has a fix side; every *docs* row cites the later decision;
+  every *decision* row has a question;
+- every ranked item has a *done when* that states a condition, not a design;
 - IDs are unique, and every ID cited in the ranking or the questions exists;
 - open **every** citation in the drift table and in the #1 reason, plus 5
   random others, and confirm each says what the report claims; fix any that

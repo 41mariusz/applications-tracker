@@ -39,7 +39,7 @@ apply known patterns far more reliably than they invent new ones.
   that's where integration risk hides. Mock expensive/non-deterministic external
   APIs (LLMs, payment gateways) at the network layer.
 - **Name the test after the risk:** `test('flashcard data persists after page
-reload', ...)`, not `test('test 1', ...)`.
+  reload', ...)`, not `test('test 1', ...)`.
 - **The assertion must fail if the risk materializes.** Control question for
   every assertion: would this fail if the `test-plan.md` risk came true? If not,
   it's decorative.
@@ -62,13 +62,13 @@ docs:
 The rules above are Playwright syntax; the principles are tool-agnostic. Map
 each to your tool's idiom:
 
-| Principle          | Playwright                                   | Cypress                                              | WebdriverIO / Selenium                      |
-| ------------------ | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------- |
-| Role-based locator | `getByRole`                                  | `cy.findByRole` (Testing Library)                    | accessibility-name / role strategy          |
-| Wait for state     | `expect().toBeVisible()`, `waitForResponse`  | `cy.contains().should('be.visible')`, `cy.intercept` | explicit waits on conditions, never `sleep` |
-| Test isolation     | parallel workers, own data                   | `beforeEach` reset, no shared aliases                | fresh session per test                      |
-| Auth without UI    | `storageState`                               | `cy.session`                                         | saved cookies / token injection             |
-| Data cleanup       | unique ids + `afterEach`, each call asserted | unique ids + `afterEach`, each call asserted         | unique ids + teardown, each call asserted   |
+| Principle | Playwright | Cypress | WebdriverIO / Selenium |
+| --- | --- | --- | --- |
+| Role-based locator | `getByRole` | `cy.findByRole` (Testing Library) | accessibility-name / role strategy |
+| Wait for state | `expect().toBeVisible()`, `waitForResponse` | `cy.contains().should('be.visible')`, `cy.intercept` | explicit waits on conditions, never `sleep` |
+| Test isolation | parallel workers, own data | `beforeEach` reset, no shared aliases | fresh session per test |
+| Auth without UI | `storageState` | `cy.session` | saved cookies / token injection |
+| Data cleanup | unique ids + `afterEach`, each call asserted | unique ids + `afterEach`, each call asserted | unique ids + teardown, each call asserted |
 
 If you work on a non-Playwright stack, write these mappings into your seed test
 and your E2E prompts so the agent produces idiomatic, stable tests for your tool.

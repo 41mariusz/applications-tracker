@@ -56,23 +56,15 @@ every number; reuse `.work/git-log.txt`. Do not read source files. Use
 
 ```markdown
 # Evidence: history
-
 <window, buckets, commits counted, excluded — from the contract>
 
-## Activity per capability <!-- changes, commits, share; unmapped and agent-authored shares -->
-
+## Activity per capability        <!-- changes, commits, share; unmapped and agent-authored shares -->
 ## Top files in top capabilities
-
-## Trend <!-- table + labels + campaigns -->
-
-## Fix pressure <!-- fix share, reverts, cross-cutting, heuristic -->
-
+## Trend                          <!-- table + labels + campaigns -->
+## Fix pressure                   <!-- fix share, reverts, cross-cutting, heuristic -->
 ## Co-change between capabilities <!-- support, confidence -->
-
 ## Hub files and freshness
-
-## Mechanical signals <!-- what false-signals.md demoted, and why -->
-
+## Mechanical signals             <!-- what false-signals.md demoted, and why -->
 ## Unknowns
 ```
 

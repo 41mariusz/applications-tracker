@@ -13,12 +13,12 @@ Resolve the tool id in this order and stop at the first hit:
 
 1. **Manifest next to this skill.** The skill runs from `<manifest dir>/skills/10x-e2e-setup/`.
    If `<manifest dir>/.10x-cli-manifest.json` exists, read its top-level `tool`.
-2. **Newest manifest in the project.** Check every _manifest dir_ in the table
+2. **Newest manifest in the project.** Check every *manifest dir* in the table
    below for `.10x-cli-manifest.json` and take the `tool` from the one with the
    latest `lastApplied`. (After a tool switch an old manifest can stay behind —
    that is why the one next to the skill wins.)
 3. **Where this skill is installed.** No manifest (the skills were copied by
-   hand): match the directory this skill runs from against the _skill dir_
+   hand): match the directory this skill runs from against the *skill dir*
    column. Every skill dir maps to exactly one tool.
 4. **Ask the user**, offering the tool ids below.
 
@@ -26,16 +26,16 @@ The legacy id `windsurf` means `devin-desktop`.
 
 ## Per-tool table
 
-| `tool` id       | Tool                              | Rules file                        | Skill dir         | Manifest dir | `playwright-cli install --skills=`         | How the user invokes a skill                                                                                   |
-| --------------- | --------------------------------- | --------------------------------- | ----------------- | ------------ | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `claude-code`   | Claude Code                       | `CLAUDE.md`                       | `.claude/skills/` | `.claude/`   | `claude`                                   | `/10x-e2e <risk-id>`                                                                                           |
-| `cursor`        | Cursor                            | `.cursor/rules/10x-course.mdc`    | `.cursor/skills/` | `.cursor/`   | `agents`, then copy (see below)            | `/10x-e2e <risk-id>` in the Agent chat                                                                         |
-| `copilot`       | GitHub Copilot                    | `.github/copilot-instructions.md` | `.github/skills/` | `.github/`   | `agents`, then copy                        | `/10x-e2e <risk-id>` in Copilot Chat (agent mode)                                                              |
-| `codex`         | Codex CLI                         | `AGENTS.md`                       | `.agents/skills/` | `.agents/`   | `agents` (already the skill dir — no copy) | `$10x-e2e <risk-id>`, or pick it from `/skills`                                                                |
-| `devin-desktop` | Devin Desktop (formerly Windsurf) | `AGENTS.md`                       | `.devin/skills/`  | `.devin/`    | `agents`, then copy                        | `@10x-e2e` in Cascade ([docs](https://docs.devin.ai/desktop/cascade/skills)); plain language also works        |
-| `gemini`        | Gemini CLI                        | `GEMINI.md`                       | `.gemini/skills/` | `.gemini/`   | `agents`, then copy                        | plain language, or pick it from `/skills`                                                                      |
-| `kiro`          | Kiro                              | `AGENTS.md`                       | `.kiro/skills/`   | `.kiro/`     | `agents`, then copy                        | `/10x-e2e` (skills appear as slash commands, [docs](https://kiro.dev/docs/skills/)); plain language also works |
-| `generic`       | Other / generic                   | `AGENTS.md`                       | `.ai/skills/`     | `.ai/`       | `agents`, then copy                        | plain language: "read `.ai/skills/10x-e2e/SKILL.md` and follow it for risk <risk-id>"                          |
+| `tool` id | Tool | Rules file | Skill dir | Manifest dir | `playwright-cli install --skills=` | How the user invokes a skill |
+| --- | --- | --- | --- | --- | --- | --- |
+| `claude-code` | Claude Code | `CLAUDE.md` | `.claude/skills/` | `.claude/` | `claude` | `/10x-e2e <risk-id>` |
+| `cursor` | Cursor | `.cursor/rules/10x-course.mdc` | `.cursor/skills/` | `.cursor/` | `agents`, then copy (see below) | `/10x-e2e <risk-id>` in the Agent chat |
+| `copilot` | GitHub Copilot | `.github/copilot-instructions.md` | `.github/skills/` | `.github/` | `agents`, then copy | `/10x-e2e <risk-id>` in Copilot Chat (agent mode) |
+| `codex` | Codex CLI | `AGENTS.md` | `.agents/skills/` | `.agents/` | `agents` (already the skill dir — no copy) | `$10x-e2e <risk-id>`, or pick it from `/skills` |
+| `devin-desktop` | Devin Desktop (formerly Windsurf) | `AGENTS.md` | `.devin/skills/` | `.devin/` | `agents`, then copy | `@10x-e2e` in Cascade ([docs](https://docs.devin.ai/desktop/cascade/skills)); plain language also works |
+| `gemini` | Gemini CLI | `GEMINI.md` | `.gemini/skills/` | `.gemini/` | `agents`, then copy | plain language, or pick it from `/skills` |
+| `kiro` | Kiro | `AGENTS.md` | `.kiro/skills/` | `.kiro/` | `agents`, then copy | `/10x-e2e` (skills appear as slash commands, [docs](https://kiro.dev/docs/skills/)); plain language also works |
+| `generic` | Other / generic | `AGENTS.md` | `.ai/skills/` | `.ai/` | `agents`, then copy | plain language: "read `.ai/skills/10x-e2e/SKILL.md` and follow it for risk <risk-id>" |
 
 Notes on the table:
 

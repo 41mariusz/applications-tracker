@@ -133,11 +133,11 @@ Each finding records:
 
 ### Impact grammar
 
-| Impact        | Meaning                                                                                |
-| ------------- | -------------------------------------------------------------------------------------- |
-| 🏃 **LOW**    | Quick decision. Fix is obvious and narrowly scoped. Safe to batch.                     |
-| 🔎 **MEDIUM** | Worth pausing. Real tradeoff or non-trivial edit — think before deciding.              |
-| 🔬 **HIGH**   | Architectural stakes. Wide blast radius, strategic implications, or unclear best path. |
+| Impact | Meaning |
+|---|---|
+| 🏃 **LOW** | Quick decision. Fix is obvious and narrowly scoped. Safe to batch. |
+| 🔎 **MEDIUM** | Worth pausing. Real tradeoff or non-trivial edit — think before deciding. |
+| 🔬 **HIGH** | Architectural stakes. Wide blast radius, strategic implications, or unclear best path. |
 
 Always pair the impact level with its one-line meaning — a reader shouldn't need to memorize a table.
 
@@ -194,15 +194,15 @@ Never use a bare icon without its label.
 Present the seven dimension verdicts as a table, alongside the overall verdict and the finding counts:
 
 ```markdown
-| Dimension           | Verdict               |
-| ------------------- | --------------------- |
-| Plan Adherence      | PASS / WARNING / FAIL |
-| Scope Discipline    | PASS / WARNING / FAIL |
-| Safety & Quality    | PASS / WARNING / FAIL |
-| Architecture        | PASS / WARNING / FAIL |
+| Dimension | Verdict |
+|-----------|---------|
+| Plan Adherence | PASS / WARNING / FAIL |
+| Scope Discipline | PASS / WARNING / FAIL |
+| Safety & Quality | PASS / WARNING / FAIL |
+| Architecture | PASS / WARNING / FAIL |
 | Pattern Consistency | PASS / WARNING / FAIL |
-| Test Coverage       | PASS / WARNING / FAIL |
-| Success Criteria    | PASS / WARNING / FAIL |
+| Test Coverage | PASS / WARNING / FAIL |
+| Success Criteria | PASS / WARNING / FAIL |
 ```
 
 The table always lists all seven dimensions even when some have zero findings; the findings list shows only the dimensions that produced findings.

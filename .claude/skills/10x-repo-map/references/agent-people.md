@@ -48,18 +48,13 @@ Display names only, never e-mail addresses. Describe work, not people.
 
 ```markdown
 # Evidence: people
-
 <humans in window, baseline, filter notes>
 
-## People per capability <!-- names, topic groups, period -->
-
-## Concentration <!-- relative to the baseline -->
-
-## Agent co-authorship <!-- share per capability, as context -->
-
-## Implications <!-- whom to ask before what kind of change, which PRs to read -->
-
-## Unknowns <!-- who is still on the team, formal ownership -->
+## People per capability   <!-- names, topic groups, period -->
+## Concentration           <!-- relative to the baseline -->
+## Agent co-authorship     <!-- share per capability, as context -->
+## Implications            <!-- whom to ask before what kind of change, which PRs to read -->
+## Unknowns                <!-- who is still on the team, formal ownership -->
 ```
 
 Name the commands you ran in one short list at the end.

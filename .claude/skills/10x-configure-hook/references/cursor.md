@@ -54,10 +54,10 @@ Common fields: `conversation_id`, `generation_id`, `hook_event_name`, `workspace
 
 Exit `0` and print JSON on stdout:
 
-| Event         | Field                | Effect                                                                     |
-| ------------- | -------------------- | -------------------------------------------------------------------------- |
-| `postToolUse` | `additional_context` | Injected into the conversation after the tool result                       |
-| `stop`        | `followup_message`   | Submitted automatically as the next user message — the agent keeps working |
+| Event | Field | Effect |
+| --- | --- | --- |
+| `postToolUse` | `additional_context` | Injected into the conversation after the tool result |
+| `stop` | `followup_message` | Submitted automatically as the next user message — the agent keeps working |
 
 Exit `2` blocks the action (equivalent to `permission: "deny"`) for permission hooks; its effect on `postToolUse`/`stop` is not documented — do not rely on it. Other non-zero exits fail open unless `failClosed` is set.
 
@@ -113,7 +113,6 @@ Report which option you chose.
 `.cursor/hooks/lint-edited-file.sh`:
 
 <!-- proof: lint-edited-file.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # postToolUse (Write): lint the edited file; errors go back as additional_context.
@@ -138,7 +137,6 @@ exit 0
 `.cursor/hooks/end-of-turn.sh`:
 
 <!-- proof: end-of-turn.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # stop: sweep everything this turn changed, send the agent back once.

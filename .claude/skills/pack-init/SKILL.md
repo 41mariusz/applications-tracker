@@ -11,17 +11,17 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /pack-init — Zainicjuj pakiet AI Toolkit
+# /pack-init — Initialize The AI Toolkit Package
 
-Tworzysz szkielet pakietu, który przekształca wygenerowane artefakty AI w wersjonowany pakiet npm.
+You create the package skeleton that turns generated AI artifacts into a versioned npm package.
 
-To drugi krok potoku Model 2 z m5l4: gdy umiejętność zespołu już istnieje (na przykład `skills/code-review/SKILL.md` wygenerowany z `m5l4-shared-spec-skill.md` za pomocą dowolnego narzędzia do tworzenia umiejętności lub ręcznie), ta umiejętność opakowuje artefakt w pakiet, który można opublikować w AWS CodeArtifact. Jeśli żadna umiejętność jeszcze nie istnieje, utwórz szkielet `skills/code-review/SKILL.md` na podstawie `m5l4-shared-spec-skill.md` i `m5l4-shared-conventions.md` oraz poinformuj osobę uczącą się, aby sprawdziła go przed publikacją.
+This is step two of the Model 2 pipeline from m5l4: once the team skill exists (for example `skills/code-review/SKILL.md` generated from `m5l4-shared-spec-skill.md` with any skill-authoring tool or by hand), this skill wraps the artifact in a package that can be published to AWS CodeArtifact. If no skill exists yet, scaffold `skills/code-review/SKILL.md` from `m5l4-shared-spec-skill.md` and `m5l4-shared-conventions.md` and tell the learner to review it before publishing.
 
-## Dane wejściowe
+## Inputs
 
-Odczytaj te pliki, jeśli są obecne:
+Read these files when present:
 
-Specyfikacje `m5l4-*.md` pochodzą z `10x get m5l4`, które zapisuje je w katalogu promptów Twojego narzędzia (`.claude/prompts/` lub `.cursor/prompts/`, `.github/prompts/`, `.agents/prompts/` dla innych narzędzi). Najpierw sprawdź tam, a następnie użyj katalogu głównego repozytorium, jeśli osoba ucząca się je przeniosła.
+The `m5l4-*.md` specs come from `10x get m5l4`, which writes them to your tool's prompts directory (`.claude/prompts/`, or `.cursor/prompts/`, `.github/prompts/`, `.agents/prompts/` for other tools). Look there first, then fall back to the repository root if the learner moved them.
 
 - `m5l4-codeartifact-spec-cicd.md`
 - `m5l4-codeartifact-spec-terraform.md`
@@ -31,20 +31,20 @@ Specyfikacje `m5l4-*.md` pochodzą z `10x get m5l4`, które zapisuje je w katalo
 - `context/spec-cicd.md`
 - `context/spec-terraform.md`
 
-Sprawdź również istniejące wygenerowane artefakty:
+Also inspect existing generated artifacts:
 
 - `skills/*/SKILL.md`
 - `rules/CLAUDE.md`
 - `commands/`
 - `prompts/`
 
-## Przebieg pracy
+## Workflow
 
-1. Potwierdź nazwę pakietu i przestrzeń nazw.
-   - Preferuj wartości ze specyfikacji.
-   - Domyślne wartości lekcyjne to `@10xdevs/ai-toolkit` oraz przestrzeń nazw `10xdevs`.
-2. Utwórz `packages/ai-toolkit/`, jeśli nie istnieje.
-3. Skopiuj lub utwórz szkielet struktury artefaktu:
+1. Confirm the package name and namespace.
+   - Prefer values from specs.
+   - Default lesson values are `@10xdevs/ai-toolkit` and namespace `10xdevs`.
+2. Create `packages/ai-toolkit/` if it does not exist.
+3. Copy or scaffold the artifact structure:
 
 ```text
 packages/ai-toolkit/
@@ -61,35 +61,35 @@ packages/ai-toolkit/
     └── CLAUDE.md
 ```
 
-4. Dodaj `package.json` zawierający:
-   - nazwę pakietu,
-   - wersję,
+4. Add `package.json` with:
+   - package name,
+   - version,
    - `type`,
    - `files`,
    - `bin`,
    - `postinstall`,
-   - silnik Node (`"engines": { "node": ">=22" }`).
-5. Dodaj `pack.yaml` zawierający co najmniej:
+   - Node engine (`"engines": { "node": ">=22" }`).
+5. Add `pack.yaml` with at least:
    - `name`,
    - `version`,
    - `description`,
    - `namespace`.
-6. Dodaj zachowanie instalatora:
-   - tryb `npm install` może tworzyć dowiązania symboliczne z `node_modules`,
-   - tryb `npx <package> install` musi kopiować pliki, ponieważ pamięć podręczna npx jest tymczasowa,
-   - zainstalowane pliki muszą być śledzone w manifeście,
-   - dezinstalacja musi odczytywać manifest zamiast zgadywać ścieżki.
+6. Add installer behavior:
+   - `npm install` mode may symlink from `node_modules`,
+   - `npx <package> install` mode must copy files because the npx cache is temporary,
+   - installed files must be tracked in a manifest,
+   - uninstall must read the manifest instead of guessing paths.
 
-## Zasady bezpieczeństwa
+## Safety Rules
 
-- Nie koduj na stałe ścieżek do prywatnych maszyn.
-- Nie zapisuj sekretów AWS, tokenów ani poświadczeń konta w plikach pakietu.
-- Nie nadpisuj plików zarządzanych przez użytkownika bez bloku znacznika lub wyraźnego potwierdzenia.
-- Zachowaj idempotentność operacji instalatora.
+- Do not hardcode personal machine paths.
+- Do not write AWS secrets, tokens or account credentials into package files.
+- Do not overwrite user-managed files without a sentinel block or explicit confirmation.
+- Keep installer operations idempotent.
 
-## Weryfikacja
+## Verification
 
-Uruchom, gdy to możliwe:
+Run when possible:
 
 ```bash
 npm pack --dry-run
@@ -97,4 +97,4 @@ node -e "JSON.parse(require('fs').readFileSync('packages/ai-toolkit/package.json
 test -f packages/ai-toolkit/pack.yaml
 ```
 
-Jeśli wygenerowany pakiet zawiera umiejętności, sprawdź, czy każdy `SKILL.md` rozpoczyna się od prawidłowego frontmatteru.
+If a generated package contains skills, verify every `SKILL.md` starts with valid frontmatter.

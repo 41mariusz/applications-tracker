@@ -25,40 +25,40 @@ uses `getByRole`, generated tests do too. If the seed has
   state instead of an arbitrary duration. That includes the page being
   **interactive**: a form rendered by a client-side framework (a React island,
   an SPA) drops input typed before it hydrates. Wrap an idempotent fill + submit
-  - `waitForURL(…, { timeout: 5_000 })` in `expect(async () => { … }).toPass()`,
-    or wait for a hydration signal before the first input (the auth setup
-    template in `/10x-e2e-setup` shows both). Inside `toPass`, clear before you
-    fill (`fill('')`, then the value): re-filling the same text fires no change
-    event, so a disabled submit stays disabled. When the submit is **not**
-    idempotent (it creates a record), don't retry it — wait for the hydration
-    signal once, then fill and submit.
+  + `waitForURL(…, { timeout: 5_000 })` in `expect(async () => { … }).toPass()`,
+  or wait for a hydration signal before the first input (the auth setup
+  template in `/10x-e2e-setup` shows both). Inside `toPass`, clear before you
+  fill (`fill('')`, then the value): re-filling the same text fires no change
+  event, so a disabled submit stays disabled. When the submit is **not**
+  idempotent (it creates a record), don't retry it — wait for the hydration
+  signal once, then fill and submit.
 - **Risk-tied assertions.** The test name should bind it unambiguously to a risk
   from `context/foundation/test-plan.md`: `test('flashcard data persists after
-page reload', ...)`, not `test('test 1', ...)`.
+  page reload', ...)`, not `test('test 1', ...)`.
 
 ## Exemplar
 
 ```typescript
 // seed.spec.ts
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
 
-test("created deck persists after page reload", async ({ page }) => {
+test('created deck persists after page reload', async ({ page }) => {
   const deckName = `Test Deck ${Date.now()}`;
-  await page.goto("/");
+  await page.goto('/');
 
-  await page.getByRole("button", { name: "New deck" }).click();
-  await page.getByRole("textbox", { name: "Deck name" }).fill(deckName);
-  await page.getByRole("button", { name: "Create" }).click();
+  await page.getByRole('button', { name: 'New deck' }).click();
+  await page.getByRole('textbox', { name: 'Deck name' }).fill(deckName);
+  await page.getByRole('button', { name: 'Create' }).click();
 
-  await expect(page.getByRole("heading", { name: deckName })).toBeVisible();
+  await expect(page.getByRole('heading', { name: deckName })).toBeVisible();
 
   await page.reload();
-  await expect(page.getByRole("heading", { name: deckName })).toBeVisible();
+  await expect(page.getByRole('heading', { name: deckName })).toBeVisible();
 
   // Cleanup — asserted, so a cleanup that fails turns the run red
-  await page.getByRole("button", { name: "Delete deck" }).click();
-  await page.getByRole("button", { name: "Confirm" }).click();
-  await expect(page.getByRole("heading", { name: deckName })).toBeHidden();
+  await page.getByRole('button', { name: 'Delete deck' }).click();
+  await page.getByRole('button', { name: 'Confirm' }).click();
+  await expect(page.getByRole('heading', { name: deckName })).toBeHidden();
 });
 ```
 
@@ -83,7 +83,7 @@ builds. Review it like any other code — it is the pattern every later test cop
 Tests start signed in: the `setup` project signs in once through the real UI and
 saves `playwright/.auth/user.json`, and the test projects load it through
 `storageState`. A test never logs in through the UI itself — unless its risk
-_is_ the signed-out path (an auth-gate redirect, the login flow). Such a test
+*is* the signed-out path (an auth-gate redirect, the login flow). Such a test
 opts out explicitly:
 
 ```typescript

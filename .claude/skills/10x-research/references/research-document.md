@@ -103,3 +103,4 @@ either file and again on the persisted bytes:
 - [ ] `node <loaded-skill-dir>/scripts/prose-json-check.mjs <research.md> <facts.json>`
       when Node is available (leaf presence only; not a substitute for the
       checklist).
+

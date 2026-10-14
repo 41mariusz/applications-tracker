@@ -110,12 +110,12 @@ difference, so `test-stack.md` keeps the plain build + preview command.
 
 Add only the missing pieces and leave every existing key as it is:
 
-| Missing                        | Add                                                                                                                      |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `webServer`                    | the block above                                                                                                          |
-| `use.baseURL`                  | `baseURL` from the `PORT` constant                                                                                       |
-| `setup` project                | `{ name: 'setup', testMatch: /.*\.setup\.ts/ }` + `dependencies: ['setup']` and `storageState` on the browser project(s) |
-| `use.trace` / `use.screenshot` | `'on-first-retry'` / `'only-on-failure'`                                                                                 |
+| Missing | Add |
+| --- | --- |
+| `webServer` | the block above |
+| `use.baseURL` | `baseURL` from the `PORT` constant |
+| `setup` project | `{ name: 'setup', testMatch: /.*\.setup\.ts/ }` + `dependencies: ['setup']` and `storageState` on the browser project(s) |
+| `use.trace` / `use.screenshot` | `'on-first-retry'` / `'only-on-failure'` |
 
 If an existing key has a different value (another port, another auth file,
 `trace: 'off'`), ask before changing it and show the old and new value.

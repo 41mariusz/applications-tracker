@@ -11,17 +11,17 @@ allowed-tools:
   - AskUserQuestion
 ---
 
-# /setup-cicd — Zbuduj potok publikowania CodeArtifact
+# /setup-cicd — Build The CodeArtifact Publish Pipeline
 
-Generujesz workflow CI/CD dla pakietu zestawu narzędzi AI Model 2.
+You generate the CI/CD workflow for the Model 2 AI toolkit package.
 
-Potok waliduje pakiet i publikuje go do AWS CodeArtifact z GitHub Actions przy użyciu OIDC. Nie może zależeć od długoterminowych kluczy dostępu AWS.
+The pipeline validates the package and publishes it to AWS CodeArtifact from GitHub Actions using OIDC. It must not depend on long-lived AWS access keys.
 
-## Dane wejściowe
+## Inputs
 
-Odczytaj te pliki, jeśli są obecne:
+Read these files when present:
 
-Specyfikacje `m5l4-*.md` pochodzą z `10x get m5l4`, które zapisuje je w katalogu promptów Twojego narzędzia (`.claude/prompts/` lub `.cursor/prompts/`, `.github/prompts/`, `.agents/prompts/` dla innych narzędzi). Najpierw szukaj tam, a następnie wróć do katalogu głównego repozytorium, jeśli osoba ucząca się je przeniosła.
+The `m5l4-*.md` specs come from `10x get m5l4`, which writes them to your tool's prompts directory (`.claude/prompts/`, or `.cursor/prompts/`, `.github/prompts/`, `.agents/prompts/` for other tools). Look there first, then fall back to the repository root if the learner moved them.
 
 - `m5l4-codeartifact-spec-cicd.md`
 - `m5l4-codeartifact-spec-terraform.md`
@@ -30,20 +30,20 @@ Specyfikacje `m5l4-*.md` pochodzą z `10x get m5l4`, które zapisuje je w katalo
 - `packages/ai-toolkit/package.json`
 - `packages/ai-toolkit/pack.yaml`
 
-Jeśli brakuje domeny CodeArtifact, repozytorium, regionu AWS, lokalizacji pakietu lub gałęzi, zapytaj o nie przed zapisaniem workflow.
+If the CodeArtifact domain, repository, AWS region, package location or branch are missing, ask for them before writing the workflow.
 
 ## Workflow
 
-1. Określ:
-   - domyślną gałąź,
-   - lokalizację pakietu,
-   - region AWS,
-   - domenę CodeArtifact,
-   - repozytorium CodeArtifact,
-   - przestrzeń nazw pakietu,
-   - nazwę sekretu ARN roli.
-2. Utwórz `.github/workflows/ci.yml`.
-3. Dodaj uprawnienia workflow:
+1. Determine:
+   - default branch,
+   - package location,
+   - AWS region,
+   - CodeArtifact domain,
+   - CodeArtifact repository,
+   - package namespace,
+   - role ARN secret name.
+2. Create `.github/workflows/ci.yml`.
+3. Add workflow permissions:
 
 ```yaml
 permissions:
@@ -51,28 +51,28 @@ permissions:
   id-token: write
 ```
 
-4. Dodaj zadanie walidacji, które sprawdza:
-   - czy istnieje `pack.yaml`,
-   - czy wymagane pola `pack.yaml` są obecne,
-   - czy każde `skills/*/SKILL.md` ma frontmatter `name` i `description`,
-   - czy frontmatter `name` odpowiada katalogowi umiejętności,
-   - czy `npm pack --dry-run` kończy się powodzeniem.
-5. Dodaj zadanie publikowania, które uruchamia się wyłącznie przy pushu do domyślnej gałęzi.
-6. Skonfiguruj poświadczenia AWS za pomocą `aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0`.
-   Przypnij `actions/checkout` (`3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1`) oraz `actions/setup-node` (`949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0`) do pełnych SHA w ten sam sposób i użyj `node-version: 24`. Sprawdź ponownie SHA za pomocą `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha` (to rozwiązuje tagi adnotowane do commita), jeśli istnieją nowsze tagi.
-7. Uruchom `aws codeartifact login`.
-8. Opublikuj z katalogu pakietu.
+4. Add a validation job that checks:
+   - `pack.yaml` exists,
+   - required `pack.yaml` fields are present,
+   - every `skills/*/SKILL.md` has `name` and `description` frontmatter,
+   - frontmatter `name` matches the skill directory,
+   - `npm pack --dry-run` succeeds.
+5. Add a publish job that runs only on push to the default branch.
+6. Configure AWS credentials with `aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0`.
+   Pin `actions/checkout` (`3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1`) and `actions/setup-node` (`949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0`) to full SHAs the same way and use `node-version: 24`. Re-check the SHAs with `gh api repos/<owner>/<repo>/commits/<tag> --jq .sha` (this resolves annotated tags to the commit) if newer tags exist.
+7. Run `aws codeartifact login`.
+8. Publish from the package directory.
 
-## Zasady bezpieczeństwa
+## Security Rules
 
-- Używaj OIDC przez `AWS_ROLE_ARN`; nie generuj workflow z `AWS_ACCESS_KEY_ID` ani `AWS_SECRET_ACCESS_KEY`.
-- Nie wypisuj tokenów.
-- Przechowuj identyfikator konta i ARN roli w sekretach GitHub, chyba że użytkownik wyraźnie wybierze inny mechanizm.
-- Nie publikuj przy pull requestach.
+- Use OIDC through `AWS_ROLE_ARN`; do not generate workflows with `AWS_ACCESS_KEY_ID` or `AWS_SECRET_ACCESS_KEY`.
+- Do not print tokens.
+- Keep account id and role arn in GitHub secrets unless the user explicitly chooses another mechanism.
+- Do not publish on pull requests.
 
-## Weryfikacja
+## Verification
 
-Uruchom lokalne sprawdzenia, gdy jest to możliwe:
+Run local checks when possible:
 
 ```bash
 test -f .github/workflows/ci.yml
@@ -81,4 +81,4 @@ grep -q "aws codeartifact login" .github/workflows/ci.yml
 npm --prefix packages/ai-toolkit pack --dry-run
 ```
 
-Na koniec wypisz wymagane sekrety GitHub oraz wszelką ręczną konfigurację AWS, która musi istnieć przed pierwszym uruchomieniem.
+Finish by listing the required GitHub secrets and any manual AWS setup that must exist before the first run.

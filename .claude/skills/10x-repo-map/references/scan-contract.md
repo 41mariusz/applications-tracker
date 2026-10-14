@@ -14,7 +14,7 @@ Tracked files only; `-c core.quotepath=off` on every git command.
 # Scan contract
 
 - repo_root: <. or --root path>
-- window: <since>..HEAD (effective: <first commit in window>..<HEAD date>)
+- window: <since>..HEAD   (effective: <first commit in window>..<HEAD date>)
 - head: <short sha>
 - trend_buckets: quarter | month | week
 - commits_in_window: <n, merges excluded>
@@ -24,29 +24,23 @@ Tracked files only; `-c core.quotepath=off` on every git command.
 - humans_in_window: <n distinct human authors>
 
 ## Module roots
-
-<language>: <module roots> (also in .work/modules.txt)
+<language>: <module roots>   (also in .work/modules.txt)
 
 ## Noise filter
-
 <pathspecs / regexes excluded from every count>
 
 ## Excluded and separated commits
-
 bots: <n> — <rules that matched>
-agent-authored: <n> — <identities> (counted as activity, never as people)
-mass: <n> — <sha, files, reason> (full list in .work/excluded-commits.txt)
+agent-authored: <n> — <identities>   (counted as activity, never as people)
+mass: <n> — <sha, files, reason>     (full list in .work/excluded-commits.txt)
 
 ## Path history
-
 <old path → current path for renamed or moved roots; deleted roots>
 
 ## Counting rules
-
 <the rules below, restated with any repo-specific choices>
 
 ## Capabilities
-
 <pointer to .work/capabilities.tsv and the inventory table — see capability-inventory.md>
 ```
 
@@ -95,7 +89,7 @@ release bots), and commits whose only change is a version bump of manifests
 and changelogs. A `noreply` address alone is **not** a bot — forges use it for
 humans and squash merges.
 
-**AI agents as authors.** Commits whose _author_ is an AI coding agent
+**AI agents as authors.** Commits whose *author* is an AI coding agent
 (Claude, Codex, Copilot, Cursor, Devin …) are **counted as activity** — the
 code changed — but never as a person: they stay out of `humans_in_window`
 and out of people evidence. Commits by a human author with an agent
@@ -116,15 +110,15 @@ reported, not silently dropped.
 
 **Counting rules** — every agent uses exactly these:
 
-- _Changes_ are counted per file: a commit touching files in three
+- *Changes* are counted per file: a commit touching files in three
   capabilities adds changes to each of the three.
-- _Commits_ are counted once per capability they touch; a cross-cutting
+- *Commits* are counted once per capability they touch; a cross-cutting
   commit counts for every capability it touches. No "dominant capability"
   attribution.
-- _Per-commit signals_ (fix share, reverts) count the commit for every
+- *Per-commit signals* (fix share, reverts) count the commit for every
   capability it touches, and the evidence notes how many of them are
   cross-cutting (touching more than three capabilities).
-- _Co-change_ uses the commits counted here and additionally drops commits
+- *Co-change* uses the commits counted here and additionally drops commits
   touching more than half of all capabilities, reporting how many.
 
 **Humans in window.** Count distinct human authors after the bot and agent

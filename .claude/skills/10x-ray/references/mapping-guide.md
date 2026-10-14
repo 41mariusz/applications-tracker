@@ -16,34 +16,30 @@ long reference tables unless they change the flow.
 {
   "summary": "One sentence: what the skill turns what input into.",
   "nodes": [
-    {
-      "id": "fanout",
-      "title": "Research areas in parallel",
-      "pattern": "fan-out",
+    { "id": "fanout", "title": "Research areas in parallel", "pattern": "fan-out",
       "concept": "Why this step exists and what technique it uses.",
       "parent": "<id of an earlier node, for loop/fan-out bodies>",
-      "when": "<condition, for branches and optional gates>"
-    }
+      "when": "<condition, for branches and optional gates>" }
   ]
 }
 ```
 
 `pattern` is one of:
 
-| pattern      | use for                                                            |
-| ------------ | ------------------------------------------------------------------ |
-| `input`      | taking in args, named files, the user's request                    |
-| `context`    | loading priors: lessons, foundation docs, config, memory           |
-| `decompose`  | splitting work into areas, phases, tasks                           |
-| `gate`       | a human decision point (AskUserQuestion, approval, wait for reply) |
-| `fan-out`    | spawning parallel sub-agents                                       |
-| `loop`       | repeating a body per phase/item/round until a condition holds      |
-| `branch`     | a step that only runs under a condition (give `when`)              |
-| `synthesize` | merging results, ranking evidence, drawing conclusions             |
-| `artifact`   | writing the skill's output file(s)                                 |
-| `verify`     | tests, checks, gates that can send the run back                    |
-| `handoff`    | presenting results, pointing at the next skill                     |
-| `step`       | anything else                                                      |
+| pattern | use for |
+|---|---|
+| `input` | taking in args, named files, the user's request |
+| `context` | loading priors: lessons, foundation docs, config, memory |
+| `decompose` | splitting work into areas, phases, tasks |
+| `gate` | a human decision point (AskUserQuestion, approval, wait for reply) |
+| `fan-out` | spawning parallel sub-agents |
+| `loop` | repeating a body per phase/item/round until a condition holds |
+| `branch` | a step that only runs under a condition (give `when`) |
+| `synthesize` | merging results, ranking evidence, drawing conclusions |
+| `artifact` | writing the skill's output file(s) |
+| `verify` | tests, checks, gates that can send the run back |
+| `handoff` | presenting results, pointing at the next skill |
+| `step` | anything else |
 
 ## Language
 
@@ -64,7 +60,7 @@ schema.
 - **`concept`**: 1–2 sentences answering "why did the author put this step
   here?": what would go wrong for an agent without it (finite context, no
   memory between sessions, confident guessing, self-declared success…) and
-  how this step answers it in _this_ skill. The views already show each
+  how this step answers it in *this* skill. The views already show each
   pattern's general lesson the first time it appears, so don't repeat it:
   name what is specific (which files, which agents, which question, which
   check). Plain words over jargon. Don't restate the title, and don't

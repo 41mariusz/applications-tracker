@@ -35,7 +35,7 @@ Collect business-meaning names, by the conventions of the stack:
 
 Drop pure technical names (`utils`, `helpers`, `client`, `manager` with no
 business noun). Keep the business noun inside a technical name
-(`InvoiceRepository` → _invoice_).
+(`InvoiceRepository` → *invoice*).
 
 ## 2. Group into concepts
 
@@ -66,21 +66,14 @@ with citations. A codebase without a domain layer is a finding.
 
 ```markdown
 # Evidence: language in the code
-
 <scope, layers covered, search patterns used, areas sampled rather than covered>
 
 ## Concepts and their names across layers
-
 ## One concept, many names
-
 ## One name, many concepts
-
 ## Implicit concepts
-
 ## States and transitions
-
 ## Where business logic lives
-
 ## Unknowns
 ```
 

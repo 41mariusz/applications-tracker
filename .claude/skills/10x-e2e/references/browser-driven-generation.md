@@ -2,8 +2,8 @@
 
 You explore the running app with `playwright-cli` (`open`, `snapshot`,
 `click <ref>`, `fill`, `press`; snapshots are files on disk) and play **both
-roles**: you _plan_ the flow from what the app actually renders, then you
-_generate_ one spec from what the browser actually exposed. You don't delegate to
+roles**: you *plan* the flow from what the app actually renders, then you
+*generate* one spec from what the browser actually exposed. You don't delegate to
 a packaged agent and you don't generate from assumptions — you author tests from
 the **accessibility tree**, not pixels. This file captures how to do that well; it
 does not replace the seed (`seed-test-pattern.md`) or the rules
@@ -32,7 +32,6 @@ playwright-cli press Enter
 playwright-cli snapshot                                # read the new state
 playwright-cli close
 ```
-
 Use a named session per project (`-s=<repo-name>` on every command, e.g. `playwright-cli -s=<repo-name> open …`): the `default` session is shared machine-wide, so another project's browser could receive your commands.
 
 - Every command reports the page state and writes the snapshot as a YAML file under
@@ -137,12 +136,12 @@ the steps live, then writing the code from what actually happened:
 
 A generated spec still goes through the five-anti-pattern review and the
 deliberate-break verification before it counts as done — driving the browser gets
-you a _plausible_ test fast; review and verification make it a _protective_ one.
+you a *plausible* test fast; review and verification make it a *protective* one.
 
 ## The auto-heal boundary
 
 Playwright (and similar tools) can auto-"heal" a failing test by re-finding moved
-elements. That is genuinely useful — and genuinely dangerous — depending on _why_
+elements. That is genuinely useful — and genuinely dangerous — depending on *why*
 the test failed:
 
 - **Selector / timing drift → heal, then review.** A moved button or a changed role
@@ -159,12 +158,12 @@ the test failed:
 
 ## How this maps to the skill's loop
 
-| Skill beat   | Browser-driven path                                                                            |
-| ------------ | ---------------------------------------------------------------------------------------------- |
-| **PLAN**     | You explore the flow for the risk and write a short scenario list that names `seed.spec.ts`    |
-| **GENERATE** | You execute the plan live and write one spec per scenario from the real run                    |
-| **REVIEW**   | You check the spec against the five anti-patterns and re-prompt by name                        |
-| **VERIFY**   | You run the spec green, then deliberately break the protected behavior and confirm it goes red |
+| Skill beat | Browser-driven path |
+| --- | --- |
+| **PLAN** | You explore the flow for the risk and write a short scenario list that names `seed.spec.ts` |
+| **GENERATE** | You execute the plan live and write one spec per scenario from the real run |
+| **REVIEW** | You check the spec against the five anti-patterns and re-prompt by name |
+| **VERIFY** | You run the spec green, then deliberately break the protected behavior and confirm it goes red |
 
 The prompt-template path (`e2e-prompt-template.md`) collapses PLAN+GENERATE into a
 single filled prompt — simpler for one clear scenario, no live browser needed.

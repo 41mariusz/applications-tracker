@@ -1,9 +1,9 @@
-# Wprowadzenie promptfoo do projektu - v2
+# Introducing promptfoo to project - v2
 
-## Badanie
+## Research
 
-/10x-research code-review-evals Przeanalizuj obecny stan '<reviewer-dir>' w kontekście potencjalnego wprowadzenia evali — możliwość ponownego użycia promptów, importowalność agenta itd. Moim pierwszym wyborem narzędzia do evali jest promptfoo. Jeśli mój stos technologiczny jest zgodny z tym narzędziem, podążaj w tym kierunku. W przeciwnym razie możesz przeanalizować inne narzędzia oss, które pozwalają mi oceniać moje prompty i agentów. Użyj Web Search lub context7, aby uzyskać najbardziej aktualną dokumentację.
+/10x-research code-review-evals Analyze the current state of '<reviewer-dir>' in the context of potential eval introduction - reusability of prompts, importability of agent, etc. My first pick for eval toolkit is promptfoo. If my tech stack is aligned with this tool, go in that direction. Otherwise, you can analyze other oss tools allowing me to eval my prompts and agents. Use Web Search or context7 to get the most up to date docs.
 
 ## Plan
 
-/10x-plan code-review-evals Zaplanuj, jak wprowadzić promptfoo w '<reviewer-dir>', zaczynając od `m5l3-promptfooconfig.yaml.template`. Moim celem jest utworzenie pierwszej konfiguracji, która testuje ten sam prompt do przeglądu kodu na trzech różnych modelach (z-ai/glm-5.3, deepseek/deepseek-v4.1-flash i openai/gpt-5.6-luna) za pośrednictwem OpenRouter. Dla przypadków testowych powinien istnieć jeden, dość złożony diff migrujący komponent React 16 do React 19+ z trzema istotnymi błędami. LLM-as-a-judge powinien zweryfikować, czy wyniki przeglądu kodu poprawnie identyfikują to, co jest uszkodzone. Dodaj również statyczną asercję javascript sprawdzającą, czy werdykt przeglądu to "fail".
+/10x-plan code-review-evals Plan how to introduce promptfoo within '<reviewer-dir>', starting from `m5l3-promptfooconfig.yaml.template`. My goal is to create a first configuration that tests the same code review prompt on three different models (z-ai/glm-5.3, deepseek/deepseek-v4.1-flash and openai/gpt-5.6-luna) through OpenRouter. For test cases, there should be one, rather complex diff migrating a React 16 component into React 19+ with three impactful flaws in it. LLM-as-a-judge should verify whether code review results correctly identify what is broken. Also add a static javascript assertion checking that the review verdict is "fail".

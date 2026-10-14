@@ -5,8 +5,9 @@ description: >
   design-system contract — audit into 3–5 charges (missing tokens, missing shared
   component, accidental architecture), fix the contract before the pixels, cover a
   7-state matrix, gate with a screenshot, and leave a rule so the next agent keeps
-  using the tokens and components. The UI entry to /10x-research → /10x-plan →
-  /10x-implement, sharing the same change folder and Progress. Use when the user wants
+  using the tokens and components. The UI entry point to the chain: it pre-audits the
+  view, suggests a change-id and hands you /10x-new, then the audit brief for
+  /10x-research → /10x-plan → /10x-implement, sharing the same change folder and Progress. Use when the user wants
   a theme, a restyle, "make it prettier", shadcn/Tailwind work, design tokens, dark
   mode, a visible-focus pass, or cleanup of UI an agent built feature by feature. Not a
   generator for a view that does not exist yet, not a component catalog, not a
@@ -24,10 +25,11 @@ screenshot: the markup renders, the data flows, the screen does its job and just
 enough. Producing that first view is ordinary feature work for the Core Skills Chain; this
 skill picks up the moment it is on screen.
 
-It does not replace the chain. It opens the change, runs the audit brief through
-`/10x-research`, shapes the plan `/10x-plan` writes, and adds UI checks to each
-`/10x-implement` phase. Those skills keep their own contracts — same `plan.md`, same
-`## Progress`, same commit ritual.
+It does not replace the chain, and it does not run the chain's skills for you. It is the
+entry point: it pre-audits the view, suggests a change-id and hands you `/10x-new`, then
+hands you the audit brief for `/10x-research`. After that it shapes the plan `/10x-plan`
+writes and adds UI checks to each `/10x-implement` phase. You run each command; those skills
+keep their own contracts — same `plan.md`, same `## Progress`, same commit ritual.
 
 Target: `$ARGUMENTS`
 
@@ -61,11 +63,11 @@ If `context/foundation/lessons.md` exists, read it once for recurring UI failure
    directory, the agent rules file(s) (`CLAUDE.md`, `AGENTS.md`, `.cursor/rules/*`,
    `.windsurfrules`, `copilot-instructions.md`), and run the hardcoded-value scan below on
    the view's files. Report the counts — they tell you which contract variant applies.
-3. **Hand off to `/10x-research`** with the audit brief from _The audit_ below; copy the
+3. **Hand off to `/10x-research`** with the audit brief from *The audit* below; copy the
    command to the clipboard. The charges land in `research.md` under `## Charges`.
 
 > **Clipboard.** Pipe the exact command to `pbcopy` / `clip.exe` / `xclip -selection
-clipboard` / `Set-Clipboard`, fall back silently if none exists, then print it on its own
+> clipboard` / `Set-Clipboard`, fall back silently if none exists, then print it on its own
 > line suffixed with `(✓ copied)`.
 
 ## Router
@@ -79,7 +81,7 @@ clipboard` / `Set-Clipboard`, fall back silently if none exists, then print it o
    desktop and one mobile width, and re-run the hardcoded-value scan on the view.
 5. **Visual gate** — kitchen sink or `toHaveScreenshot` on that one view.
 6. **Leave a guard** — the rule (and, if the repo has a linter, the check) that keeps the next
-   agent on the contract. See _Make it stick_.
+   agent on the contract. See *Make it stick*.
 7. `/10x-impl-review` — UI findings are not "cosmetic skip" by default. Then the review loop.
 
 ## The audit: three categories of charge
@@ -100,15 +102,15 @@ Also read the agent rules file(s) for UI instructions. A rule that tells the age
 one-off values (e.g. "use arbitrary values like `w-[123px]` for precise designs") is an
 accidental-architecture charge: it is why the views drifted, and it will undo the fix.
 
-| Category                     | What it looks like                                                                                                                                                                                                                      | Evidence to record                                                               | Typical fix                                                                                                                           |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| **Missing tokens**           | literal colours in the view — hex/rgb/oklch, and on Tailwind **palette classes** (`bg-blue-900`, `text-purple-200`, `from-indigo-900`) and arbitrary values (`p-[13px]`); three shades of the same "primary"; spacing invented per file | file:line of the literal, plus the token that should have covered it             | move the value into this repo's token source and reference it by role (`bg-primary`, `text-muted-foreground` in the Tailwind variant) |
-| **Missing shared component** | a second `Button` built from `div`+classes, a card that copies a DS card, copy-pasted form field                                                                                                                                        | file:line of the duplicate, plus the component it shadows (or the one to add)    | import the real component, or add it through the stack's own path (e.g. `npx shadcn add <name>`)                                      |
-| **Accidental architecture**  | the screen mirrors the order features were added: unauthenticated route returning raw JSON, a modal that is a page, a "settings" tab holding four unrelated things, an agent rule that invites one-off styles                           | the route/component/rule path, plus what the user sees when they arrive that way | fix the entry point (guard, redirect, layout) or the rule, not the colour                                                             |
+| Category | What it looks like | Evidence to record | Typical fix |
+| --- | --- | --- | --- |
+| **Missing tokens** | literal colours in the view — hex/rgb/oklch, and on Tailwind **palette classes** (`bg-blue-900`, `text-purple-200`, `from-indigo-900`) and arbitrary values (`p-[13px]`); three shades of the same "primary"; spacing invented per file | file:line of the literal, plus the token that should have covered it | move the value into this repo's token source and reference it by role (`bg-primary`, `text-muted-foreground` in the Tailwind variant) |
+| **Missing shared component** | a second `Button` built from `div`+classes, a card that copies a DS card, copy-pasted form field | file:line of the duplicate, plus the component it shadows (or the one to add) | import the real component, or add it through the stack's own path (e.g. `npx shadcn add <name>`) |
+| **Accidental architecture** | the screen mirrors the order features were added: unauthenticated route returning raw JSON, a modal that is a page, a "settings" tab holding four unrelated things, an agent rule that invites one-off styles | the route/component/rule path, plus what the user sees when they arrive that way | fix the entry point (guard, redirect, layout) or the rule, not the colour |
 
 The third category is the hardest to see on a screenshot and the easiest to skip. Ask
-explicitly: _what happens if someone reaches this view logged out, with no data, or straight
-from a link?_
+explicitly: *what happens if someone reaches this view logged out, with no data, or straight
+from a link?*
 
 Charges the plan does not address stay in `## Charges` marked **deferred** with a reason —
 not deleted.
@@ -137,12 +139,12 @@ The contract has two halves, and neither names a tool:
 
 Without both, the agent reinvents primitives on every view. With both, it has somewhere to look.
 
-| Stack                                                                  | Where the values live                                                  | Where the components live                                          |
-| ---------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| **Tailwind v4 + shadcn/ui** (the course variant)                       | `:root` / `.dark` in CSS, published through `@theme` / `@theme inline` | copied into the repo, usually `src/components/ui`                  |
-| **CSS Modules / plain CSS variables**                                  | a variables file (`:root`, often `theme.css` / `variables.css`)        | a shared components directory, imported by path                    |
-| **CSS-in-JS with a theme** (styled-components, vanilla-extract, Panda) | a theme object or `.css.ts` token file                                 | styled primitives exported from one module                         |
-| **Component library with a theme** (MUI, Chakra, Mantine)              | the library's theme/config object, extended in your code               | the library's components, wrapped locally where you customise them |
+| Stack | Where the values live | Where the components live |
+| --- | --- | --- |
+| **Tailwind v4 + shadcn/ui** (the course variant) | `:root` / `.dark` in CSS, published through `@theme` / `@theme inline` | copied into the repo, usually `src/components/ui` |
+| **CSS Modules / plain CSS variables** | a variables file (`:root`, often `theme.css` / `variables.css`) | a shared components directory, imported by path |
+| **CSS-in-JS with a theme** (styled-components, vanilla-extract, Panda) | a theme object or `.css.ts` token file | styled primitives exported from one module |
+| **Component library with a theme** (MUI, Chakra, Mantine) | the library's theme/config object, extended in your code | the library's components, wrapped locally where you customise them |
 
 Tailwind detail: `:root` / `.dark` hold the **values**, `@theme inline` **publishes** them as
 `--color-*`, and only then does `bg-primary` exist. Raw colours written straight into
@@ -177,15 +179,15 @@ already configured) in the course variant. Do not require `mcp init` to finish t
 The states phase is done when every cell is **shown** (in the kitchen sink) or marked
 **N/A with a reason** — not when the happy path looks right.
 
-| State         | What to check                                                                                    |
-| ------------- | ------------------------------------------------------------------------------------------------ |
-| default       | built from tokens and repo components only                                                       |
-| hover         | visible change, token-driven                                                                     |
+| State | What to check |
+| --- | --- |
+| default | built from tokens and repo components only |
+| hover | visible change, token-driven |
 | focus-visible | keyboard focus visible on every control; own token (`--ring` in shadcn), not the browser default |
-| disabled      | looks and behaves disabled, still readable                                                       |
-| error         | message next to the field/action, `destructive` token, not colour alone                          |
-| empty         | no data: a real empty state, not a blank frame or raw JSON                                       |
-| loading       | skeleton or spinner; no layout jump when data arrives                                            |
+| disabled | looks and behaves disabled, still readable |
+| error | message next to the field/action, `destructive` token, not colour alone |
+| empty | no data: a real empty state, not a blank frame or raw JSON |
+| loading | skeleton or spinner; no layout jump when data arrives |
 
 `disabled`, `error` and `focus-visible` drift first, because nothing in the happy path
 exercises them. Moving the accent does not move the focus token — review it separately.
@@ -264,15 +266,15 @@ describe the states in text, keep the screenshot gate in CI.
 
 ## Failures to refuse
 
-| Smell                                                                            | Do this instead                                   |
-| -------------------------------------------------------------------------------- | ------------------------------------------------- |
-| Default purple/blue gradient "AI landing"                                        | Change `--primary` / theme tokens first           |
-| New primitive `div`+CSS that copies a DS component                               | Import the real component                         |
-| "Selected" tab that is only CSS, not clickable                                   | Wire the state                                    |
-| Unauthenticated or empty-state entry that dumps raw JSON / a blank frame         | Fix the entry point; it is an architecture charge |
-| `shadcn init` (or equivalent) on a repo that already ships tokens and components | Extend the first system                           |
-| Updating a screenshot baseline to make CI green                                  | Explain the visual delta; update only if intended |
-| "Fix the design" as one agent task on the CRUD thread                            | New change folder, audit, plan, gate              |
+| Smell | Do this instead |
+| --- | --- |
+| Default purple/blue gradient "AI landing" | Change `--primary` / theme tokens first |
+| New primitive `div`+CSS that copies a DS component | Import the real component |
+| "Selected" tab that is only CSS, not clickable | Wire the state |
+| Unauthenticated or empty-state entry that dumps raw JSON / a blank frame | Fix the entry point; it is an architecture charge |
+| `shadcn init` (or equivalent) on a repo that already ships tokens and components | Extend the first system |
+| Updating a screenshot baseline to make CI green | Explain the visual delta; update only if intended |
+| "Fix the design" as one agent task on the CRUD thread | New change folder, audit, plan, gate |
 
 ## Playbooks
 

@@ -3,13 +3,11 @@ Jesteś inżynierem wprowadzającym nowego developera do dużego repo legacy.
 Twoim zadaniem jest utworzyć dokument onboardingowy `context/map/repo-map.md` z trzech już istniejących artefaktów — nie generuj danych od zera, nie powtarzaj ich tabel w całości.
 
 Kontekst do mapy:
-
 - `context/map/artifact-1-territory.md`
 - `context/map/artifact-2-structure.md`
 - `context/map/artifact-3-contributors.md`
 
 Zasady:
-
 1. Łącz trzy perspektywy w jeden spójny obraz: gdzie żyje system → jak jest powiązany → kogo zapytać.
 2. Pokaż realne granice i te miejsca, gdzie struktura katalogów nie odpowiada realnej aktywności.
 3. Dokument ma prowadzić od szerokiego obrazu do 5–8 „pierwszych plików do przeczytania”.
@@ -21,7 +19,6 @@ Zasady:
 9. Zanim zapiszesz mapę, sprawdź, czy każda ścieżka z sekcji „Strefy ryzyka” i „Pierwszy dzień” nadal istnieje w repo.
 
 Struktura `repo-map.md`:
-
 1. TL;DR (5–7 zdań) — czym jest repo, główne warstwy (Mermaid), gdzie skupia się praca, gdzie boli.
 2. Teren — duża odpowiedzialność vs peryferia; moduły głębokie i płytkie; aktywność w czasie.
 3. Realne powiązania — co naprawdę zmienia się razem (couplingi + warstwy + cykle);
@@ -31,7 +28,6 @@ Struktura `repo-map.md`:
 7. Ograniczenia — okno czasowe, metoda, czego mapa NIE mówi.
 
 ## Format
-
 Markdown z Mermaid, zwięźle, tabele tylko gdy realnie pomagają.
 
 Cel: nowy developer po 15 min czytania wie, gdzie rzeczy żyją, co jest niebezpieczne i od czego zacząć.

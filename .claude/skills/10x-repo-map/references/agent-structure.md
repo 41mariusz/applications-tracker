@@ -98,24 +98,15 @@ Markdown tables, no Graphviz/DOT.
 ```markdown
 # Evidence: structure
 
-## Graph sources <!-- per language: source, level, confidence, blind spots -->
-
-## Capability graph <!-- table + Mermaid -->
-
+## Graph sources        <!-- per language: source, level, confidence, blind spots -->
+## Capability graph     <!-- table + Mermaid -->
 ## Blast radius per capability
-
-## Cycles <!-- runtime only; smallest real loop -->
-
+## Cycles               <!-- runtime only; smallest real loop -->
 ## Broken boundaries
-
 ## Test risks
-
 ## Centres and thin entry points
-
-## Mechanical signals <!-- build, type-only, config-as-code edges, with counts -->
-
-## Unknowns <!-- runtime coupling (DI, reflection, dynamic imports, flags, codegen, queues,
-
+## Mechanical signals   <!-- build, type-only, config-as-code edges, with counts -->
+## Unknowns             <!-- runtime coupling (DI, reflection, dynamic imports, flags, codegen, queues,
                              webhooks), external consumers, languages without a graph, tools worth installing -->
 ```
 

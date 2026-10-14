@@ -1,49 +1,43 @@
-# CodeArtifact CI/CD — Wymagania
+# CodeArtifact CI/CD — Requirements
 
-> **Dodatek AWS dla Modelu 2.** Użyj tego wyłącznie wtedy, gdy świadomie wybrałeś
-> ścieżkę infrastruktury zarządzanej: AWS CodeArtifact + Terraform. W przypadku domyślnej
-> ścieżki Zadania 3 użyj zamiast tego `m5l4-github-packages-spec-cicd.md`.
+> **AWS appendix for Model 2.** Use this only if you deliberately chose the
+> managed-infrastructure path: AWS CodeArtifact + Terraform. For the default
+> Zadanie 3 path, use `m5l4-github-packages-spec-cicd.md` instead.
 
-## Cel
+## Goal
+Create a GitHub Actions workflow that validates and publishes the AI toolkit npm
+package to AWS CodeArtifact.
 
-Utwórz workflow GitHub Actions, który waliduje i publikuje pakiet npm zestawu narzędzi AI
-do AWS CodeArtifact.
+## Configuration
+- Branch: `master` (adapt to `main` if that is your default branch)
+- AWS region: `eu-central-1`
+- CodeArtifact domain: `devs10x`
+- CodeArtifact repository: `npm`
+- Workflow file: `.github/workflows/ci.yml`
+- Package location: `packages/ai-toolkit/` (relative to repo root)
+- GitHub secrets: `AWS_ACCOUNT_ID` and `AWS_ROLE_ARN`
 
-## Konfiguracja
-
-- Branch: `master` (dostosuj do `main`, jeśli jest to Twoja domyślna gałąź)
-- Region AWS: `eu-central-1`
-- Domena CodeArtifact: `devs10x`
-- Repozytorium CodeArtifact: `npm`
-- Plik workflow: `.github/workflows/ci.yml`
-- Lokalizacja pakietu: `packages/ai-toolkit/` (względem głównego katalogu repozytorium)
-- GitHub secrets: `AWS_ACCOUNT_ID` i `AWS_ROLE_ARN`
-
-## Uwierzytelnianie OIDC
-
+## OIDC Authentication
 - Action: `aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd # v6.3.0`
-- Przypnij również `actions/checkout` i `actions/setup-node` do pełnych SHA (tag w komentarzu);
-  użyj `node-version: 24`
-- Rola: odwołanie przez `${{ secrets.AWS_ROLE_ARN }}`
-- Wymagane uprawnienie workflow: `id-token: write`
+- Pin `actions/checkout` and `actions/setup-node` to full SHAs too (tag in a comment);
+  use `node-version: 24`
+- Role: referenced via `${{ secrets.AWS_ROLE_ARN }}`
+- Required workflow permission: `id-token: write`
 
-## Kontrole walidacyjne
+## Validation checks
+1. `pack.yaml` exists with required fields: `name`, `version`, `description`, `namespace`
+2. Each `skills/*/SKILL.md` has YAML frontmatter with `name` and `description`
+3. Frontmatter `name` matches the skill's directory name
+4. `npm pack --dry-run` succeeds
 
-1. `pack.yaml` istnieje i zawiera wymagane pola: `name`, `version`, `description`, `namespace`
-2. Każdy `skills/*/SKILL.md` ma frontmatter YAML z `name` i `description`
-3. Frontmatter `name` odpowiada nazwie katalogu umiejętności
-4. `npm pack --dry-run` kończy się powodzeniem
-
-## Konfiguracja sekretów
-
+## Secrets setup
 ```bash
 gh secret set AWS_ACCOUNT_ID --body "<account-id>" --repo <owner>/<repo>
 gh secret set AWS_ROLE_ARN --body "<role-arn>" --repo <owner>/<repo>
 ```
 
-## Przepływ publikacji
-
-1. Skonfiguruj poświadczenia AWS przez OIDC.
-2. Uruchom `aws codeartifact login`.
-3. Uruchom walidację.
-4. Opublikuj pakiet npm.
+## Publish flow
+1. Configure AWS credentials through OIDC.
+2. Run `aws codeartifact login`.
+3. Run validation.
+4. Publish the npm package.

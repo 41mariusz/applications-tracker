@@ -18,12 +18,12 @@ If you can browse, re-check the payload field, exit-code table and timeout defau
 
 ## Config locations
 
-| File                                                     | Scope                                         |
-| -------------------------------------------------------- | --------------------------------------------- |
-| `~/.claude/settings.json`                                | All your projects                             |
-| `.claude/settings.json`                                  | This project, committed with `.claude/hooks/` |
-| `.claude/settings.local.json`                            | This project, local only (gitignored)         |
-| Managed policy settings                                  | Organisation, admin-controlled                |
+| File | Scope |
+| --- | --- |
+| `~/.claude/settings.json` | All your projects |
+| `.claude/settings.json` | This project, committed with `.claude/hooks/` |
+| `.claude/settings.local.json` | This project, local only (gitignored) |
+| Managed policy settings | Organisation, admin-controlled |
 | Plugin `hooks/hooks.json`, skill or subagent frontmatter | While the plugin / skill / subagent is active |
 
 Hooks from different levels **merge**; they do not replace each other. Shape:
@@ -31,7 +31,9 @@ Hooks from different levels **merge**; they do not replace each other. Shape:
 ```json
 {
   "hooks": {
-    "PostToolUse": [{ "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "...", "timeout": 30 }] }]
+    "PostToolUse": [
+      { "matcher": "Write|Edit", "hooks": [{ "type": "command", "command": "...", "timeout": 30 }] }
+    ]
   }
 }
 ```
@@ -49,11 +51,11 @@ JSON on stdin. `PostToolUse` fields include `session_id`, `cwd`, `hook_event_nam
 
 ## Signal channel — what reaches the agent
 
-| Exit code         | PostToolUse                                                                               | Stop                                                           |
-| ----------------- | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `0`               | Success. stdout goes to the debug log only; stderr is never seen by Claude                | Agent stops normally                                           |
-| `2`               | **stderr is shown to Claude** next to the tool result (the edit already happened)         | **Agent does not stop**; stderr is the reason it keeps working |
-| other (incl. `1`) | Non-blocking error: the user sees "hook error" in the transcript, **Claude sees nothing** | Same                                                           |
+| Exit code | PostToolUse | Stop |
+| --- | --- | --- |
+| `0` | Success. stdout goes to the debug log only; stderr is never seen by Claude | Agent stops normally |
+| `2` | **stderr is shown to Claude** next to the tool result (the edit already happened) | **Agent does not stop**; stderr is the reason it keeps working |
+| other (incl. `1`) | Non-blocking error: the user sees "hook error" in the transcript, **Claude sees nothing** | Same |
 
 Most linters and test runners exit `1` and print to stdout, so a raw `npx eslint .` hook reaches nobody. Scripts must redirect output to stderr (`>&2`) and turn any failure into `exit 2`.
 
@@ -74,7 +76,7 @@ Stop block cap: after **8** consecutive blocks Claude Code ends the turn anyway 
   - the **per-edit** script takes the checkout from the edited file (`git -C "$(dirname "$FILE")"`), resolves a relative path against `cwd`, and skips files whose repository differs from the session's (`--git-common-dir` guard: `~/.claude`, other projects);
   - the **Stop** script takes the checkout from the payload `cwd`, plus every checkout the per-edit script registered for this `session_id` (`$TMPDIR/claude-hooks/<session_id>.roots`), so edits in a sibling worktree are swept too.
 - No fail-open wrapper (`[ -x "$d/..." ] && exec ...; exit 0`): a missing script must surface as a hook error, not vanish. Commands run with `sh -c` on macOS/Linux and Git Bash on Windows. The per-hook `shell` field accepts `"bash"` or `"powershell"` (default PowerShell on Windows without Git Bash). Without Git Bash or `jq`, generate a Node script instead.
-- `.claude/` in `.gitignore` (`git check-ignore -v .claude/settings.json` prints the rule): hooks that are not committed exist only on your disk. A re-include under an ignored _directory_ does not work, so replace `.claude/` with `.claude/*`, `!.claude/settings.json`, `!.claude/hooks/` (keep `settings.local.json` ignored). Show the user that diff; do not commit it unasked.
+- `.claude/` in `.gitignore` (`git check-ignore -v .claude/settings.json` prints the rule): hooks that are not committed exist only on your disk. A re-include under an ignored *directory* does not work, so replace `.claude/` with `.claude/*`, `!.claude/settings.json`, `!.claude/hooks/` (keep `settings.local.json` ignored). Show the user that diff; do not commit it unasked.
 
 ## Trust and debugging
 
@@ -104,7 +106,6 @@ Stop block cap: after **8** consecutive blocks Claude Code ends the turn anyway 
 `.claude/settings.json` (merge into existing `hooks`, do not replace them):
 
 <!-- proof: settings.json -->
-
 ```json
 {
   "hooks": {
@@ -112,27 +113,15 @@ Stop block cap: after **8** consecutive blocks Claude Code ends the turn anyway 
       {
         "matcher": "Write|Edit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")\"/.claude/hooks/lint-edited-file.sh",
-            "timeout": 30
-          },
-          {
-            "type": "command",
-            "command": "\"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")\"/.claude/hooks/related-tests.sh",
-            "timeout": 60
-          }
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")\"/.claude/hooks/lint-edited-file.sh", "timeout": 30 },
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")\"/.claude/hooks/related-tests.sh", "timeout": 60 }
         ]
       }
     ],
     "Stop": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")\"/.claude/hooks/end-of-turn.sh",
-            "timeout": 120
-          }
+          { "type": "command", "command": "\"$(git rev-parse --show-toplevel 2>/dev/null || echo \"$CLAUDE_PROJECT_DIR\")\"/.claude/hooks/end-of-turn.sh", "timeout": 120 }
         ]
       }
     ]
@@ -143,7 +132,6 @@ Stop block cap: after **8** consecutive blocks Claude Code ends the turn anyway 
 `.claude/hooks/lint-edited-file.sh` — lint only the edited file, in its own checkout:
 
 <!-- proof: lint-edited-file.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # PostToolUse (Write|Edit): lint the file the agent just edited.
@@ -191,7 +179,6 @@ exit 0
 `.claude/hooks/end-of-turn.sh` — at end of turn: lint and related tests for every changed file, then a whole-project typecheck, in every checkout this session touched; one retry:
 
 <!-- proof: end-of-turn.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # Stop: sweep everything this turn changed before the agent finishes, one retry.
@@ -294,7 +281,6 @@ exit 0
 `.claude/hooks/related-tests.sh` — tests that depend on the edited file (optional, per edit; for runners with a related mode):
 
 <!-- proof: related-tests.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # PostToolUse (Write|Edit): run the tests related to the edited file.
@@ -331,7 +317,6 @@ exit 0
 `.claude/hooks/related-tests-by-import.sh` — the same for runners **without** a related mode (`node --test`, `bun test`): select the test files that import the edited module, by grep:
 
 <!-- proof: related-tests-by-import.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # PostToolUse (Write|Edit): run the tests that import the edited file.
@@ -389,7 +374,6 @@ exit 0
 `.claude/hooks/check-edited-file.sh` — per-edit check for a repo **without a linter**: the typechecker's diagnostics for the edited file only, `node --check` for plain JavaScript:
 
 <!-- proof: check-edited-file.sh -->
-
 ```bash
 #!/usr/bin/env bash
 # PostToolUse (Write|Edit): no linter in this repo, so check the edited file with what exists:

@@ -62,7 +62,7 @@ before a launch, after an incident where "we had no logs", or to re-check
 an earlier audit.
 
 **Skip when** the user wants to fix one specific known error: that is
-normal debugging. Also skip when they want to _choose_ a monitoring vendor
+normal debugging. Also skip when they want to *choose* a monitoring vendor
 (`/10x-infra-research`) or run a general project health check
 (`/10x-health-check`).
 
@@ -80,7 +80,7 @@ normal debugging. Also skip when they want to _choose_ a monitoring vendor
 - **Arguments (optional):** area names (e.g. `login checkout "admin import"`)
   override area selection. `--runtime` opts into runtime proof without
   asking. `--verify <report>` re-checks an earlier report's findings instead
-  of hunting for new ones (see _Verify mode_). `--out <dir-or-file>`, or
+  of hunting for new ones (see *Verify mode*). `--out <dir-or-file>`, or
   the user naming a location in words, overrides where the report is
   written (see Step 6).
 - **Previous reports (optional):** `*.md` in the report directory
@@ -118,7 +118,7 @@ description of how a failure travels from code to a human. Do this yourself
   queues.
 - **Error tracker:** Sentry, Datadog, Rollbar, Bugsnag, Honeybadger, New
   Relic, OpenTelemetry exporter, Application Insights, Crashlytics, or none.
-  Find _every_ init site and note what each one covers.
+  Find *every* init site and note what each one covers.
 - **Capture boundaries:** where does the tracker actually get a live client?
   Global process handler, per-request middleware, per-route wrapper,
   framework integration, exception filter, error boundary. The central
@@ -175,7 +175,7 @@ records how each earlier finding changed.
 Launch in a single message, so they run concurrently:
 
 - **One auditor per area** (read-only).
-- **One plumbing auditor** (read-only). It covers the cross-cutting _code_
+- **One plumbing auditor** (read-only). It covers the cross-cutting *code*
   no area owns: tracker init code, boundaries and middleware order, the
   logger's error serialization, scrubbing hooks, release tagging in code,
   background/worker entry points, client-side global handlers, plus a
@@ -192,7 +192,7 @@ While they run, prepare Step 4 if it applies.
 
 ### Step 4 — Runtime proof (optional, isolated)
 
-Static reading says "this _should_ be invisible". A runtime probe shows it
+Static reading says "this *should* be invisible". A runtime probe shows it
 is. Offer this step when the audit found critical coverage gaps and the app
 can boot locally. Run it when the user passed `--runtime` or agreed.
 
@@ -214,7 +214,7 @@ Follow `references/runtime-probes.md`. The essentials:
   Keeping the harness is what makes before/after proof possible later.
 
 If the app cannot boot (missing infra, secrets, paid services), report the
-exact blocker. Mark the affected findings as _static-only_; never guess
+exact blocker. Mark the affected findings as *static-only*; never guess
 runtime results.
 
 ### Step 5 — Verify, then synthesize
@@ -226,12 +226,12 @@ Subagents over-report. Before the report:
   dependency folder). Drop or downgrade anything that doesn't hold, and say
   in the report that you verified it.
 - **Deduplicate** across areas. Several area findings are often one
-  mechanism: "12 routes don't call the reporter" is _one_ coverage gap with
+  mechanism: "12 routes don't call the reporter" is *one* coverage gap with
   12 locations, not 12 findings.
 - **Drop precondition findings.** "Logging isn't enabled in the deploy
   config", "no log forwarding", "no alert rules in the repo" or "no tracker
   key in the example env file" aren't findings when the setting can live
-  outside the repo. Move them to the report's _Assumptions_ list. Keep a
+  outside the repo. Move them to the report's *Assumptions* list. Keep a
   config item only when code you can cite actively degrades events (a
   scrubbing hook that drops stacks, error sampling below 100%, an ignore
   list that matches first-party errors).
@@ -256,7 +256,7 @@ Write the report using `references/report-template.md` to:
 ```
 
 - `<project-root>` is the audited project's root (`git rev-parse
---show-toplevel`, or cwd outside git), not the skill's directory.
+  --show-toplevel`, or cwd outside git), not the skill's directory.
 - `<slug>` is the audited areas in kebab-case, joined with `-` (e.g.
   `login-checkout`), or `verify-<areas>` in verify mode.
 - Create the directory if needed.
@@ -273,7 +273,7 @@ Write the report using `references/report-template.md` to:
   that frontmatter, so keep its keys stable.
 - If a previous report exists, fill **Changes since last audit**: for each
   earlier finding in an area you covered again, mark it `fixed`, `still
-open`, `changed` or `not re-checked`, with evidence.
+  open`, `changed` or `not re-checked`, with evidence.
 - Keep each finding to its location, its category, its severity, **what
   happens in production when it fails**, and a one-line fix direction. The
   production consequence is what makes a finding actionable, so never leave
@@ -286,7 +286,7 @@ count of findings by severity, what was runtime-proven vs static-only, and
 the recommended first fix. Offer next steps:
 
 - prove a specific fix with a before/after run on the same probe suite
-  (see _Verify mode_);
+  (see *Verify mode*);
 - turn the top fix into a change with `/10x-new` + `/10x-plan`.
 
 Mention that isolated worktrees or harness files from Step 4 still exist,

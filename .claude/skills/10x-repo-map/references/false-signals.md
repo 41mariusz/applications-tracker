@@ -22,9 +22,9 @@ crosses sources. A false signal is not deleted — it is reported as
    check fails loudly when they drift. Check for that guard before calling it
    fragile.
 4. **Shared cause counted twice.** "All sources agree" only counts when the
-   sources are independent. A CI file is a co-change hub _because_ every new
-   check touches it; its owner carries it _because_ one person does infra; a
-   new subsystem is both busy and heavily planned _because_ it is being
+   sources are independent. A CI file is a co-change hub *because* every new
+   check touches it; its owner carries it *because* one person does infra; a
+   new subsystem is both busy and heavily planned *because* it is being
    built. Name the common cause and count it once.
 5. **Trial-and-error fix ratio.** CI, deploy, infrastructure config and UI
    polish get fixed by iteration (`fix(ci): make the pipeline green`,

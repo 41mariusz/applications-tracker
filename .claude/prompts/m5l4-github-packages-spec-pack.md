@@ -1,26 +1,23 @@
-# Zestaw narzędzi AI GitHub Packages — Wymagania
+# GitHub Packages AI Toolkit Pack — Requirements
 
-> **Domyślna ścieżka dla Zadania 3.** Ta specyfikacja opisuje Model 1 z lekcji:
-> wewnętrzny zestaw narzędzi zespołu dystrybuowany jako prywatny pakiet npm przez GitHub
-> Packages. Użyj tego jako punktu bazowego, chyba że Twój zespół konkretnie potrzebuje AWS
-> CodeArtifact lub pełnego produktu dostarczanego jako API+CLI.
+> **Default path for Zadanie 3.** This spec describes Model 1 from the lesson:
+> an internal team toolkit distributed as a private npm package through GitHub
+> Packages. Use this as the baseline unless your team specifically needs AWS
+> CodeArtifact or a full API+CLI delivery product.
 
-## Cel
+## Goal
+Package the team's AI artifacts into a distributable npm package that consumer
+repositories can install from GitHub Packages.
 
-Spakuj artefakty AI zespołu do dystrybuowalnego pakietu npm, który repozytoria
-konsumenckie mogą instalować z GitHub Packages.
+## Package metadata
+- Package name: `@twoj-zespol/ai-toolkit`
+- Short name: `ai-toolkit`
+- Version: `0.1.0`
+- Registry: `https://npm.pkg.github.com`
+- Node version: `>=22` (`engines.node`)
 
-## Metadane pakietu
-
-- Nazwa pakietu: `@twoj-zespol/ai-toolkit`
-- Krótka nazwa: `ai-toolkit`
-- Wersja: `0.1.0`
-- Rejestr: `https://npm.pkg.github.com`
-- Wersja Node: `>=22` (`engines.node`)
-
-## Wymagane pliki
-
-Wygeneruj tę strukturę startową:
+## Required files
+Generate this starter structure:
 
 ```text
 ai-toolkit/
@@ -35,19 +32,17 @@ ai-toolkit/
     └── CLAUDE.md
 ```
 
-## Wymagania dotyczące package.json
+## package.json requirements
+The package must:
+- publish to GitHub Packages through `publishConfig.registry`;
+- include only `skills/`, `rules/`, `install.js`, `uninstall.js`, and `README.md`
+  in the published package;
+- run `node install.js` as `postinstall`;
+- expose `ai-toolkit` and `ai-toolkit-uninstall` as bin commands for manual
+  install/uninstall;
+- declare `"engines": { "node": ">=22" }`.
 
-Pakiet musi:
-
-- publikować do GitHub Packages przez `publishConfig.registry`;
-- zawierać wyłącznie `skills/`, `rules/`, `install.js`, `uninstall.js` i `README.md`
-  w opublikowanym pakiecie;
-- uruchamiać `node install.js` jako `postinstall`;
-- udostępniać `ai-toolkit` i `ai-toolkit-uninstall` jako polecenia bin do ręcznej
-  instalacji/deinstalacji;
-- deklarować `"engines": { "node": ">=22" }`.
-
-Przykład:
+Example:
 
 ```json
 {
@@ -72,46 +67,42 @@ Przykład:
 }
 ```
 
-## Konfiguracja repozytorium konsumenckiego
-
-Wygeneruj instrukcje dla repozytoriów konsumenckich:
+## Consumer repository setup
+Generate instructions for consumer repositories:
 
 ```text
 @twoj-zespol:registry=https://npm.pkg.github.com
 ```
 
-Zacommitowany plik `.npmrc` musi zawierać wyłącznie mapowanie rejestru. Nie może
-zawierać tokenu.
+The committed `.npmrc` must contain only the registry mapping. It must not
+contain a token.
 
-## Zachowanie instalatora
+## Installer behavior
+The installer should:
+- locate the consumer project root;
+- install skills into `.claude/skills/<skill-name>/`;
+- append rules into `CLAUDE.md` between sentinel markers;
+- write `.claude/.ai-toolkit-manifest.json` with package version (read from
+  `package.json`, never hardcoded) and installed files;
+- be idempotent: running install twice updates managed blocks instead of duplicating them;
+- stop with a clear message instead of appending a second block when only one
+  sentinel marker is present (someone edited the managed block by hand);
+- avoid failing the whole `npm install` when postinstall cleanup or linking fails.
 
-Instalator powinien:
-
-- zlokalizować katalog główny projektu konsumenckiego;
-- instalować umiejętności w `.claude/skills/<skill-name>/`;
-- dopisywać reguły do `CLAUDE.md` pomiędzy markerami sentinel;
-- zapisywać `.claude/.ai-toolkit-manifest.json` z wersją pakietu (odczytaną z
-  `package.json`, nigdy zakodowaną na stałe) oraz zainstalowanymi plikami;
-- być idempotentny: uruchomienie instalacji dwa razy aktualizuje zarządzane bloki zamiast je duplikować;
-- zatrzymywać się z jasnym komunikatem zamiast dopisywać drugi blok, gdy obecny jest tylko jeden
-  marker sentinel (ktoś ręcznie zmodyfikował zarządzany blok);
-- unikać niepowodzenia całego `npm install`, gdy czyszczenie lub linkowanie po postinstall się nie powiedzie.
-
-Użyj tych markerów sentinel:
+Use these sentinel markers:
 
 ```text
 <!-- BEGIN @twoj-zespol/ai-toolkit -->
 <!-- END @twoj-zespol/ai-toolkit -->
 ```
 
-## Zachowanie uwierzytelniania
-
-Instalator może dodać tego pomocnika `preinstall` do konsumenckiego `package.json`, gdy
-projekt konsumencki nie ma istniejącego mechanizmu uwierzytelniania GitHub Packages:
+## Authentication behavior
+The installer may add this `preinstall` helper to consumer `package.json` when
+the consumer project has no existing GitHub Packages auth flow:
 
 ```bash
 [ -n "$GH_PKG_TOKEN" ] && echo '//npm.pkg.github.com/:_authToken=${GH_PKG_TOKEN}' >> .npmrc || true
 ```
 
-Ten pomocnik jest przeznaczony dla CI. Lokalni deweloperzy powinni używać `npm login` lub własnego
-pliku `.npmrc` na poziomie użytkownika. Nigdy nie commituj `_authToken` do repozytorium.
+This helper is for CI. Local developers should use `npm login` or their own
+user-level `.npmrc`. Never commit `_authToken` to the repository.

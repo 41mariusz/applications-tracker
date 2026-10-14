@@ -1,24 +1,22 @@
-# Wspólna umiejętność przeglądu kodu — Wymagania
+# Shared Code Review Skill — Requirements
 
-## Cel
+## Goal
+Create an Agent Skill for automated code review based on the team's engineering
+conventions.
 
-Utwórz umiejętność agenta do automatycznego przeglądu kodu na podstawie konwencji inżynieryjnych zespołu.
+## Input
+Use the accompanying `m5l4-shared-conventions.md` handout as the source document.
+The generated skill should review code against those conventions, not invent a
+new review standard.
 
-## Dane wejściowe
-
-Użyj dołączonego materiału `m5l4-shared-conventions.md` jako dokumentu źródłowego.
-Wygenerowana umiejętność powinna przeglądać kod względem tych konwencji, a nie tworzyć nowego standardu przeglądu.
-
-## Konfiguracja
-
-- Nazwa umiejętności: `code-review`
-- Kategoria: quality
-- Plik docelowy: `skills/code-review/SKILL.md`
-- Frazy wyzwalające: „review code”, „check this PR”, „review my changes”, „code review”
+## Configuration
+- Skill name: `code-review`
+- Category: quality
+- Target file: `skills/code-review/SKILL.md`
+- Trigger phrases: "review code", "check this PR", "review my changes", "code review"
 
 ## Frontmatter
-
-Plik `SKILL.md` musi zawierać frontmatter YAML z:
+The `SKILL.md` file must include YAML frontmatter with:
 
 ```yaml
 ---
@@ -27,19 +25,16 @@ description: Review code changes against team engineering conventions, testing s
 ---
 ```
 
-## Kategorie przeglądu
-
-Użyj kategorii wynikających z materiału o konwencjach:
-
-- Nazewnictwo
-- Obsługa błędów
+## Review categories
+Use categories derived from the conventions handout:
+- Naming
+- Error handling
 - TypeScript
-- Projektowanie funkcji
-- Bezpieczeństwo
-- Testowanie
+- Function design
+- Security
+- Testing
 
-## Format wyjściowy
-
-Ustalenia zorganizowane według ważności: Critical → Warning → Suggestion.
-Każde ustalenie zawiera odniesienie `file:line`, jeśli jest to możliwe.
-Zakończ jedną rekomendacją: `APPROVE`, `REQUEST CHANGES` lub `NEEDS DISCUSSION`.
+## Output format
+Findings organized by severity: Critical → Warning → Suggestion.
+Each finding includes a `file:line` reference when possible.
+Finish with one recommendation: `APPROVE`, `REQUEST CHANGES`, or `NEEDS DISCUSSION`.

@@ -22,7 +22,6 @@ It owns: the Playwright config, `tests/e2e/auth.setup.ts`, the seed test, the `p
 In the config, "owns" means the **app `webServer` entry** (the one whose `url` is the base URL) and every field `test-stack.md` records. `/10x-e2e` may later add extra `webServer` entries for mock servers (the array form) and hook its mock into the app entry (`references/playwright-setup-templates.md` → "Who owns what in the config"). A re-run reads and records only the app entry's build + preview command, url, port and `reuseExistingServer`, and never touches the extra entries.
 
 It will not:
-
 - write E2E tests beyond the seed — that is `/10x-e2e`;
 - touch CI workflows;
 - overwrite an existing config key or spec without asking;
@@ -32,9 +31,9 @@ It will not:
 
 ## Conventions
 
-> **Asking the user — host-agnostic.** Wherever this skill says _ask the user_, use whichever interactive-question tool your agent exposes; don't hard-code one tool name. Before the first question, scan your available tools for one that asks the user a structured question (a `question` parameter plus an `options`/`choices` field) and use the first match. If there is none, ask in a plain conversational message listing the labelled options and wait for the reply — never block the procedure. The first time you ask, say which tool you used (or that you fell back to plain chat). Ask only what you could not detect.
+> **Asking the user — host-agnostic.** Wherever this skill says *ask the user*, use whichever interactive-question tool your agent exposes; don't hard-code one tool name. Before the first question, scan your available tools for one that asks the user a structured question (a `question` parameter plus an `options`/`choices` field) and use the first match. If there is none, ask in a plain conversational message listing the labelled options and wait for the reply — never block the procedure. The first time you ask, say which tool you used (or that you fell back to plain chat). Ask only what you could not detect.
 
-> **Clipboard convention.** Wherever this skill says _copy `X` to the clipboard_, pipe the exact string `X` to the platform clipboard — try `pbcopy` (macOS), then `clip.exe` (Windows/WSL), then `xclip -selection clipboard` (Linux), or `Set-Clipboard` in PowerShell, and fall back silently if none exist. Then display the copied command on its own line suffixed with `(✓ copied)`.
+> **Clipboard convention.** Wherever this skill says *copy `X` to the clipboard*, pipe the exact string `X` to the platform clipboard — try `pbcopy` (macOS), then `clip.exe` (Windows/WSL), then `xclip -selection clipboard` (Linux), or `Set-Clipboard` in PowerShell, and fall back silently if none exist. Then display the copied command on its own line suffixed with `(✓ copied)`.
 
 > **Per-tool values.** Everything that differs per agent tool — the skill directory, the `playwright-cli install --skills` target, how a skill is invoked — lives in `references/tool-wiring.md`. Look it up there by the tool id; never guess it.
 
@@ -53,7 +52,7 @@ Read, don't write. Collect these facts and show them to the user as one short ta
    - an explicit port in the framework config (e.g. `server.port` in `astro.config.*`, `preview.port`/`server.port` in `vite.config.*`);
    - a `--port`/`-p` flag in the preview/start script;
    - the framework's documented default for its preview/start command (e.g. Astro 4321, Vite preview 4173, Next.js 3000).
-     Record where the number came from. If `E2E_PORT` is already set in the env file (a name, and a port number is not a secret, so read it), that is the port the run uses: the user answered the port question on an earlier run, so don't ask it again.
+   Record where the number came from. If `E2E_PORT` is already set in the env file (a name, and a port number is not a secret, so read it), that is the port the run uses: the user answered the port question on an earlier run, so don't ask it again.
 5. **Is the port free?** Check the port the run uses (`E2E_PORT` if set, else the detected one) before you rely on it: `lsof -nP -iTCP:<port> -sTCP:LISTEN` (macOS/Linux) or `netstat -ano | findstr :<port>` (Windows); `nc -z localhost <port>` also works. If something is listening, say so plainly and name the process if you can: with `reuseExistingServer` outside CI, Playwright would **silently test whatever app already runs there**. Offer two ways out — stop that process, or set `E2E_PORT=<free port>` in the env file (the config reads it). Never pick a new default port on your own.
 6. **Existing Playwright.** `@playwright/test` in `package.json`; `playwright.config.*` (read it fully: `testDir`, `use.baseURL`, `webServer`, projects, `storageState`, `trace`, `screenshot`); existing specs (`*.spec.ts`, `*.setup.ts`); an existing seed (a file named `seed.spec.ts`, or the `seed` field of `test-stack.md`).
 7. **Unit-test runner overlap.** If a unit runner (e.g. Vitest, Jest) is configured, check its include globs. If they would also collect `tests/e2e/**/*.spec.ts`, the E2E specs must be excluded there — note it for step 3.

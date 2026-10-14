@@ -8,7 +8,6 @@ twierdzenie -> potwierdzone / doprecyzowane / obalone, z plikami i liniami.
 Każde zero z ast-grep potwierdź klasycznym grepem.
 
 Po weryfikacji zaktualizuj analizowany raport:
-
 - błędne liczby i numery linii popraw w miejscu, w formacie "150 (raport: 145)" —
   tak, żeby ślad korekty został w tekście;
 - dodaj sekcję "## Weryfikacja twierdzeń (ast-grep)" z tabelą:

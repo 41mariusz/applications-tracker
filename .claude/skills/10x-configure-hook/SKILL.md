@@ -69,13 +69,13 @@ Read the manifest and config, not memory. For each gate record the exact command
 
 **Moments**, cheapest signal first:
 
-| Moment      | Belongs here                                                              | Reaches the agent |
-| ----------- | ------------------------------------------------------------------------- | ----------------- |
-| Per edit    | Lint/format of the edited file; related tests when they finish in seconds | Yes               |
-| End of turn | Lint + tests for every file changed this turn; whole-project typecheck    | Yes               |
-| Pre-commit  | Lint + tests on staged files (catches edits made without the agent)       | No                |
-| Pre-push    | Heavier suites, local e2e                                                 | No                |
-| CI          | Integration, shared state, infra you do not have locally                  | No                |
+| Moment | Belongs here | Reaches the agent |
+| --- | --- | --- |
+| Per edit | Lint/format of the edited file; related tests when they finish in seconds | Yes |
+| End of turn | Lint + tests for every file changed this turn; whole-project typecheck | Yes |
+| Pre-commit | Lint + tests on staged files (catches edits made without the agent) | No |
+| Pre-push | Heavier suites, local e2e | No |
+| CI | Integration, shared state, infra you do not have locally | No |
 
 Speed heuristic: **the slower the check, the rarer the moment.** A few seconds fits per edit; tens of seconds or whole-project scope belongs to end of turn; minutes belongs to commit, push or CI.
 

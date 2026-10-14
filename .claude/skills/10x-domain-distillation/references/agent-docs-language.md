@@ -30,9 +30,9 @@ record:
   abbreviations, the same idea in another language);
 - the definition in the source's own words, quoted, with `path:line`;
 - where it appears (the strongest 1–3 citations);
-- its kind: _entity_ (identity and a lifecycle), _value_ (defined only by
-  its content), _role_, _state_, _operation_, _event_, _measure_, _policy_
-  (a product-wide rule or guarantee), _thesis_ (a positioning or strategy
+- its kind: *entity* (identity and a lifecycle), *value* (defined only by
+  its content), *role*, *state*, *operation*, *event*, *measure*, *policy*
+  (a product-wide rule or guarantee), *thesis* (a positioning or strategy
   word with no runtime meaning).
 
 Skip technical vocabulary (database, endpoint, cache) unless the documents use
@@ -67,19 +67,13 @@ invariant candidates; do not judge enforcement — you have not seen the code.
 
 ```markdown
 # Evidence: language in the documents
-
 <documents read, the narrative sample, documents skipped and why>
 
-## Terms <!-- term, variants, kind, definition (quoted), source -->
-
+## Terms                <!-- term, variants, kind, definition (quoted), source -->
 ## Lifecycles
-
-## Rules <!-- rule (quoted), binds terms, entity or policy, source -->
-
+## Rules                <!-- rule (quoted), binds terms, entity or policy, source -->
 ## Multiple meanings
-
-## Conflicting statements <!-- older, newer, both cited -->
-
+## Conflicting statements   <!-- older, newer, both cited -->
 ## Unknowns
 ```
 

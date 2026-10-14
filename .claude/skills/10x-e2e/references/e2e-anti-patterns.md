@@ -85,7 +85,7 @@ quotas, slows lists, leaks into other tests' searches). Two ways it happens:
   issues) — never disable the protection for tests.
 - **Some data can only be removed through a flow** (no DELETE route — e.g.
   drafts that disappear only when a session is saved or discarded). Capture
-  the ids the cleanup needs _before_ a client-side redirect hides them (a
+  the ids the cleanup needs *before* a client-side redirect hides them (a
   pass-through `page.route()` + `route.fetch()` on the creating call — not
   `waitForResponse()`, whose body is lost when the page navigates), and let the cleanup drive that flow through the
   API with asserted calls. A cleanup that skips when an id is missing is the
@@ -96,8 +96,8 @@ quotas, slows lists, leaks into other tests' searches). Two ways it happens:
 Same discipline as for unit tests, lifted to E2E: **never say
 "fix this test."** Name the specific anti-pattern, explain why it doesn't protect
 the risk (or why it produces false failures), and give the target pattern. Three
-elements per re-prompt: _what's wrong_, _why it doesn't protect the risk_, _what
-replaces it_.
+elements per re-prompt: *what's wrong*, *why it doesn't protect the risk*, *what
+replaces it*.
 
 ### Target-pattern re-prompt examples
 

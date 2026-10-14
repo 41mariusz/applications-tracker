@@ -48,20 +48,20 @@ number of seats).
   paths) the guard sits on, against those you found that the rule
   constrains.
 - **Strictness**:
-  - _hard (data)_ — the data store rejects a violation (constraint, policy,
+  - *hard (data)* — the data store rejects a violation (constraint, policy,
     trigger) whoever writes;
-  - _hard (app)_ — every writer found in this code goes through the check,
+  - *hard (app)* — every writer found in this code goes through the check,
     but the data store would accept a violating write;
-  - _soft_ — checked on some paths, others can write or read without it;
-  - _client-only_ — only the UI checks it; any direct call bypasses it. Note
+  - *soft* — checked on some paths, others can write or read without it;
+  - *client-only* — only the UI checks it; any direct call bypasses it. Note
     when the state itself lives on the client by design (browser storage) —
     there, a client check may be the right place.
-- **Failure handling** — one of: _named error_ (stops with a domain error),
-  _generic error_, _logs and continues_, _swallowed silently_ (no log, the
-  operation goes on), _silently corrects_ (rewrites the data). The last three
+- **Failure handling** — one of: *named error* (stops with a domain error),
+  *generic error*, *logs and continues*, *swallowed silently* (no log, the
+  operation goes on), *silently corrects* (rewrites the data). The last three
   are findings.
 
-For a _soft_ rule, show one path that bypasses the check, or say that you
+For a *soft* rule, show one path that bypasses the check, or say that you
 could not establish whether one exists. When you find a writer that actively
 does the opposite of a guard elsewhere (resets, overrides, back doors),
 record it next to that rule.
@@ -83,21 +83,14 @@ trigger, or a trigger with no handler, is a finding.
 
 ```markdown
 # Evidence: rules guarded in the code
-
 <scope or group, layers searched, patterns used, areas not covered>
 
-## Guarded rules <!-- table above, grouped by business concept -->
-
+## Guarded rules        <!-- table above, grouped by business concept -->
 ## Soft and client-only rules
-
 ## Writers that work against a guard
-
 ## Failure handling
-
 ## Atomicity
-
 ## Scheduled and asynchronous work
-
 ## Unknowns
 ```
 

@@ -28,13 +28,13 @@ repeated with date ranges if needed). Never request per-PR file lists in bulk;
 if a call times out, fall back to smaller pages or per-item `gh pr view`.
 
 - `gh pr list --state all --search "created:>=<date>" --json
-number,title,createdAt,mergedAt,closedAt,state,reviews,comments,additions,deletions`
+  number,title,createdAt,mergedAt,closedAt,state,reviews,comments,additions,deletions`
   → per capability: PRs, PRs closed without merge, largest PRs, and **human**
   review activity. Comments and reviews posted by bots or automation accounts
   are not review (false-signal rule 7). If there is no human review at all,
   report that as a finding instead of medians.
 - `gh issue list --state all --search "created:>=<date>" --json
-number,title,labels,createdAt,closedAt,state` → per capability (labels,
+  number,title,labels,createdAt,closedAt,state` → per capability (labels,
   title vocabulary): opened, still open, bug-labelled, age of open bugs.
 - Never post, comment, label or change anything on the forge.
 
@@ -61,20 +61,14 @@ number,title,labels,createdAt,closedAt,state` → per capability (labels,
 
 ```markdown
 # Evidence: discussion
-
 <sources available: gh (owner/repo) or git-only; window; limits hit>
 
-## Buzz per capability <!-- one table: PRs, closed-unmerged, human review, reverts, open bugs, plans, markers -->
-
-## Friction <!-- reverts, second attempts, long-open bugs, closed-unmerged PRs, with numbers -->
-
-## Planning attention <!-- which capabilities attract plans and research -->
-
+## Buzz per capability     <!-- one table: PRs, closed-unmerged, human review, reverts, open bugs, plans, markers -->
+## Friction                <!-- reverts, second attempts, long-open bugs, closed-unmerged PRs, with numbers -->
+## Planning attention      <!-- which capabilities attract plans and research -->
 ## Debt markers
-
-## Mechanical signals <!-- demoted by false-signals.md, and why -->
-
-## Unknowns <!-- e.g. no forge access, issue tracker elsewhere, production errors not visible -->
+## Mechanical signals      <!-- demoted by false-signals.md, and why -->
+## Unknowns                <!-- e.g. no forge access, issue tracker elsewhere, production errors not visible -->
 ```
 
 Production error trackers are out of scope for this run; list them under
