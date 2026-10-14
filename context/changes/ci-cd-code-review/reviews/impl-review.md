@@ -41,7 +41,7 @@ Notes: two unplanned changes were approved during implementation (ci.yml wait lo
   - Tradeoff: (c) and (d) remain — a re-run or a hand label still sets the verdict PR-wide.
   - Confidence: HIGH — plain `gh` calls already used in the workflow.
   - Blind spot: Remaining race window between live read and label edit.
-- **Decision**: FIXED via Fix A — verdict recorded as commit status "AI review verdict" on the head SHA; replay reads that status; labels read live, opposite label removed (live check on PR #5 after push)
+- **Decision**: FIXED via Fix A — verdict recorded as commit status "AI review verdict" on the head SHA; replay reads that status; labels read live, opposite label removed — verified live on PR #5 (commit 4790201): status `AI review verdict: failure` recorded; a hand-added `ai-cr:passed` replayed red ("verdict for this commit: fail")
 
 ### F2 — GitHub token visible to third-party code
 
