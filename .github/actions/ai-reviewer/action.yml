@@ -78,10 +78,15 @@ runs:
         review_file="$RUNNER_TEMP/ai-review.json"
         status=0
         node "$RUNNER_TEMP/ai-reviewer/review.js" > "$review_file" || status=$?
-        if [ "$status" -ne 0 ]; then
+        if [ "$status" -eq 2 ]; then
+          # Exit 2 = usage error; the key was checked above, so the input is the problem.
+          echo "::error title=AI review::The agent refused its input: empty diff (no changes against the base branch) or unreadable DIFF_FILE (see the log line above)."
+          exit 1
+        elif [ "$status" -ne 0 ]; then
           echo "::error title=AI review::The agent exited with $status and gave no verdict (see the log line above)."
           exit 1
         fi
-        verdict=$(node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); if (!["pass", "fail"].includes(r.verdict)) process.exit(1); console.log(r.verdict)' "$review_file")
+        verdict=$(node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); if (!["pass", "fail"].includes(r.verdict)) process.exit(1); console.log(r.verdict)' "$review_file") \
+          || { echo "::error title=AI review::The review JSON has no valid verdict (pass/fail)."; exit 1; }
         echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
         echo "review-file=$review_file" >> "$GITHUB_OUTPUT"

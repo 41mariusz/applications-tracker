@@ -1,10 +1,13 @@
 # AI code review on every pull request to main (course lesson M5L3, from
 # .claude/config-templates/m5l3-review.yml.template; decisions in context/changes/ci-cd-code-review/).
 # - review events (opened, synchronize, reopened, label ai-cr:review): run the agent, comment with
-#   the summary, label ai-cr:passed / ai-cr:failed, fail the job on "fail"
-# - any other label event: replay the verdict from the PR's labels, no model call
-# The job is never skipped: a skipped job counts as a passing required check. The ruleset on main
-# requires the check "AI code review" (owner bypasses); direct pushes to main are not gated.
+#   the summary, record the verdict as the commit status "AI review verdict" on the PR's head
+#   commit, label ai-cr:passed / ai-cr:failed, fail the job on "fail"
+# - any other label event: replay the verdict of the head commit from that status, no model call
+# The verdict is bound to the commit, not to the labels: labels are for humans, and a stale or
+# hand-added label never passes the gate. The job is never skipped (a skipped job counts as a
+# passing required check). The ruleset on main requires the check "AI code review" (owner
+# bypasses); direct pushes to main are not gated.
 name: AI Code Review
 
 on:
@@ -16,6 +19,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write # labels live on the issues API
+  statuses: write # the verdict is a commit status on the head commit
 
 concurrency:
   # Review events share one group per PR, so a newer push cancels an older review. Replay events
@@ -28,38 +32,41 @@ jobs:
     # The required check's name: keep it stable (the ruleset on main refers to it).
     name: AI code review
     runs-on: ubuntu-latest
+    # A hung model call must not keep the required check pending for the 6 h default.
+    timeout-minutes: 15
+    # GH_TOKEN goes only to the steps that call gh, never to npm ci or the agent's dependencies.
     env:
-      GH_TOKEN: ${{ github.token }}
       PR: ${{ github.event.pull_request.number }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
       REPLAY: ${{ github.event.action == 'labeled' && github.event.label.name != 'ai-cr:review' }}
-      # Labels at the time of the event, as a JSON array of names.
-      LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
     steps:
-      - name: Replay verdict from labels
+      - name: Replay verdict of the head commit
         if: env.REPLAY == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          node -e '
-            const labels = JSON.parse(process.env.LABELS);
-            if (labels.includes("ai-cr:passed")) {
-              console.log("AI review verdict for this commit: pass");
-              process.exit(0);
-            }
-            const reason = labels.includes("ai-cr:failed") ? "fail" : "none yet (push or add ai-cr:review)";
-            console.log("::error title=AI review::AI review verdict for this commit: " + reason);
-            process.exit(1);
-          '
+          # Newest status first; empty when this commit has no verdict yet (e.g. its review is still running).
+          state=$(gh api "repos/$GITHUB_REPOSITORY/commits/$HEAD_SHA/statuses" --jq '[.[] | select(.context == "AI review verdict")][0].state // ""')
+          case "$state" in
+            success) echo "AI review verdict for this commit: pass" ;;
+            failure) echo "::error title=AI review::AI review verdict for this commit: fail"; exit 1 ;;
+            *) echo "::error title=AI review::AI review verdict for this commit: none yet (wait for the review, push or add ai-cr:review)"; exit 1 ;;
+          esac
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: env.REPLAY != 'true'
         with:
           fetch-depth: 0 # full history, otherwise there is no base to diff against
+          persist-credentials: false # the diff is local; no token left in .git/config for later steps
 
-      - name: Drop the previous verdict
-        # A replay must never pass a commit nobody reviewed: no verdict label until this review ends.
+      - name: Drop the previous verdict labels
         if: env.REPLAY != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          labels=$(gh pr view "$PR" --json labels --jq '.labels[].name')
           for label in ai-cr:passed ai-cr:failed; do
-            if node -e 'process.exit(JSON.parse(process.env.LABELS).includes(process.argv[1]) ? 0 : 1)' "$label"; then
+            if printf '%s\n' "$labels" | grep -qxF "$label"; then
               gh pr edit "$PR" --remove-label "$label"
             fi
           done
@@ -80,21 +87,28 @@ jobs:
           diff-file: ${{ runner.temp }}/pr.diff
           model: ${{ vars.REVIEW_MODEL }}
 
-      - name: Comment and label
+      - name: Record verdict, comment and label
         if: env.REPLAY != 'true' && steps.review.outputs.verdict != ''
         env:
+          GH_TOKEN: ${{ github.token }}
           VERDICT: ${{ steps.review.outputs.verdict }}
           REVIEW_FILE: ${{ steps.review.outputs.review-file }}
         run: |
+          if [ "$VERDICT" = pass ]; then state=success; label=ai-cr:passed; other=ai-cr:failed; else state=failure; label=ai-cr:failed; other=ai-cr:passed; fi
+          gh api -X POST "repos/$GITHUB_REPOSITORY/statuses/$HEAD_SHA" \
+            -f state="$state" -f context="AI review verdict" -f description="AI code review: $VERDICT" \
+            -f target_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > /dev/null
           node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); console.log("## AI Code Review: " + r.verdict + "\n\n" + r.summary)' "$REVIEW_FILE" > "$RUNNER_TEMP/comment.md"
           gh pr comment "$PR" --body-file "$RUNNER_TEMP/comment.md"
           gh label create ai-cr:passed --color 0E8A16 --description "AI code review passed" --force
           gh label create ai-cr:failed --color B60205 --description "AI code review failed" --force
-          if [ "$VERDICT" = pass ]; then label=ai-cr:passed; else label=ai-cr:failed; fi
+          labels=$(gh pr view "$PR" --json labels --jq '.labels[].name')
+          for drop in "$other" ai-cr:review; do
+            if printf '%s\n' "$labels" | grep -qxF "$drop"; then
+              gh pr edit "$PR" --remove-label "$drop"
+            fi
+          done
           gh pr edit "$PR" --add-label "$label"
-          if node -e 'process.exit(JSON.parse(process.env.LABELS).includes("ai-cr:review") ? 0 : 1)'; then
-            gh pr edit "$PR" --remove-label ai-cr:review
-          fi
 
       - name: Gate on verdict
         if: env.REPLAY != 'true'

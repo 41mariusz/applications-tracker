@@ -5,7 +5,7 @@
 // The model is OpenRouter's: REVIEW_MODEL, default DEFAULT_MODEL.
 import { APICallError } from "ai";
 import { text } from "node:stream/consumers";
-import { reviewPullRequest } from "./agent.js";
+import { DEFAULT_MODEL, reviewPullRequest } from "./agent.js";
 import { readReviewInput, UsageError } from "./cli-input.js";
 
 if (!process.env.OPENROUTER_API_KEY) {
@@ -22,13 +22,14 @@ try {
   process.exit(2);
 }
 
+const model = process.env.REVIEW_MODEL || DEFAULT_MODEL;
 let result;
 try {
-  result = await reviewPullRequest(input, { model: process.env.REVIEW_MODEL || undefined });
+  result = await reviewPullRequest(input, { model });
 } catch (error) {
   // The SDK error carries the whole request (diff included); print only the cause, not the payload.
-  const status = APICallError.isInstance(error) ? ` (HTTP ${error.statusCode})` : "";
-  console.error(`Review failed${status}: ${error instanceof Error ? error.message : String(error)}`);
+  const status = APICallError.isInstance(error) ? `, HTTP ${error.statusCode}` : "";
+  console.error(`Review failed (model=${model}${status}): ${error instanceof Error ? error.message : String(error)}`);
   process.exit(1);
 }
 
