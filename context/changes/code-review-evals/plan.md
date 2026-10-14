@@ -333,7 +333,7 @@ Not applicable: no database, no app code, no deploy impact.
 
 #### Automated
 
-- [x] 2.1 `npm ci --omit=optional` in `tools/code-reviewer/evals` succeeds from the committed lockfile
+- [x] 2.1 `npm ci --omit=optional` in `tools/code-reviewer/evals` succeeds from the committed lockfile — 6022ba3
 - [x] 2.2 `npx promptfoo --version` in `tools/code-reviewer/evals` prints `0.124.1` — 6022ba3
 - [x] 2.3 `npx promptfoo validate -c promptfooconfig.yaml` in `tools/code-reviewer/evals` reports a valid config — 6022ba3
 - [x] 2.4 The fixture contains none of `{{`, `{%`, `{#`: `grep -nE '\{\{|\{%|\{#' tools/code-reviewer/evals/fixtures/react19-migration.diff` prints nothing — 6022ba3
@@ -344,16 +344,16 @@ Not applicable: no database, no app code, no deploy impact.
 #### Manual
 
 - [x] 2.8 Owner reads the fixture and agrees that each of the three flaws is impactful and that the diff gives no hints — 6022ba3
-- [x] 2.9 Owner reads the rubric text and agrees that it describes the three flaws precisely enough to judge
+- [x] 2.9 Owner reads the rubric text and agrees that it describes the three flaws precisely enough to judge — 6022ba3
 
 ### Phase 3: First Live Run and Recorded Results
 
 #### Automated
 
-- [x] 3.1 `npm run eval` in `tools/code-reviewer/evals` completes with exit code 0 or 100, and `results/latest.json` lists 3 results, one per provider, with no provider error
-- [x] 3.2 `context/changes/code-review-evals/eval-results.md` exists and has one table row per model (3)
+- [x] 3.1 `npm run eval` in `tools/code-reviewer/evals` completes with exit code 0 or 100, and `results/latest.json` lists 3 results, one per provider, with no provider error — 180c801
+- [x] 3.2 `context/changes/code-review-evals/eval-results.md` exists and has one table row per model (3) — 180c801
 
 #### Manual
 
-- [x] 3.3 In `npm run view`, the rendered prompt for one result shows the system message and the full diff intact
-- [x] 3.4 Owner spot-checks the grader's reasons and agrees the `llm-rubric` verdicts are fair for at least one passing and one failing model, or for all three if all share one outcome
+- [x] 3.3 In `npm run view`, the rendered prompt for one result shows the system message and the full diff intact — 180c801
+- [x] 3.4 Owner spot-checks the grader's reasons and agrees the `llm-rubric` verdicts are fair for at least one passing and one failing model, or for all three if all share one outcome — 180c801

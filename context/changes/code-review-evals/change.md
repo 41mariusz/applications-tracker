@@ -1,7 +1,7 @@
 ---
 change_id: code-review-evals
 title: promptfoo evals of the code-review agent across models (M5L3)
-status: implementing
+status: implemented
 created: 2026-10-14
 updated: 2026-10-14
 archived_at: null
