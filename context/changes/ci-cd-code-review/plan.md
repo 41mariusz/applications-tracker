@@ -260,14 +260,14 @@ Each review adds `npm ci` in `tools/code-reviewer` (~10-20 s) and one model call
 
 #### Automated
 
-- [x] 3.1 Docs mention the workflow and secret in `CLAUDE.md`
-- [x] 3.2 App checks pass: `npm run lint` at the repo root
+- [x] 3.1 Docs mention the workflow and secret in `CLAUDE.md` — bc03a13
+- [x] 3.2 App checks pass: `npm run lint` at the repo root — bc03a13
 
 #### Manual
 
-- [x] 3.3 Secret `OPENROUTER_API_KEY` and variable `REVIEW_MODEL` exist in the repository settings
-- [x] 3.4 Throwaway PR with a small correct change: comment, `ai-cr:passed`, check green
-- [x] 3.5 Throwaway PR with an obviously flawed change: `ai-cr:failed`, check red
-- [x] 3.6 Adding an unrelated label to the failed PR keeps the check red and cancels nothing
-- [x] 3.7 Adding `ai-cr:review` runs a new review and removes the label
-- [ ] 3.8 Ruleset active: failed PR blocked for non-bypass merge; direct push to `main` still works
+- [x] 3.3 Secret `OPENROUTER_API_KEY` and variable `REVIEW_MODEL` exist in the repository settings — bc03a13
+- [x] 3.4 Throwaway PR with a small correct change: comment, `ai-cr:passed`, check green — bc03a13
+- [x] 3.5 Throwaway PR with an obviously flawed change: `ai-cr:failed`, check red — bc03a13
+- [x] 3.6 Adding an unrelated label to the failed PR keeps the check red and cancels nothing — bc03a13
+- [x] 3.7 Adding `ai-cr:review` runs a new review and removes the label — bc03a13
+- [x] 3.8 Ruleset active: failed PR blocked for non-bypass merge; direct push to `main` still works — bc03a13
