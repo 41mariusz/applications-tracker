@@ -164,6 +164,7 @@ Write the artifacts the toolkit distributes and the package manifest, so that `n
   - `publishConfig.registry: https://npm.pkg.github.com`;
   - `files: ["skills/", "rules/", "install.js", "uninstall.js", "README.md"]`;
   - `scripts.postinstall: node install.js`, `scripts.test: node --test test/`;
+  - _Implementation note (2026-10-14): `node --test test/` resolves the directory as a module (`MODULE_NOT_FOUND`), so the script is `node --test "test/*.test.mjs"`; Node 22+ expands the glob itself._
   - `bin: { "ai-toolkit": "./install.js", "ai-toolkit-uninstall": "./uninstall.js" }`;
   - `engines.node: ">=22"`;
   - no dependencies.
@@ -444,22 +445,22 @@ Not applicable: no database or app changes.
 
 #### Automated
 
-- [x] 1.1 `npm pack --dry-run --json` in `packages/ai-toolkit` lists only `package.json`, `README.md`, and files under `skills/` and `rules/` (no `test/`, no `scripts/`)
-- [x] 1.2 `skills/team-code-review/SKILL.md` frontmatter has `name: team-code-review` (equal to its directory) and a non-empty `description`
-- [x] 1.3 `npm run lint` at the repo root still passes
+- [x] 1.1 `npm pack --dry-run --json` in `packages/ai-toolkit` lists only `package.json`, `README.md`, and files under `skills/` and `rules/` (no `test/`, no `scripts/`) — 9c155a3
+- [x] 1.2 `skills/team-code-review/SKILL.md` frontmatter has `name: team-code-review` (equal to its directory) and a non-empty `description` — 9c155a3
+- [x] 1.3 `npm run lint` at the repo root still passes — 9c155a3
 
 #### Manual
 
-- [x] 1.4 Owner reads `references/conventions.md` and agrees the adaptations reflect this repo's rules
+- [x] 1.4 Owner reads `references/conventions.md` and agrees the adaptations reflect this repo's rules — 9c155a3
 
 ### Phase 2: Installer, Uninstaller and Their Tests
 
 #### Automated
 
-- [ ] 2.1 `npm test` in `packages/ai-toolkit` passes (all installer and uninstaller tests)
-- [ ] 2.2 Breaking the sentinel rule in `install.js` (appending a second block instead of replacing) makes `npm test` fail; restoring makes it pass
-- [ ] 2.3 `npm run lint` at the repo root passes and reports `packages/ai-toolkit/install.js` as linted (e.g. `npx eslint packages/ai-toolkit --max-warnings=0`)
-- [ ] 2.4 `npx astro check` and `npm test` at the repo root still pass
+- [x] 2.1 `npm test` in `packages/ai-toolkit` passes (all installer and uninstaller tests)
+- [x] 2.2 Breaking the sentinel rule in `install.js` (appending a second block instead of replacing) makes `npm test` fail; restoring makes it pass
+- [x] 2.3 `npm run lint` at the repo root passes and reports `packages/ai-toolkit/install.js` as linted (e.g. `npx eslint packages/ai-toolkit --max-warnings=0`)
+- [x] 2.4 `npx astro check` and `npm test` at the repo root still pass
 
 ### Phase 3: Publish Workflow and Consumer Check
 

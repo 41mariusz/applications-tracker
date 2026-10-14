@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "postinstall": "node install.js",
-    "test": "node --test test/"
+    "test": "node --test \"test/*.test.mjs\""
   },
   "bin": {
     "ai-toolkit": "./install.js",

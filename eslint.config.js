@@ -74,7 +74,8 @@ const astroConfig = defineConfig({
 });
 
 const scriptsConfig = defineConfig({
-  files: ["scripts/**/*.mjs"],
+  // Dependency-free Node scripts: CI scripts and the published toolkit's installer.
+  files: ["scripts/**/*.mjs", "packages/ai-toolkit/**/*.{js,mjs}"],
   extends: [tseslint.configs.disableTypeChecked],
   languageOptions: {
     globals: {
