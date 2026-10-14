@@ -1,0 +1,33 @@
+{
+  "name": "@41mariusz/ai-toolkit",
+  "version": "0.1.0",
+  "description": "Team AI artifacts (team-code-review skill, CLAUDE.md rules) distributed through GitHub Packages",
+  "license": "UNLICENSED",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/41mariusz/applications-tracker.git",
+    "directory": "packages/ai-toolkit"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "skills/",
+    "rules/",
+    "install.js",
+    "uninstall.js",
+    "README.md"
+  ],
+  "scripts": {
+    "postinstall": "node install.js",
+    "test": "node --test test/"
+  },
+  "bin": {
+    "ai-toolkit": "./install.js",
+    "ai-toolkit-uninstall": "./uninstall.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
