@@ -12,6 +12,8 @@ describe("isUuid", () => {
     "3f0e8b8c-1d2a-4c5b-9e6f-7a8b9c0d1e2",
     "3f0e8b8c1d2a4c5b9e6f7a8b9c0d1e2f",
     "3f0e8b8c-1d2a-4c5b-9e6f-7a8b9c0d1e2g",
+    " 3f0e8b8c-1d2a-4c5b-9e6f-7a8b9c0d1e2f",
+    "{3f0e8b8c-1d2a-4c5b-9e6f-7a8b9c0d1e2f}",
   ])("rejects %j", (id) => {
     expect(isUuid(id)).toBe(false);
   });
