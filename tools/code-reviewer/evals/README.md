@@ -21,7 +21,11 @@ npm run view      # local web UI with prompts, outputs and grader reasons
 - **Key:** `OPENROUTER_API_KEY` is read from `tools/code-reviewer/.env`, the same file the agent's CLI uses.
 - **Cost:** a run costs a few cents, mostly for the grader (`anthropic/claude-sonnet-5.5`).
 - **Fresh results:** `--no-cache` is set, so every run calls the models again.
+- **Provider overrides:** `promptfooconfig.yaml` sets `showThinking: false` and `max_tokens: 16384` for all three models. Without them, promptfoo prepends "Thinking: …" to the answer (so the JSON assertions fail) and cuts reasoning models off at 1024 tokens. Either way it would measure the setup, not the model. The agent's AI SDK call does neither.
+- **Install:** plain `npm ci`. `--omit=optional` drops the native libsql binding and promptfoo refuses to start.
+- **Audit:** `npm audit` reports known high findings in promptfoo's transitive dependencies (`basic-ftp`, `braces`, `node-forge`). They are not reachable from this local, fixed-input run, and none of them reaches the CI review action. Bump promptfoo when a release clears them; never run `npm audit fix --force`, which breaks the pin.
 - **Telemetry:** telemetry and the update check are off. Never use `--share`.
+- **`npm run view` listens on every network interface** (promptfoo 0.124.1 binds port 15500 without a host), so anyone who can reach the box can read the prompts, outputs and eval history. On a remote box, keep 15500 closed to the outside and open the UI through an SSH tunnel: `ssh -L 15500:localhost:15500 <box>`, then http://localhost:15500. Answer `N` to "Open URL in browser?" and stop the server (Ctrl+C) when done.
 - **Exit codes:**
   - `0`: every assertion passed.
   - `100`: at least one assertion failed. That is an eval result, not a setup error.

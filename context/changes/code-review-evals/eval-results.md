@@ -3,7 +3,7 @@
 - **Run:** `eval-mox-2026-10-14T15:59:08`, `npm run eval` in `tools/code-reviewer/evals`. Exit code 100 means some assertions failed; that is an eval result, not a setup error.
 - **Versions:**
   - promptfoo 0.124.1;
-  - code at `6022ba3`, plus the config fix below;
+  - code at `6022ba3`, plus the config fix below (committed afterwards in `180c801`);
   - prompt and schema generated from `tools/code-reviewer/src/prompts/` and `src/review-schema.ts`.
 - **Test:** `React 16 -> 19 migration with three planted flaws` (`fixtures/react19-migration.diff`, 212 lines, 4 files).
 - **Grader:** `openrouter:anthropic/claude-sonnet-5.5`.

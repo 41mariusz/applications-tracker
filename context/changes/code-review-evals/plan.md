@@ -205,7 +205,7 @@ Create `tools/code-reviewer/evals/` from the course template: pinned promptfoo, 
 - README covers:
   - purpose and what is measured (prompt + schema, not the agent loop);
   - Node `>=22.22.0`;
-  - `npm ci --omit=optional`, then `npm run eval` and `npm run view`;
+  - `npm ci --omit=optional`, then `npm run eval` and `npm run view`; _(superseded: plain `npm ci`, see the implementation note under Phase 2 §1)_
   - the key comes from `tools/code-reviewer/.env`;
   - regenerating the prompt files with `npm run eval:sync` (the drift test enforces it);
   - the fixture rules (no hints, no Nunjucks syntax);
@@ -217,7 +217,7 @@ Create `tools/code-reviewer/evals/` from the course template: pinned promptfoo, 
 
 #### Automated Verification:
 
-- `npm ci --omit=optional` in `tools/code-reviewer/evals` succeeds from the committed lockfile
+- `npm ci --omit=optional` in `tools/code-reviewer/evals` succeeds from the committed lockfile _(superseded: verified with plain `npm ci`, see the implementation note under Phase 2 §1)_
 - `npx promptfoo --version` in `tools/code-reviewer/evals` prints `0.124.1`
 - `npx promptfoo validate -c promptfooconfig.yaml` in `tools/code-reviewer/evals` reports a valid config
 - The fixture contains none of `{{`, `{%`, `{#`: `grep -nE '\{\{|\{%|\{#' tools/code-reviewer/evals/fixtures/react19-migration.diff` prints nothing
@@ -297,7 +297,7 @@ Run the eval once against the three real models and record the outcome. Assertio
 ### Manual Testing Steps:
 
 1. `cd tools/code-reviewer && npm run eval:sync && npm test`, which should be green.
-2. `cd evals && npm ci --omit=optional && npm run eval` should show a 3-column table with one row.
+2. `cd evals && npm ci --omit=optional && npm run eval` should show a 3-column table with one row. _(superseded: plain `npm ci`, see the implementation note under Phase 2 §1)_
 3. `npm run view` opens the local UI. Open one cell and check the prompt and diff, the JSON review and the grader reason.
 
 ## Performance Considerations

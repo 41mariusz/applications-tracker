@@ -25,8 +25,13 @@ export function buildPromptfooSchema(): Record<string, unknown> {
   return schema;
 }
 
+export interface ResponseFormat {
+  type: "json_schema";
+  json_schema: { name: string; strict: boolean; schema: Record<string, unknown> };
+}
+
 /** Same response format the OpenRouter SDK provider sends for the agent's structured output. */
-export function buildPromptfooResponseFormat() {
+export function buildPromptfooResponseFormat(): ResponseFormat {
   return {
     type: "json_schema",
     json_schema: { name: "response", strict: true, schema: buildPromptfooSchema() },

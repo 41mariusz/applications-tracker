@@ -27,7 +27,10 @@
     },
     "verdict": {
       "type": "string",
-      "enum": ["pass", "fail"],
+      "enum": [
+        "pass",
+        "fail"
+      ],
       "description": "Wiążący werdykt dla całej zmiany; czyta go bramka w CI"
     },
     "summary": {
