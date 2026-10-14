@@ -147,6 +147,7 @@ Create `tools/code-reviewer/evals/` from the course template: pinned promptfoo, 
   - `eval`: `PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 promptfoo eval -c promptfooconfig.yaml --env-file ../.env --no-cache -o results/latest.json`
   - `view`: `promptfoo view`, with the same two env vars.
 - Install with `npm install --omit=optional`. If npm's `allowScripts` blocks a needed install script, allow only that package and version, following the reviewer's `package.json`.
+  - _Implementation note (2026-10-14): `--omit=optional` drops the native `@libsql/linux-x64-gnu` binding, an optional dependency, and promptfoo then refuses to start. Installed with plain `npm install` / `npm ci` instead; criterion 2.1 was verified with `npm ci`. No install script is needed: esbuild's postinstall warning is harmless because promptfoo loads no `.ts` files here._
 - `.gitignore`: `results/`.
 
 #### 2. promptfoo configuration
@@ -321,28 +322,28 @@ Not applicable: no database, no app code, no deploy impact.
 
 #### Automated
 
-- [x] 1.1 `npm run eval:sync` in `tools/code-reviewer` writes the three files under `evals/`
-- [x] 1.2 `npm test` in `tools/code-reviewer` passes, including the new drift test
-- [x] 1.3 Editing one word in `evals/prompts/review.json` makes `npm test` fail with a message naming `npm run eval:sync`; reverting makes it pass
-- [x] 1.4 `npm run typecheck` in `tools/code-reviewer` passes
-- [x] 1.5 `npm run build` in `tools/code-reviewer` still produces `dist/review.js` (the CLI bundle is unaffected)
+- [x] 1.1 `npm run eval:sync` in `tools/code-reviewer` writes the three files under `evals/` — 8c5dc44
+- [x] 1.2 `npm test` in `tools/code-reviewer` passes, including the new drift test — 8c5dc44
+- [x] 1.3 Editing one word in `evals/prompts/review.json` makes `npm test` fail with a message naming `npm run eval:sync`; reverting makes it pass — 8c5dc44
+- [x] 1.4 `npm run typecheck` in `tools/code-reviewer` passes — 8c5dc44
+- [x] 1.5 `npm run build` in `tools/code-reviewer` still produces `dist/review.js` (the CLI bundle is unaffected) — 8c5dc44
 
 ### Phase 2: Evals Package, promptfoo Config and the React 19 Fixture
 
 #### Automated
 
-- [ ] 2.1 `npm ci --omit=optional` in `tools/code-reviewer/evals` succeeds from the committed lockfile
-- [ ] 2.2 `npx promptfoo --version` in `tools/code-reviewer/evals` prints `0.124.1`
-- [ ] 2.3 `npx promptfoo validate -c promptfooconfig.yaml` in `tools/code-reviewer/evals` reports a valid config
-- [ ] 2.4 The fixture contains none of `{{`, `{%`, `{#`: `grep -nE '\{\{|\{%|\{#' tools/code-reviewer/evals/fixtures/react19-migration.diff` prints nothing
-- [ ] 2.5 `git apply --check` of the fixture on an empty scratch repo accepts it (valid unified diff), or, for hunks modifying existing files, `git apply --stat` parses it without errors
-- [ ] 2.6 `npm test` and `npm run typecheck` in `tools/code-reviewer` still pass
-- [ ] 2.7 `npm run lint` at the repo root still passes
+- [x] 2.1 `npm ci --omit=optional` in `tools/code-reviewer/evals` succeeds from the committed lockfile
+- [x] 2.2 `npx promptfoo --version` in `tools/code-reviewer/evals` prints `0.124.1`
+- [x] 2.3 `npx promptfoo validate -c promptfooconfig.yaml` in `tools/code-reviewer/evals` reports a valid config
+- [x] 2.4 The fixture contains none of `{{`, `{%`, `{#`: `grep -nE '\{\{|\{%|\{#' tools/code-reviewer/evals/fixtures/react19-migration.diff` prints nothing
+- [x] 2.5 `git apply --check` of the fixture on an empty scratch repo accepts it (valid unified diff), or, for hunks modifying existing files, `git apply --stat` parses it without errors
+- [x] 2.6 `npm test` and `npm run typecheck` in `tools/code-reviewer` still pass
+- [x] 2.7 `npm run lint` at the repo root still passes
 
 #### Manual
 
-- [ ] 2.8 Owner reads the fixture and agrees that each of the three flaws is impactful and that the diff gives no hints
-- [ ] 2.9 Owner reads the rubric text and agrees that it describes the three flaws precisely enough to judge
+- [x] 2.8 Owner reads the fixture and agrees that each of the three flaws is impactful and that the diff gives no hints
+- [x] 2.9 Owner reads the rubric text and agrees that it describes the three flaws precisely enough to judge
 
 ### Phase 3: First Live Run and Recorded Results
 

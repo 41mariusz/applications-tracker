@@ -1,0 +1,212 @@
+diff --git a/package.json b/package.json
+index d3963c9..508c6bf 100644
+--- a/package.json
++++ b/package.json
+@@ -1,6 +1,6 @@
+ {
+   "name": "team-dashboard",
+-  "version": "2.3.0",
++  "version": "3.0.0",
+   "private": true,
+   "scripts": {
+     "start": "react-scripts start",
+@@ -8,13 +8,12 @@
+     "test": "react-scripts test"
+   },
+   "dependencies": {
+-    "prop-types": "^15.8.1",
+-    "react": "^16.14.0",
+-    "react-dom": "^16.14.0",
++    "react": "^19.2.0",
++    "react-dom": "^19.2.0",
+     "react-scripts": "5.0.1"
+   },
+   "devDependencies": {
+-    "enzyme": "^3.11.0",
+-    "enzyme-adapter-react-16": "^1.15.8"
++    "@testing-library/jest-dom": "^6.9.1",
++    "@testing-library/react": "^16.3.0"
+   }
+ }
+diff --git a/src/components/UserActivityFeed.jsx b/src/components/UserActivityFeed.jsx
+index c8c9f6f..2fc7145 100644
+--- a/src/components/UserActivityFeed.jsx
++++ b/src/components/UserActivityFeed.jsx
+@@ -1,82 +1,47 @@
+-import React from "react";
+-import PropTypes from "prop-types";
++import { useEffect, useState } from "react";
+ import { fetchActivity, activityStream } from "../api/activity";
+ import ActivityItem from "./ActivityItem";
+ import Spinner from "./Spinner";
+ 
+-class UserActivityFeed extends React.Component {
+-  static propTypes = {
+-    userId: PropTypes.string.isRequired,
+-    pageSize: PropTypes.number,
+-    onError: PropTypes.func,
+-  };
+-
+-  static defaultProps = {
+-    pageSize: 20,
+-    onError: () => {},
+-  };
+-
+-  state = { items: [], loading: true, error: null };
+-
+-  componentDidMount() {
+-    this.load();
+-    this.subscribe();
+-  }
+-
+-  componentDidUpdate(prevProps) {
+-    if (prevProps.userId !== this.props.userId) {
+-      this.unsubscribe();
+-      this.setState({ items: [], loading: true, error: null });
+-      this.load();
+-      this.subscribe();
+-    }
+-  }
+-
+-  componentWillUnmount() {
+-    this.unsubscribe();
+-  }
+-
+-  async load() {
+-    const { userId, pageSize, onError } = this.props;
+-    try {
+-      const items = await fetchActivity(`/api/users/${userId}/activity?limit=${pageSize}`);
+-      this.setState({ items, loading: false });
+-    } catch (error) {
+-      this.setState({ error, loading: false });
+-      onError(error);
++function UserActivityFeed({ userId, pageSize, onError = () => {} }) {
++  const [items, setItems] = useState([]);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState(null);
++
++  useEffect(() => {
++    async function load() {
++      try {
++        const data = await fetchActivity(`/api/users/${userId}/activity?limit=${pageSize}`);
++        setItems(data);
++      } catch (err) {
++        setError(err);
++        onError(err);
++      } finally {
++        setLoading(false);
++      }
+     }
+-  }
+ 
+-  subscribe() {
+-    this.subscription = activityStream.subscribe(this.props.userId, (item) => {
+-      this.setState((state) => ({
+-        items: [item, ...state.items].slice(0, this.props.pageSize),
+-      }));
++    load();
++    activityStream.subscribe(userId, (item) => {
++      setItems((current) => [item, ...current].slice(0, pageSize));
+     });
+-  }
+-
+-  unsubscribe() {
+-    if (this.subscription) {
+-      this.subscription.unsubscribe();
+-      this.subscription = null;
+-    }
+-  }
+-
+-  render() {
+-    const { items, loading, error } = this.state;
+-
+-    if (loading) return <Spinner label="Loading activity" />;
+-    if (error) return <p className="feed-error">Could not load activity.</p>;
+-    if (items.length === 0) return <p className="feed-empty">No activity yet.</p>;
+-
+-    return (
+-      <ul className="activity-feed">
+-        {items.map((item) => (
+-          <ActivityItem key={item.id} item={item} />
+-        ))}
+-      </ul>
+-    );
+-  }
++  }, []);
++
++  if (loading) return <Spinner label="Loading activity" />;
++  if (error) return <p className="feed-error">Could not load activity.</p>;
++  if (items.length === 0) return <p className="feed-empty">No activity yet.</p>;
++
++  return (
++    <ul className="activity-feed">
++      {items.map((item) => (
++        <ActivityItem key={item.id} item={item} />
++      ))}
++    </ul>
++  );
+ }
+ 
++UserActivityFeed.defaultProps = {
++  pageSize: 20,
++};
++
+ export default UserActivityFeed;
+diff --git a/src/components/UserActivityFeed.test.jsx b/src/components/UserActivityFeed.test.jsx
+index 8dda02f..1a51418 100644
+--- a/src/components/UserActivityFeed.test.jsx
++++ b/src/components/UserActivityFeed.test.jsx
+@@ -1,11 +1,8 @@
+-import React from "react";
+-import Enzyme, { shallow } from "enzyme";
+-import Adapter from "enzyme-adapter-react-16";
++import { render, screen } from "@testing-library/react";
++import "@testing-library/jest-dom";
+ import UserActivityFeed from "./UserActivityFeed";
+ import { fetchActivity } from "../api/activity";
+ 
+-Enzyme.configure({ adapter: new Adapter() });
+-
+ jest.mock("../api/activity", () => ({
+   fetchActivity: jest.fn(),
+   activityStream: { subscribe: jest.fn(() => ({ unsubscribe: jest.fn() })) },
+@@ -14,14 +11,13 @@ jest.mock("../api/activity", () => ({
+ describe("UserActivityFeed", () => {
+   it("shows a spinner while loading", () => {
+     fetchActivity.mockReturnValue(new Promise(() => {}));
+-    const wrapper = shallow(<UserActivityFeed userId="u1" />);
+-    expect(wrapper.find("Spinner")).toHaveLength(1);
++    render(<UserActivityFeed userId="u1" pageSize={20} />);
++    expect(screen.getByLabelText("Loading activity")).toBeInTheDocument();
+   });
+ 
+   it("renders the loaded items", async () => {
+     fetchActivity.mockResolvedValue([{ id: "a1", text: "Opened a PR" }]);
+-    const wrapper = shallow(<UserActivityFeed userId="u1" />);
+-    await wrapper.instance().load();
+-    expect(wrapper.find("ActivityItem")).toHaveLength(1);
++    render(<UserActivityFeed userId="u1" pageSize={20} />);
++    expect(await screen.findByText("Opened a PR")).toBeInTheDocument();
+   });
+ });
+diff --git a/src/index.js b/src/index.js
+index 8ef9683..30cfe91 100644
+--- a/src/index.js
++++ b/src/index.js
+@@ -1,11 +1,10 @@
+-import React from "react";
+-import ReactDOM from "react-dom";
++import { StrictMode } from "react";
++import { createRoot } from "react-dom/client";
+ import App from "./App";
+ import "./index.css";
+ 
+-ReactDOM.render(
+-  <React.StrictMode>
++createRoot(document.getElementById("root")).render(
++  <StrictMode>
+     <App />
+-  </React.StrictMode>,
+-  document.getElementById("root")
++  </StrictMode>
+ );

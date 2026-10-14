@@ -1,0 +1,16 @@
+{
+  "name": "code-reviewer-evals",
+  "private": true,
+  "type": "module",
+  "description": "promptfoo evals of the code-review prompt across OpenRouter models (10xDevs M5L3).",
+  "engines": {
+    "node": ">=22.22.0"
+  },
+  "scripts": {
+    "eval": "PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 promptfoo eval -c promptfooconfig.yaml --env-file ../.env --no-cache -o results/latest.json",
+    "view": "PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 promptfoo view"
+  },
+  "devDependencies": {
+    "promptfoo": "0.124.1"
+  }
+}

@@ -1,0 +1,63 @@
+# promptfoo evals of the code-review prompt across models (10xDevs M5L3; from
+# .claude/config-templates/m5l3-promptfooconfig.yaml.template).
+# Run: cd tools/code-reviewer/evals && npm ci && npm run eval   (Node >= 22.22.0;
+# OPENROUTER_API_KEY comes from tools/code-reviewer/.env). Browse results: npm run view.
+# prompts/review.json, schema.json and response-format.json are GENERATED from the agent's
+# src/prompts/ and src/review-schema.ts: run `npm run eval:sync` in tools/code-reviewer after
+# changing them (its promptfoo.test.ts fails until you do). Do not edit them by hand.
+description: Code review prompt — one React 16 -> 19 migration diff, three models
+
+# Same strict structured output as the agent in CI; no temperature (the agent sets none,
+# and openai/gpt-5.6-luna does not accept it).
+x-review-config: &review-config
+  response_format: file://response-format.json
+
+providers:
+  - id: openrouter:z-ai/glm-5.3
+    label: glm-5.3
+    config: *review-config
+  - id: openrouter:deepseek/deepseek-v4.1-flash
+    label: deepseek-v4.1-flash
+    config: *review-config
+  - id: openrouter:openai/gpt-5.6-luna
+    label: gpt-5.6-luna
+    config: *review-config
+
+prompts:
+  - file://prompts/review.json
+
+defaultTest:
+  options:
+    # llm-rubric grader: a different model family than the three under test.
+    provider: openrouter:anthropic/claude-sonnet-5.5
+
+tests:
+  - description: React 16 -> 19 migration with three planted flaws
+    vars:
+      # Must not contain {{, {% or {#: promptfoo resolves Nunjucks syntax inside vars too.
+      diff: file://fixtures/react19-migration.diff
+    assert:
+      # 1. valid JSON in the review schema — the CI gate depends on it
+      - type: is-json
+        value: file://schema.json
+      # 2. a second model checks that the review names what is broken
+      - type: llm-rubric
+        value: |
+          The output is a JSON code review of a pull request that migrates a React 16 class
+          component (UserActivityFeed) to a React 19 function component with hooks. Its `summary`
+          is written in Polish. Pass only if the review identifies ALL THREE of these defects and
+          says, for each, why it breaks the component (naming the defect without the consequence
+          is not enough):
+          1. The data-loading effect has an empty dependency array, so changing the `userId` prop
+             no longer refetches or resubscribes (componentDidUpdate did): the feed keeps showing
+             the previous user's activity.
+          2. The effect returns no cleanup, so the activity-stream subscription that
+             componentWillUnmount used to remove is never unsubscribed: it leaks and keeps calling
+             state setters after unmount or after a user switch.
+          3. The default `pageSize` is still declared as `UserActivityFeed.defaultProps`, which
+             React 19 ignores for function components: `pageSize` is undefined and the request
+             asks for `limit=undefined`.
+          Fail if any of the three is missing or misdiagnosed.
+      # 3. hard condition on the binding verdict from the Definition of Done
+      - type: javascript
+        value: JSON.parse(output).verdict === "fail"
