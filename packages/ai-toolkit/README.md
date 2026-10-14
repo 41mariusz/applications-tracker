@@ -31,6 +31,8 @@ The skill is called `team-code-review`, not `code-review`, because Claude Code s
    npm install --save-dev @41mariusz/ai-toolkit
    ```
 
+npm 11 prints "install scripts not yet covered by allowScripts" for the toolkit's `postinstall`. As of npm 11.19 the script still runs. To approve it explicitly, and to stay ready for npm versions that block unapproved scripts, run `npm install-scripts approve @41mariusz/ai-toolkit`, or install the artifacts by hand with `npx ai-toolkit`.
+
 ## What the installer does
 
 `postinstall` (or `npx ai-toolkit` by hand) works in the project where `npm install` ran (`INIT_CWD`):

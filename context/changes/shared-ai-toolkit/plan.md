@@ -457,23 +457,23 @@ Not applicable: no database or app changes.
 
 #### Automated
 
-- [x] 2.1 `npm test` in `packages/ai-toolkit` passes (all installer and uninstaller tests)
-- [x] 2.2 Breaking the sentinel rule in `install.js` (appending a second block instead of replacing) makes `npm test` fail; restoring makes it pass
-- [x] 2.3 `npm run lint` at the repo root passes and reports `packages/ai-toolkit/install.js` as linted (e.g. `npx eslint packages/ai-toolkit --max-warnings=0`)
-- [x] 2.4 `npx astro check` and `npm test` at the repo root still pass
+- [x] 2.1 `npm test` in `packages/ai-toolkit` passes (all installer and uninstaller tests) — 94c556e
+- [x] 2.2 Breaking the sentinel rule in `install.js` (appending a second block instead of replacing) makes `npm test` fail; restoring makes it pass — 94c556e
+- [x] 2.3 `npm run lint` at the repo root passes and reports `packages/ai-toolkit/install.js` as linted (e.g. `npx eslint packages/ai-toolkit --max-warnings=0`) — 94c556e
+- [x] 2.4 `npx astro check` and `npm test` at the repo root still pass — 94c556e
 
 ### Phase 3: Publish Workflow and Consumer Check
 
 #### Automated
 
-- [ ] 3.1 `node scripts/validate-package.mjs` in `packages/ai-toolkit` passes; renaming the frontmatter `name` makes it fail with a named message; restoring makes it pass
-- [ ] 3.2 `npm pack` then `node scripts/consumer-check.mjs <tarball>` in `packages/ai-toolkit` passes locally
-- [ ] 3.3 The workflow YAML parses, and every `uses:` line in it is pinned to a 40-character SHA: `node -e` over the file, or `grep -E 'uses: .+@[0-9a-f]{40} #'` matching every `uses:` line
-- [ ] 3.4 `npm run lint` at the repo root still passes
+- [x] 3.1 `node scripts/validate-package.mjs` in `packages/ai-toolkit` passes; renaming the frontmatter `name` makes it fail with a named message; restoring makes it pass
+- [x] 3.2 `npm pack` then `node scripts/consumer-check.mjs <tarball>` in `packages/ai-toolkit` passes locally
+- [x] 3.3 The workflow YAML parses, and every `uses:` line in it is pinned to a 40-character SHA: `node -e` over the file, or `grep -E 'uses: .+@[0-9a-f]{40} #'` matching every `uses:` line
+- [x] 3.4 `npm run lint` at the repo root still passes
 
 #### Manual
 
-- [ ] 3.5 Owner reads the workflow and agrees on permissions (read-only by default, `packages: write` only in `publish`) and the paths filter
+- [x] 3.5 Owner reads the workflow and agrees on permissions (read-only by default, `packages: write` only in `publish`) and the paths filter
 
 ### Phase 4: Live Publish and Consumer Proof
 
