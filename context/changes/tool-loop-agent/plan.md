@@ -215,23 +215,23 @@ One model call per review (no tools, structured output in the same step). The ti
 
 #### Automated
 
-- [x] 1.1 Type checking passes: `cd tools/code-reviewer && npm run typecheck`
-- [x] 1.2 Empty input is a usage error: `echo "" | npm run -s review` exits 2 with the usage line and sends no request
-- [x] 1.3 App checks unaffected: `npm run lint` and `npx astro check` at the repo root pass
+- [x] 1.1 Type checking passes: `cd tools/code-reviewer && npm run typecheck` — 1509faa
+- [x] 1.2 Empty input is a usage error: `echo "" | npm run -s review` exits 2 with the usage line and sends no request — 1509faa
+- [x] 1.3 App checks unaffected: `npm run lint` and `npx astro check` at the repo root pass — 1509faa
 
 #### Manual
 
-- [x] 1.4 A real review on the free model with `DIFF_FILE`, `PR_TITLE` and `PR_BODY` set returns schema-valid JSON with a Polish `summary`
-- [x] 1.5 The same diff piped through stdin without title/body still returns a review
+- [x] 1.4 A real review on the free model with `DIFF_FILE`, `PR_TITLE` and `PR_BODY` set returns schema-valid JSON with a Polish `summary` — 1509faa
+- [x] 1.5 The same diff piped through stdin without title/body still returns a review — 1509faa
 
 ### Phase 2: Unit tests on a mock model
 
 #### Automated
 
-- [ ] 2.1 Unit tests pass: `cd tools/code-reviewer && npm test`
-- [ ] 2.2 Type checking passes: `cd tools/code-reviewer && npm run typecheck`
-- [ ] 2.3 A deliberately broken prompt builder makes `npm test` fail
+- [x] 2.1 Unit tests pass: `cd tools/code-reviewer && npm test`
+- [x] 2.2 Type checking passes: `cd tools/code-reviewer && npm run typecheck`
+- [x] 2.3 A deliberately broken prompt builder makes `npm test` fail
 
 #### Manual
 
-- [ ] 2.4 Tests run offline: `npm test` passes with `OPENROUTER_API_KEY` unset
+- [x] 2.4 Tests run offline: `npm test` passes with `OPENROUTER_API_KEY` unset
