@@ -247,27 +247,27 @@ Each review adds `npm ci` in `tools/code-reviewer` (~10-20 s) and one model call
 
 #### Automated
 
-- [x] 2.1 Workflow lint passes: actionlint 1.7.12 via docker
-- [x] 2.2 No PR title, body or labels expression inside a `run:` block
-- [x] 2.3 Replay decision logic is correct for passed / failed / no verdict label
-- [x] 2.4 Agent and app checks still pass: `npm test` in `tools/code-reviewer` and `npm run lint` at the repo root
+- [x] 2.1 Workflow lint passes: actionlint 1.7.12 via docker — 05f1f13
+- [x] 2.2 No PR title, body or labels expression inside a `run:` block — 05f1f13
+- [x] 2.3 Replay decision logic is correct for passed / failed / no verdict label — 05f1f13
+- [x] 2.4 Agent and app checks still pass: `npm test` in `tools/code-reviewer` and `npm run lint` at the repo root — 05f1f13
 
 #### Manual
 
-- [x] 2.5 Read-through of `review.yml`: every event type ends in an explicit exit 0/1, none skips the job
+- [x] 2.5 Read-through of `review.yml`: every event type ends in an explicit exit 0/1, none skips the job — 05f1f13
 
 ### Phase 3: GitHub setup, live verification and docs
 
 #### Automated
 
-- [ ] 3.1 Docs mention the workflow and secret in `CLAUDE.md`
-- [ ] 3.2 App checks pass: `npm run lint` at the repo root
+- [x] 3.1 Docs mention the workflow and secret in `CLAUDE.md`
+- [x] 3.2 App checks pass: `npm run lint` at the repo root
 
 #### Manual
 
-- [ ] 3.3 Secret `OPENROUTER_API_KEY` and variable `REVIEW_MODEL` exist in the repository settings
-- [ ] 3.4 Throwaway PR with a small correct change: comment, `ai-cr:passed`, check green
-- [ ] 3.5 Throwaway PR with an obviously flawed change: `ai-cr:failed`, check red
-- [ ] 3.6 Adding an unrelated label to the failed PR keeps the check red and cancels nothing
-- [ ] 3.7 Adding `ai-cr:review` runs a new review and removes the label
+- [x] 3.3 Secret `OPENROUTER_API_KEY` and variable `REVIEW_MODEL` exist in the repository settings
+- [x] 3.4 Throwaway PR with a small correct change: comment, `ai-cr:passed`, check green
+- [x] 3.5 Throwaway PR with an obviously flawed change: `ai-cr:failed`, check red
+- [x] 3.6 Adding an unrelated label to the failed PR keeps the check red and cancels nothing
+- [x] 3.7 Adding `ai-cr:review` runs a new review and removes the label
 - [ ] 3.8 Ruleset active: failed PR blocked for non-bypass merge; direct push to `main` still works
