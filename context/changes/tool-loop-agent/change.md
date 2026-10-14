@@ -1,7 +1,7 @@
 ---
 change_id: tool-loop-agent
 title: Modular code-review agent on AI SDK ToolLoopAgent (M5L2)
-status: implementing
+status: implemented
 created: 2026-10-14
 updated: 2026-10-14
 archived_at: null

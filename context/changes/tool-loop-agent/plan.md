@@ -228,10 +228,10 @@ One model call per review (no tools, structured output in the same step). The ti
 
 #### Automated
 
-- [x] 2.1 Unit tests pass: `cd tools/code-reviewer && npm test`
-- [x] 2.2 Type checking passes: `cd tools/code-reviewer && npm run typecheck`
-- [x] 2.3 A deliberately broken prompt builder makes `npm test` fail
+- [x] 2.1 Unit tests pass: `cd tools/code-reviewer && npm test` — 778d6e3
+- [x] 2.2 Type checking passes: `cd tools/code-reviewer && npm run typecheck` — 778d6e3
+- [x] 2.3 A deliberately broken prompt builder makes `npm test` fail — 778d6e3
 
 #### Manual
 
-- [x] 2.4 Tests run offline: `npm test` passes with `OPENROUTER_API_KEY` unset
+- [x] 2.4 Tests run offline: `npm test` passes with `OPENROUTER_API_KEY` unset — 778d6e3
