@@ -1,0 +1,87 @@
+# Composite action: builds the repository's code-review agent (tools/code-reviewer) from the
+# checked-out code and runs it on a PR diff (course lesson M5L3, from
+# .claude/config-templates/m5l3-action.yml.template).
+# The agent prints JSON matching tools/code-reviewer/src/review-schema.ts; this action exposes
+# the binding verdict and the path of the full review.
+name: AI Reviewer
+description: Build the repository's code-review agent and run it on a pull request diff
+
+inputs:
+  api-key:
+    description: OpenRouter API key (empty for PRs from forks and Dependabot, which get no secrets)
+    required: false
+    default: ""
+  pr-title:
+    description: Pull request title
+    required: true
+  pr-body:
+    description: Pull request description (optional; costs tokens)
+    required: false
+    default: ""
+  diff-file:
+    description: Path to a file with the PR diff (a file avoids step-output size and newline limits)
+    required: true
+  model:
+    description: OpenRouter model id; empty uses the agent's default model
+    required: false
+    default: ""
+  reviewer-dir:
+    description: Agent package directory, relative to the workspace
+    required: false
+    default: tools/code-reviewer
+
+outputs:
+  verdict:
+    description: Binding pass/fail verdict from the agent
+    value: ${{ steps.agent.outputs.verdict }}
+  review-file:
+    description: Path to the full JSON review
+    value: ${{ steps.agent.outputs.review-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Require the API key
+      shell: bash
+      env:
+        API_KEY: ${{ inputs.api-key }}
+      run: |
+        if [ -z "$API_KEY" ]; then
+          echo "::error title=AI review::No OPENROUTER_API_KEY: a PR from a fork or Dependabot gets no repository secrets. Review it manually."
+          exit 1
+        fi
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 22
+        cache: npm
+        cache-dependency-path: ${{ inputs.reviewer-dir }}/package-lock.json
+
+    - name: Build agent
+      shell: bash
+      working-directory: ${{ inputs.reviewer-dir }}
+      run: |
+        npm ci --no-audit --no-fund
+        npm run build -- --outfile="$RUNNER_TEMP/ai-reviewer/review.js"
+
+    - name: Run agent
+      id: agent
+      shell: bash
+      # Untrusted PR text goes through env, never interpolated into the script.
+      env:
+        OPENROUTER_API_KEY: ${{ inputs.api-key }}
+        PR_TITLE: ${{ inputs.pr-title }}
+        PR_BODY: ${{ inputs.pr-body }}
+        DIFF_FILE: ${{ inputs.diff-file }}
+        REVIEW_MODEL: ${{ inputs.model }}
+      run: |
+        review_file="$RUNNER_TEMP/ai-review.json"
+        status=0
+        node "$RUNNER_TEMP/ai-reviewer/review.js" > "$review_file" || status=$?
+        if [ "$status" -ne 0 ]; then
+          echo "::error title=AI review::The agent exited with $status and gave no verdict (see the log line above)."
+          exit 1
+        fi
+        verdict=$(node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8")); if (!["pass", "fail"].includes(r.verdict)) process.exit(1); console.log(r.verdict)' "$review_file")
+        echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+        echo "review-file=$review_file" >> "$GITHUB_OUTPUT"

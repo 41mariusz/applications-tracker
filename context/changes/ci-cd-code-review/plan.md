@@ -234,27 +234,27 @@ Each review adds `npm ci` in `tools/code-reviewer` (~10-20 s) and one model call
 
 #### Automated
 
-- [x] 1.1 Build produces a runnable bundle: `npm run build` then the bundle exits 2 on an empty diff
-- [x] 1.2 Agent checks pass: `npm run typecheck && npm test` in `tools/code-reviewer`
-- [x] 1.3 Workflow lint passes: actionlint 1.7.12 via docker
-- [x] 1.4 App checks unaffected: `npm run lint` at the repo root passes
+- [x] 1.1 Build produces a runnable bundle: `npm run build` then the bundle exits 2 on an empty diff — 4106bfc
+- [x] 1.2 Agent checks pass: `npm run typecheck && npm test` in `tools/code-reviewer` — 4106bfc
+- [x] 1.3 Workflow lint passes: actionlint 1.7.12 via docker — 4106bfc
+- [x] 1.4 App checks unaffected: `npm run lint` at the repo root passes — 4106bfc
 
 #### Manual
 
-- [ ] 1.5 After push, the `code-reviewer` job is green on GitHub and `deploy` ran without waiting for it
+- [x] 1.5 After push, the `code-reviewer` job is green on GitHub and `deploy` ran without waiting for it — 4106bfc
 
 ### Phase 2: Composite action and review workflow
 
 #### Automated
 
-- [ ] 2.1 Workflow lint passes: actionlint 1.7.12 via docker
-- [ ] 2.2 No PR title, body or labels expression inside a `run:` block
-- [ ] 2.3 Replay decision logic is correct for passed / failed / no verdict label
-- [ ] 2.4 Agent and app checks still pass: `npm test` in `tools/code-reviewer` and `npm run lint` at the repo root
+- [x] 2.1 Workflow lint passes: actionlint 1.7.12 via docker
+- [x] 2.2 No PR title, body or labels expression inside a `run:` block
+- [x] 2.3 Replay decision logic is correct for passed / failed / no verdict label
+- [x] 2.4 Agent and app checks still pass: `npm test` in `tools/code-reviewer` and `npm run lint` at the repo root
 
 #### Manual
 
-- [ ] 2.5 Read-through of `review.yml`: every event type ends in an explicit exit 0/1, none skips the job
+- [x] 2.5 Read-through of `review.yml`: every event type ends in an explicit exit 0/1, none skips the job
 
 ### Phase 3: GitHub setup, live verification and docs
 
