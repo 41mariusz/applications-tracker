@@ -8,9 +8,13 @@
 description: Code review prompt — one React 16 -> 19 migration diff, three models
 
 # Same strict structured output as the agent in CI; no temperature (the agent sets none,
-# and openai/gpt-5.6-luna does not accept it).
+# and openai/gpt-5.6-luna does not accept it). Like the agent's AI SDK call, the output is the
+# answer only: showThinking off (promptfoo would prepend "Thinking: …" and break the JSON), and
+# no 1024-token default cap (reasoning models spend it all on thinking and get cut off).
 x-review-config: &review-config
   response_format: file://response-format.json
+  showThinking: false
+  max_tokens: 16384
 
 providers:
   - id: openrouter:z-ai/glm-5.3

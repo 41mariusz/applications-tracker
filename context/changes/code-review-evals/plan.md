@@ -252,6 +252,7 @@ Run the eval once against the three real models and record the outcome. Assertio
 
 - Exit code 0 (all assertions passed) or 100 (some failed) are both valid outcomes.
 - Any provider error is a setup problem to fix before recording: HTTP 4xx/5xx, a rejected `response_format`, an unknown model.
+  - _Implementation note (2026-10-14): the first funded run exposed two promptfoo provider defaults: `showThinking: true` ("Thinking: …" prepended, so the output is not JSON) and `max_tokens: 1024` (DeepSeek truncated). Both are now overridden in the shared provider config (`showThinking: false`, `max_tokens: 16384`), so the output matches the agent's. The baseline comes from the run after that fix._
 
 #### 2. Results record
 
@@ -333,26 +334,26 @@ Not applicable: no database, no app code, no deploy impact.
 #### Automated
 
 - [x] 2.1 `npm ci --omit=optional` in `tools/code-reviewer/evals` succeeds from the committed lockfile
-- [x] 2.2 `npx promptfoo --version` in `tools/code-reviewer/evals` prints `0.124.1`
-- [x] 2.3 `npx promptfoo validate -c promptfooconfig.yaml` in `tools/code-reviewer/evals` reports a valid config
-- [x] 2.4 The fixture contains none of `{{`, `{%`, `{#`: `grep -nE '\{\{|\{%|\{#' tools/code-reviewer/evals/fixtures/react19-migration.diff` prints nothing
-- [x] 2.5 `git apply --check` of the fixture on an empty scratch repo accepts it (valid unified diff), or, for hunks modifying existing files, `git apply --stat` parses it without errors
-- [x] 2.6 `npm test` and `npm run typecheck` in `tools/code-reviewer` still pass
-- [x] 2.7 `npm run lint` at the repo root still passes
+- [x] 2.2 `npx promptfoo --version` in `tools/code-reviewer/evals` prints `0.124.1` — 6022ba3
+- [x] 2.3 `npx promptfoo validate -c promptfooconfig.yaml` in `tools/code-reviewer/evals` reports a valid config — 6022ba3
+- [x] 2.4 The fixture contains none of `{{`, `{%`, `{#`: `grep -nE '\{\{|\{%|\{#' tools/code-reviewer/evals/fixtures/react19-migration.diff` prints nothing — 6022ba3
+- [x] 2.5 `git apply --check` of the fixture on an empty scratch repo accepts it (valid unified diff), or, for hunks modifying existing files, `git apply --stat` parses it without errors — 6022ba3
+- [x] 2.6 `npm test` and `npm run typecheck` in `tools/code-reviewer` still pass — 6022ba3
+- [x] 2.7 `npm run lint` at the repo root still passes — 6022ba3
 
 #### Manual
 
-- [x] 2.8 Owner reads the fixture and agrees that each of the three flaws is impactful and that the diff gives no hints
+- [x] 2.8 Owner reads the fixture and agrees that each of the three flaws is impactful and that the diff gives no hints — 6022ba3
 - [x] 2.9 Owner reads the rubric text and agrees that it describes the three flaws precisely enough to judge
 
 ### Phase 3: First Live Run and Recorded Results
 
 #### Automated
 
-- [ ] 3.1 `npm run eval` in `tools/code-reviewer/evals` completes with exit code 0 or 100, and `results/latest.json` lists 3 results, one per provider, with no provider error
-- [ ] 3.2 `context/changes/code-review-evals/eval-results.md` exists and has one table row per model (3)
+- [x] 3.1 `npm run eval` in `tools/code-reviewer/evals` completes with exit code 0 or 100, and `results/latest.json` lists 3 results, one per provider, with no provider error
+- [x] 3.2 `context/changes/code-review-evals/eval-results.md` exists and has one table row per model (3)
 
 #### Manual
 
-- [ ] 3.3 In `npm run view`, the rendered prompt for one result shows the system message and the full diff intact
-- [ ] 3.4 Owner spot-checks the grader's reasons and agrees the `llm-rubric` verdicts are fair for at least one passing and one failing model, or for all three if all share one outcome
+- [x] 3.3 In `npm run view`, the rendered prompt for one result shows the system message and the full diff intact
+- [x] 3.4 Owner spot-checks the grader's reasons and agrees the `llm-rubric` verdicts are fair for at least one passing and one failing model, or for all three if all share one outcome
