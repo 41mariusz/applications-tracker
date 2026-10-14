@@ -1,10 +1,10 @@
 ---
 change_id: ci-cd-code-review
 title: AI code review of pull requests in GitHub Actions (M5L3)
-status: impl_reviewed
+status: archived
 created: 2026-10-14
 updated: 2026-10-14
-archived_at: null
+archived_at: 2026-10-14T16:12:59Z
 ---
 
 ## Notes
