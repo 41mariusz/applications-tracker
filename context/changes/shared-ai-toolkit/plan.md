@@ -466,24 +466,24 @@ Not applicable: no database or app changes.
 
 #### Automated
 
-- [x] 3.1 `node scripts/validate-package.mjs` in `packages/ai-toolkit` passes; renaming the frontmatter `name` makes it fail with a named message; restoring makes it pass
-- [x] 3.2 `npm pack` then `node scripts/consumer-check.mjs <tarball>` in `packages/ai-toolkit` passes locally
-- [x] 3.3 The workflow YAML parses, and every `uses:` line in it is pinned to a 40-character SHA: `node -e` over the file, or `grep -E 'uses: .+@[0-9a-f]{40} #'` matching every `uses:` line
-- [x] 3.4 `npm run lint` at the repo root still passes
+- [x] 3.1 `node scripts/validate-package.mjs` in `packages/ai-toolkit` passes; renaming the frontmatter `name` makes it fail with a named message; restoring makes it pass — d20c214
+- [x] 3.2 `npm pack` then `node scripts/consumer-check.mjs <tarball>` in `packages/ai-toolkit` passes locally — d20c214
+- [x] 3.3 The workflow YAML parses, and every `uses:` line in it is pinned to a 40-character SHA: `node -e` over the file, or `grep -E 'uses: .+@[0-9a-f]{40} #'` matching every `uses:` line — d20c214
+- [x] 3.4 `npm run lint` at the repo root still passes — d20c214
 
 #### Manual
 
-- [x] 3.5 Owner reads the workflow and agrees on permissions (read-only by default, `packages: write` only in `publish`) and the paths filter
+- [x] 3.5 Owner reads the workflow and agrees on permissions (read-only by default, `packages: write` only in `publish`) and the paths filter — d20c214
 
 ### Phase 4: Live Publish and Consumer Proof
 
 #### Automated
 
-- [ ] 4.1 The `Publish AI Toolkit` run for the release commit on `main` has `validate` and `publish` concluded `success` (GitHub API `actions/runs?head_sha=…`)
-- [ ] 4.2 `context/changes/shared-ai-toolkit/publish-results.md` exists with run IDs, version and package URL
+- [x] 4.1 The `Publish AI Toolkit` run for the release commit on `main` has `validate` and `publish` concluded `success` (GitHub API `actions/runs?head_sha=…`)
+- [x] 4.2 `context/changes/shared-ai-toolkit/publish-results.md` exists with run IDs, version and package URL
 
 #### Manual
 
-- [ ] 4.3 In a scratch consumer, the owner installs `@41mariusz/ai-toolkit@0.1.0` from GitHub Packages, using a committed-style `.npmrc` with the registry mapping only, plus their own token: `npm login` or a user-level `.npmrc`. Then `.claude/skills/team-code-review/`, one managed `CLAUDE.md` block and the manifest are present.
-- [ ] 4.4 In that consumer, asking Claude Code to "review my changes" on a small diff triggers `team-code-review`, which answers in the spec's format: severities, `file:line`, and a final recommendation.
-- [ ] 4.5 The package page on GitHub shows the package linked to `41mariusz/applications-tracker`
+- [x] 4.3 In a scratch consumer, the owner installs `@41mariusz/ai-toolkit@0.1.0` from GitHub Packages, using a committed-style `.npmrc` with the registry mapping only, plus their own token: `npm login` or a user-level `.npmrc`. Then `.claude/skills/team-code-review/`, one managed `CLAUDE.md` block and the manifest are present.
+- [x] 4.4 In that consumer, asking Claude Code to "review my changes" on a small diff triggers `team-code-review`, which answers in the spec's format: severities, `file:line`, and a final recommendation.
+- [x] 4.5 The package page on GitHub shows the package linked to `41mariusz/applications-tracker`
