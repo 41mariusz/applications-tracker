@@ -479,11 +479,11 @@ Not applicable: no database or app changes.
 
 #### Automated
 
-- [x] 4.1 The `Publish AI Toolkit` run for the release commit on `main` has `validate` and `publish` concluded `success` (GitHub API `actions/runs?head_sha=…`)
-- [x] 4.2 `context/changes/shared-ai-toolkit/publish-results.md` exists with run IDs, version and package URL
+- [x] 4.1 The `Publish AI Toolkit` run for the release commit on `main` has `validate` and `publish` concluded `success` (GitHub API `actions/runs?head_sha=…`) — 21241c9
+- [x] 4.2 `context/changes/shared-ai-toolkit/publish-results.md` exists with run IDs, version and package URL — 21241c9
 
 #### Manual
 
-- [x] 4.3 In a scratch consumer, the owner installs `@41mariusz/ai-toolkit@0.1.0` from GitHub Packages, using a committed-style `.npmrc` with the registry mapping only, plus their own token: `npm login` or a user-level `.npmrc`. Then `.claude/skills/team-code-review/`, one managed `CLAUDE.md` block and the manifest are present.
-- [x] 4.4 In that consumer, asking Claude Code to "review my changes" on a small diff triggers `team-code-review`, which answers in the spec's format: severities, `file:line`, and a final recommendation.
-- [x] 4.5 The package page on GitHub shows the package linked to `41mariusz/applications-tracker`
+- [x] 4.3 In a scratch consumer, the owner installs `@41mariusz/ai-toolkit@0.1.0` from GitHub Packages, using a committed-style `.npmrc` with the registry mapping only, plus their own token: `npm login` or a user-level `.npmrc`. Then `.claude/skills/team-code-review/`, one managed `CLAUDE.md` block and the manifest are present. — 21241c9
+- [x] 4.4 In that consumer, asking Claude Code to "review my changes" on a small diff triggers `team-code-review`, which answers in the spec's format: severities, `file:line`, and a final recommendation. — 21241c9
+- [x] 4.5 The package page on GitHub shows the package linked to `41mariusz/applications-tracker` — 21241c9

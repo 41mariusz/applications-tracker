@@ -1,9 +1,9 @@
 ---
 change_id: shared-ai-toolkit
 title: Shared AI toolkit package published to GitHub Packages (M5L4)
-status: implementing
+status: implemented
 created: 2026-10-14
-updated: 2026-10-14
+updated: 2026-10-15
 archived_at: null
 ---
 
