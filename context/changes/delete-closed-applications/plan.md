@@ -287,5 +287,5 @@ The change is additive (a new permissive policy), so the previous code version w
 
 #### Manual
 
-- [ ] 3.4 Owner runs `npx supabase db push` (the new migration), then pushes; CI deploys
-- [ ] 3.5 In production the owner withdraws one `[TEST]` application, deletes it from its details page, and sees it gone from the list; an active one shows no delete control
+- [x] 3.4 Owner runs `npx supabase db push` (the new migration), then pushes; CI deploys — 90f073b
+- [x] 3.5 In production the owner withdraws one `[TEST]` application, deletes it from its details page, and sees it gone from the list; an active one shows no delete control — 90f073b
