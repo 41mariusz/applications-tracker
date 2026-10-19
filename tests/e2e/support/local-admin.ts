@@ -1,6 +1,6 @@
 import { expect, type APIRequestContext } from "@playwright/test";
 
-// The app never deletes anything (PRD), so E2E data is removed by the test process itself, with the
+// The app deletes only crossed-out applications (PRD FR-004), so E2E data is removed by the test process itself, with the
 // LOCAL stack's service-role key from the gitignored .env.e2e. Never pointed at a non-local backend.
 function localAdmin(): { url: string; key: string } {
   const url = process.env.E2E_SUPABASE_URL;

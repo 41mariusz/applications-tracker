@@ -70,6 +70,7 @@ Primary persona: the author themself — a single candidate running many recruit
 - FR-004: User can remove an application from active tracking; it is never deleted without a trace — at most it stays on the list crossed out, with an appropriate status. Priority: must-have
   > Socrates: Counter-argument considered: "permanent removal wipes the agreements and the change log, contradicting the 'no lost agreements' guardrail." Resolution (user's words): "nie usuwa bez śladu, co najwyżej jest skreślona na liście z odpowiednim statusem" — nothing is ever permanently removed; removed applications appear crossed out with the Withdrawn status (see Business Logic).
   > Update 2026-10-06 (domain distillation Q-01): one deliberate exception — switching from demo to real data (roadmap S-05) wipes **all** of the account's applications, notes, history and CV files with `npm run demo-data -- --reset`. It runs once, before the first real application is entered, and only with the owner's explicit go-ahead; after that, nothing is deleted.
+  > Update 2026-10-19 (owner decision, certification CRUD): an application that is crossed out — status Rejected or Withdrawn — can be **deleted permanently** from its details page, after a confirmation that names the company. The deletion takes its notes, note versions, status and field history with it; its CV file stays in the CV library (FR-013). Active and Accepted applications cannot be deleted (the UI hides the action, the API answers 409, and the database's RLS delete policy allows only those two statuses). The "no lost agreements" guardrail still holds for every application that is not crossed out.
 
 ### Lookup
 
@@ -111,7 +112,7 @@ Primary persona: the author themself — a single candidate running many recruit
 
 The application orders the user's recruitment processes by stage and, within a stage, by most recent activity, while allowing status changes only forward or to a closed state and recording every change.
 
-**Statuses.** Active: Sent → HR contact → Interviews → Offer. Terminal: Accepted, Rejected (the company declined), Withdrawn (the user resigned — this is also how an application is "removed", see FR-004).
+**Statuses.** Active: Sent → HR contact → Interviews → Offer. Terminal: Accepted, Rejected (the company declined), Withdrawn (the user resigned — this is also how an application is "removed", see FR-004). A Rejected or Withdrawn application can also be deleted permanently (FR-004, update 2026-10-19).
 
 **Transitions.** Forward moves are allowed, including skipping stages (e.g., Sent → Interviews when HR invites straight away). From any active status the user can move to Rejected or Withdrawn. A terminal status can be reverted — to any other status the user picks, including another terminal one (e.g., Accepted → Withdrawn) — only after explicit confirmation (e.g., a company comes back after a month), and the revert is recorded in the change log. Any other move (e.g., Offer → Sent) is refused.
 

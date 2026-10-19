@@ -4,6 +4,7 @@ import Topbar from "@/components/Topbar.astro";
 import StatusControl from "@/components/applications/StatusControl";
 import NotesPanel from "@/components/applications/NotesPanel";
 import CvPanel from "@/components/applications/CvPanel";
+import DeleteApplicationButton from "@/components/applications/DeleteApplicationButton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,7 @@ import type { CvFile } from "@/types";
 import { isUuid } from "@/lib/domain/ids";
 import { latestActiveNote } from "@/lib/domain/notes";
 import { FIELD_LABELS, mergeHistory, type HistoryField } from "@/lib/domain/changes";
-import { isClosed } from "@/lib/domain/status";
+import { canDelete, isClosed } from "@/lib/domain/status";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { getApplicationDetails, type ApplicationDetails } from "@/lib/services/notes";
 import { logError, logWarn } from "@/lib/log";
@@ -222,6 +223,17 @@ const plainLinkClass = "text-link focus-visible:ring-ring rounded-sm underline o
               </ul>
             )}
           </section>
+
+          {canDelete(application.status) && (
+            <section class="bg-card rounded-xl border p-4 text-sm" data-testid="delete-section">
+              <h2 class="font-semibold">Usuń aplikację</h2>
+              <p class="text-supporting-foreground mt-1 mb-3">
+                Aplikacja jest zamknięta. Możesz ją usunąć trwale razem z notatkami i historią zmian; plik CV zostanie w
+                bibliotece.
+              </p>
+              <DeleteApplicationButton applicationId={application.id} company={application.company} client:load />
+            </section>
+          )}
         </>
       )}
     </div>

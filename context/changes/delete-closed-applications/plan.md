@@ -271,18 +271,18 @@ The change is additive (a new permissive policy), so the previous code version w
 
 #### Automated
 
-- [x] 2.1 `npm test` passes, including the `canDelete` cases
-- [x] 2.2 `npx astro check` passes
-- [x] 2.3 `npm run lint` passes
-- [x] 2.4 `npm run smoke` passes against a local preview (`BASE_URL=http://localhost:4321`, local `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`)
+- [x] 2.1 `npm test` passes, including the `canDelete` cases — 06f28ee
+- [x] 2.2 `npx astro check` passes — 06f28ee
+- [x] 2.3 `npm run lint` passes — 06f28ee
+- [x] 2.4 `npm run smoke` passes against a local preview (`BASE_URL=http://localhost:4321`, local `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`) — 06f28ee
 
 ### Phase 3: UI, E2E and Docs
 
 #### Automated
 
-- [ ] 3.1 `npx playwright test tests/e2e/delete-closed.spec.ts` passes (local preview, local Supabase)
-- [ ] 3.2 `npm run lint` passes (incl. `check-ui-literals`)
-- [ ] 3.3 `npx astro check` and `npm test` pass
+- [x] 3.1 `npx playwright test tests/e2e/delete-closed.spec.ts` passes (local preview, local Supabase)
+- [x] 3.2 `npm run lint` passes (incl. `check-ui-literals`)
+- [x] 3.3 `npx astro check` and `npm test` pass
 
 #### Manual
 

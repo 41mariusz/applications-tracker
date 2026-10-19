@@ -11,6 +11,7 @@ import ApplicationCard from "@/components/applications/ApplicationCard.astro";
 import { FILTER_CHIP_CLASS } from "@/components/applications/list-classes";
 import NotesPanel from "@/components/applications/NotesPanel";
 import CvPanel from "@/components/applications/CvPanel";
+import DeleteApplicationButton from "@/components/applications/DeleteApplicationButton";
 import ApplicationForm from "@/components/applications/ApplicationForm";
 import {
   FORM_CONTROL_CLASS,
@@ -775,6 +776,25 @@ const cvMarkers: [string, string][] = [
             <div class="space-y-1">
               <p class="text-muted-foreground text-xs">StatusControl — zamknięta</p>
               <StatusControl applicationId="00000000-0000-4000-8000-000000000002" status="rejected" />
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">
+                DeleteApplicationButton — zamknięta (tylko Odrzucona / Wycofana)
+              </p>
+              <DeleteApplicationButton
+                applicationId="00000000-0000-4000-8000-000000000002"
+                company="Acme sp. z o.o."
+                client:load
+              />
+            </div>
+            <div class="space-y-1">
+              <p class="text-muted-foreground text-xs">DeleteApplicationButton — w toku</p>
+              <DeleteApplicationButton
+                applicationId="00000000-0000-4000-8000-000000000002"
+                company="Acme sp. z o.o."
+                forcePending
+                client:load
+              />
             </div>
             <p class="text-muted-foreground max-w-xs text-xs">
               Stan „Zapisywanie…” i błąd zmiany statusu pojawiają się tylko po interakcji (stan wewnętrzny) — ten sam
