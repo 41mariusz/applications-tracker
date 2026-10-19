@@ -168,7 +168,7 @@ Safety agent:
   - Phase 4 §1 expects a run with an unchanged version to show the "already published" notice. The optional re-run was not done; no Progress row claims it.
   - The logic is sound: the installed npm throws E404 for a missing version (`lib/commands/view.js:190`).
 - **Fix**: Re-run the `Publish AI Toolkit` run 38604604264 ("Re-run all jobs") and record the notice in `publish-results.md`.
-- **Decision**: IN PROGRESS — the review-fix push touches the package with version 0.1.0 unchanged, so its run must show the skip notice; recorded in publish-results.md after the push
+- **Decision**: FIXED — proven live: run #39247763782 for the review-fix push (version 0.1.0 unchanged) ended `publish` with "already published; skipping"; recorded in publish-results.md
 
 ### F8 — consumer-check prints raw multi-line errors
 

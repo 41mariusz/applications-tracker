@@ -1,6 +1,6 @@
 {
   "name": "@41mariusz/ai-toolkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Team AI artifacts (team-code-review skill, CLAUDE.md rules) distributed through GitHub Packages",
   "license": "UNLICENSED",
   "type": "module",

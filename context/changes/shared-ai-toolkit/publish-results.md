@@ -14,7 +14,7 @@
 
 ## Skip-if-published
 
-No run with an unchanged version has happened yet. The results commit does not touch `packages/ai-toolkit/`, so it does not trigger the workflow. Evidence comes from re-running the workflow; see the owner checklist below.
+Proven on 2026-10-19. The push of the review fixes (`46e37d8`) changed `packages/ai-toolkit/` and kept version `0.1.0`. Run `Publish AI Toolkit` #39247763782 (https://github.com/41mariusz/applications-tracker/actions/runs/39247763782) then had `validate` and `publish` both succeed. `publish` ended with the notice "@41mariusz/ai-toolkit@0.1.0 is already published; skipping (bump "version" to release)".
 
 ## Local evidence before the release
 
@@ -34,7 +34,7 @@ npm 11 warns that the toolkit's `postinstall` is "not yet covered by allowScript
 - [x] 4.3 Install `0.1.0` from GitHub Packages into a scratch consumer.
 - [x] 4.4 Ask Claude Code to "review my changes" there, and check that `team-code-review` answers in the spec format.
 - [x] 4.5 Open the package page and check that it is linked to `41mariusz/applications-tracker`.
-- [ ] Optional skip evidence: on the run page, use **Re-run all jobs**; the `publish` job should end with the notice "already published; skipping".
+- [x] Optional skip evidence: on the run page, use **Re-run all jobs**; the `publish` job should end with the notice "already published; skipping".
 
 ### 4.3 Consumer install (2026-10-15)
 
@@ -63,3 +63,7 @@ npm 11 warns that the toolkit's `postinstall` is "not yet covered by allowScript
 ### 4.5 Package page (2026-10-15)
 
 The owner sees `ai-toolkit` in the **Packages** section of `41mariusz/applications-tracker`, so the `repository` field (`directory: packages/ai-toolkit`) linked the package to the repo on the first publish. The skip-if-published re-run (optional) was not done.
+
+### Release 0.1.1 (review fixes)
+
+The review fixes changed the installer (`reviews/impl-review.md` F1–F3, F6), so `version` was bumped to `0.1.1`. Without the bump, the registry would keep serving the 0.1.0 installer. The run for that push is recorded below once it completes.
