@@ -7,9 +7,12 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
+// GitHub cuts an annotation at its first newline; escape like scripts/check-cloud-migrations.mjs.
+const escapeAnnotation = (text) => text.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+
 const tarballArg = process.argv[2];
-if (!tarballArg) {
-  console.error("Usage: node scripts/consumer-check.mjs <tarball>");
+if (!tarballArg || !existsSync(tarballArg)) {
+  console.error(`Usage: node scripts/consumer-check.mjs <tarball>${tarballArg ? ` (not found: ${tarballArg})` : ""}`);
   process.exit(2);
 }
 const tarball = resolve(tarballArg);
@@ -31,6 +34,7 @@ function expect(condition, message) {
 const blocks = () => readFileSync(join(consumer, "CLAUDE.md"), "utf8").split(begin).length - 1;
 const skill = join(consumer, ".claude", "skills", "team-code-review", "SKILL.md");
 const manifestPath = join(consumer, ".claude", ".ai-toolkit-manifest.json");
+const statusPath = join(consumer, ".claude", ".ai-toolkit-status.json");
 
 try {
   writeFileSync(join(consumer, "CLAUDE.md"), "# Consumer project\n");
@@ -48,6 +52,7 @@ try {
     JSON.parse(readFileSync(manifestPath, "utf8")).version === pkg.version,
     `manifest records version ${pkg.version}`,
   );
+  expect(JSON.parse(readFileSync(statusPath, "utf8")).ok === true, "status file records a successful postinstall");
 
   console.log("npx ai-toolkit (second install)");
   npm(["exec", "--no", "--", "ai-toolkit"]);
@@ -55,11 +60,14 @@ try {
 
   console.log("npx ai-toolkit-uninstall");
   npm(["exec", "--no", "--", "ai-toolkit-uninstall"]);
-  expect(!existsSync(skill) && !existsSync(manifestPath), "uninstall removed the skill and the manifest");
+  expect(
+    !existsSync(skill) && !existsSync(manifestPath) && !existsSync(statusPath),
+    "uninstall removed the skill, the manifest and the status file",
+  );
   expect(readFileSync(join(consumer, "CLAUDE.md"), "utf8") === "# Consumer project\n", "uninstall restored CLAUDE.md");
   console.log("consumer check passed");
 } catch (error) {
-  console.error(`::error title=ai-toolkit consumer check::${error.message}`);
+  console.error(`::error title=ai-toolkit consumer check::${escapeAnnotation(error.message)}`);
   if (error.stderr) console.error(String(error.stderr));
   process.exitCode = 1;
 } finally {

@@ -19,11 +19,22 @@ The skill is called `team-code-review`, not `code-review`, because Claude Code s
 
 2. Authenticate. GitHub Packages requires a token even to read a package:
    - **Locally:** run `npm login --scope=@41mariusz --registry=https://npm.pkg.github.com` with your GitHub user name and a classic token with `read:packages`. Alternatively, put `//npm.pkg.github.com/:_authToken=<token>` in your **user-level** `~/.npmrc`, never in the repository.
-   - **In CI:** store the token as the secret `GH_PKG_TOKEN` and add this `preinstall` script to the consumer's `package.json`. It appends the auth line only on the CI machine. The installer does not add it for you.
+   - **In CI:** store a `read:packages` token as the secret `GH_PKG_TOKEN`, and give npm the auth line **before** `npm ci` runs. In GitHub Actions:
 
-     ```bash
-     [ -n "$GH_PKG_TOKEN" ] && echo '//npm.pkg.github.com/:_authToken=${GH_PKG_TOKEN}' >> .npmrc || true
+     ```yaml
+     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+       with:
+         node-version: 24
+         registry-url: "https://npm.pkg.github.com"
+         scope: "@41mariusz"
+     - run: npm ci
+       env:
+         NODE_AUTH_TOKEN: ${{ secrets.GH_PKG_TOKEN }}
      ```
+
+     On other CI systems, write `//npm.pkg.github.com/:_authToken=${GH_PKG_TOKEN}` (literally, with single quotes) to the CI user's `~/.npmrc` in a step before `npm ci`. npm expands the variable at run time.
+
+     Do not use a `preinstall` script for this. npm 7+ runs the root project's `preinstall` only after the dependencies have been fetched, so the token arrives too late and `npm ci` fails with 401.
 
 3. Install:
 
@@ -37,7 +48,9 @@ npm 11 prints "install scripts not yet covered by allowScripts" for the toolkit'
 
 `postinstall` (or `npx ai-toolkit` by hand) works in the project where `npm install` ran (`INIT_CWD`):
 
-- **Skills:** copies every skill to `.claude/skills/<name>/`. A skill directory that the toolkit did not install itself is left alone, with a warning.
+- **Skills:** copies every skill to `.claude/skills/<name>/`.
+  - A skill directory that the toolkit did not install itself is left alone, with a warning.
+  - A directory the toolkit did install **belongs to the toolkit**: any local edit or extra file inside it is replaced on the next install and removed on uninstall. To customise a skill, copy it under another name.
 - **Rules:** writes the rules between these markers in `CLAUDE.md`, creating the file if it is missing:
 
   ```
@@ -49,10 +62,14 @@ npm 11 prints "install scripts not yet covered by allowScripts" for the toolkit'
   - With exactly one `BEGIN` before one `END`, the block is replaced.
   - With anything else (one marker, duplicates, `END` first), it stops with a message and changes nothing. Fix the markers by hand and run `npx ai-toolkit`.
 
-- **Manifest:** writes `.claude/.ai-toolkit-manifest.json` with the package version and the installed files.
+  - It refuses, with a message and no change, a `CLAUDE.md` that is not valid UTF-8, or a symlink whose target is missing or outside the project. A symlink to a file inside the project (for example `AGENTS.md`) is followed, and that file is edited.
+  - The block is written with LF line endings. In a CRLF file it stays LF, and uninstall may leave one extra blank line.
+
+- **Manifest:** writes `.claude/.ai-toolkit-manifest.json` with the package version and the installed files. Ownership is recorded _before_ anything is copied, so if an install fails halfway, the next `npx ai-toolkit` repairs it.
+- **Status:** writes `.claude/.ai-toolkit-status.json`, with `ok: true` plus the installed version, or `ok: false` plus the error.
 - **Idempotent:** a second run refreshes the managed content and never duplicates it.
-- **Never breaks your install:** during `npm install` a problem is printed as a warning and the install continues. Run by hand, the same problem exits with code 1.
-- **Development checkout:** in the package's own directory it does nothing.
+- **Never breaks your install:** a problem during `npm install` does not fail it. npm hides the output of a dependency's install scripts, so the warning is not shown. After installing, check `.claude/.ai-toolkit-status.json`, or run `npx ai-toolkit`, which prints the result and exits 1 on an error.
+- **Only as a project dependency:** it does nothing when the package does not sit in a `node_modules` directory (a development checkout, `npm install --prefix packages/ai-toolkit`) and on a global install (`npm i -g`).
 
 ## Uninstall
 
@@ -61,7 +78,13 @@ npx ai-toolkit-uninstall
 npm uninstall @41mariusz/ai-toolkit
 ```
 
-The uninstaller removes exactly what the manifest lists: the skill directories, the managed `CLAUDE.md` block and the manifest itself. It never deletes `CLAUDE.md` or files it did not install.
+The uninstaller removes exactly what the manifest lists:
+
+- the skill directories, whole, including anything you added inside them;
+- the managed `CLAUDE.md` block;
+- the manifest and the status file.
+
+It never deletes `CLAUDE.md` itself, other skill directories, or any other file.
 
 ## Releasing
 

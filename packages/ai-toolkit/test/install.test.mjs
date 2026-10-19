@@ -1,10 +1,21 @@
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, it } from "node:test";
-import { MANIFEST_PATH, PACKAGE_DIR, install, markersFor, readPackage } from "../install.js";
+import { MANIFEST_PATH, PACKAGE_DIR, STATUS_PATH, install, markersFor, readPackage } from "../install.js";
 import { uninstall } from "../uninstall.js";
 
 const pkg = readPackage();
@@ -84,29 +95,105 @@ describe("install", () => {
   });
 });
 
+describe("install recovery and guards", () => {
+  it("owns the skill even when the first install fails halfway, so the next install repairs it", () => {
+    writeFileSync(join(root, "CLAUDE.md"), "# My project\n");
+    chmodSync(join(root, "CLAUDE.md"), 0o444);
+
+    assert.throws(() => install({ root }), { code: "EACCES" });
+    assert.deepEqual(JSON.parse(read(MANIFEST_PATH)).skills, ["team-code-review"]);
+
+    chmodSync(join(root, "CLAUDE.md"), 0o644);
+    const result = install({ root });
+
+    assert.deepEqual(result.skills, ["team-code-review"]);
+    assert.deepEqual(result.warnings, []);
+    assert.equal(countOf(read("CLAUDE.md"), begin), 1);
+  });
+
+  it("refuses a CLAUDE.md symlink whose target is missing", () => {
+    symlinkSync(join(root, "elsewhere", "CLAUDE.md"), join(root, "CLAUDE.md"));
+
+    assert.throws(() => install({ root }), /symlink to a missing file/);
+    assert.equal(existsSync(join(root, "elsewhere")), false);
+  });
+
+  it("refuses a CLAUDE.md that is not UTF-8 instead of rewriting its bytes", () => {
+    const latin1 = Buffer.from([0x23, 0x20, 0x43, 0x61, 0x66, 0xe9, 0x0a]);
+    writeFileSync(join(root, "CLAUDE.md"), latin1);
+
+    assert.throws(() => install({ root }), /not valid UTF-8/);
+    assert.deepEqual(readFileSync(join(root, "CLAUDE.md")), latin1);
+  });
+
+  it("reports a manifest that is not a JSON object as a fixable error", () => {
+    mkdirSync(join(root, ".claude"), { recursive: true });
+    writeFileSync(join(root, MANIFEST_PATH), "null\n");
+
+    assert.throws(() => install({ root }), /not a JSON object/);
+  });
+});
+
 describe("install CLI", () => {
-  const runInstall = (env) =>
-    spawnSync(process.execPath, [join(PACKAGE_DIR, "install.js")], {
-      env: { ...process.env, INIT_CWD: root, npm_lifecycle_event: "", ...env },
+  // The CLI installs only as a project dependency, so run a copy that lives under node_modules.
+  let installedCopy;
+  const runInstall = (env, script = join(installedCopy, "install.js")) =>
+    spawnSync(process.execPath, [script], {
+      env: { ...process.env, INIT_CWD: root, npm_lifecycle_event: "", npm_config_global: "", ...env },
       encoding: "utf8",
     });
 
   beforeEach(() => {
-    writeFileSync(join(root, "CLAUDE.md"), `${end}\n${begin}\n`);
+    installedCopy = join(root, "node_modules", "@41mariusz", "ai-toolkit");
+    for (const entry of ["package.json", "install.js", "uninstall.js", "skills", "rules"]) {
+      cpSync(join(PACKAGE_DIR, entry), join(installedCopy, entry), { recursive: true });
+    }
   });
 
-  it("warns and exits 0 during npm install (postinstall) so the consumer's install continues", () => {
+  it("warns and exits 0 during npm install (postinstall) and records the error in the status file", () => {
+    writeFileSync(join(root, "CLAUDE.md"), `${end}\n${begin}\n`);
+
     const run = runInstall({ npm_lifecycle_event: "postinstall" });
 
     assert.equal(run.status, 0);
     assert.match(run.stderr, /warning: CLAUDE\.md has 1/);
+    const status = JSON.parse(read(STATUS_PATH));
+    assert.equal(status.ok, false);
+    assert.match(status.error, /CLAUDE\.md has 1/);
   });
 
   it("exits 1 when run by hand", () => {
+    writeFileSync(join(root, "CLAUDE.md"), `${end}\n${begin}\n`);
+
     const run = runInstall({});
 
     assert.equal(run.status, 1);
     assert.match(run.stderr, /error: CLAUDE\.md has 1/);
+  });
+
+  it("records a successful install in the status file", () => {
+    const run = runInstall({ npm_lifecycle_event: "postinstall" });
+
+    assert.equal(run.status, 0);
+    const status = JSON.parse(read(STATUS_PATH));
+    assert.equal(status.ok, true);
+    assert.equal(status.version, pkg.version);
+  });
+
+  it("installs nothing when the package is not under node_modules (development checkout, --prefix)", () => {
+    const run = runInstall({ npm_lifecycle_event: "postinstall" }, join(PACKAGE_DIR, "install.js"));
+
+    assert.equal(run.status, 0);
+    assert.match(run.stdout, /not installed as a project dependency/);
+    assert.equal(existsSync(join(root, ".claude")), false);
+    assert.equal(existsSync(join(root, "CLAUDE.md")), false);
+  });
+
+  it("installs nothing on a global install", () => {
+    const run = runInstall({ npm_lifecycle_event: "postinstall", npm_config_global: "true" });
+
+    assert.match(run.stdout, /global install/);
+    assert.equal(existsSync(join(root, ".claude")), false);
   });
 });
 

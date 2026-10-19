@@ -18,7 +18,7 @@ Markers:
   - React and Astro components are PascalCase (`ApplicationForm.tsx`, `ApplicationCard.astro`);
   - a test sits next to its module as `<module>.test.ts`.
 - Constants: UPPER_SNAKE_CASE (`MAX_CV_BYTES`, `CV_TYPES`).
-- **(repo rule)** Language:
+- **(repo rule)** Language (`CLAUDE.md` § Domain and data):
   - Code, comments and docs are in English.
   - UI text is in Polish.
   - Dates are displayed in `Europe/Warsaw`.
@@ -35,7 +35,7 @@ Markers:
   - **Services** wrap Supabase errors with `toServiceError`, so the cause is kept.
   - **Routes** answer through `readFormData` / `failureResponse`.
   - **Failed reads** answer 5xx, never 200 with an empty list.
-- **(repo rule) Browser:**
+- **(repo rule) Browser** (`CLAUDE.md` § Errors and observability):
   - Browser code calls the API only through `apiRequest`.
   - It never wraps a request or a JSON parse in a bare `catch {}`.
 
@@ -43,10 +43,10 @@ Markers:
 
 - **`any`** is not allowed without an explicit justification comment. The repo's ESLint (`strictTypeChecked`) flags it.
 - **Object shapes:** prefer `interface` over `type`, which is already the dominant style in `src/`.
-- **External data:** type it as `unknown` and narrow it with type guards, or **(repo rule)** parse it with zod at system boundaries.
+- **External data:** type it as `unknown` and narrow it with type guards, or **(repo rule)** parse it with zod at system boundaries (`CLAUDE.md` § Key conventions, API routes).
 - **States:** model them with discriminated unions, not optional fields.
 - **Generic parameters:** use descriptive names (`TUser`, not `T`).
-- **(repo rule) Shared types:** entities and DTOs live in `src/types.ts`.
+- **(repo rule) Shared types** (`CLAUDE.md` § Key conventions): entities and DTOs live in `src/types.ts`.
 
 ## Functions
 
@@ -54,12 +54,12 @@ Markers:
 - **Parameters:** at most 3; beyond that, use an options object.
 - **Control flow:** prefer early returns over nested conditionals.
 - **Queries** (`get*`, `find*`, `is*`) must be pure.
-- **(repo rule) Where code goes:**
+- **(repo rule) Where code goes** (`CLAUDE.md` § Key conventions):
   - business rules are pure functions in `src/lib/domain/`, each with a `.test.ts`;
   - Supabase reads and writes go in `src/lib/services/`;
   - other helpers go in `src/lib/`;
   - rules are not put in components or routes.
-- **(repo rule) Writes with a trace:** a write that must leave a trace (status change, field change, note revision) goes through one SQL function, together with its history row.
+- **(repo rule) Writes with a trace** (`CLAUDE.md` § Hard rules): a write that must leave a trace (status change, field change, note revision) goes through one SQL function, together with its history row.
 
 ## Security
 
@@ -68,11 +68,11 @@ Markers:
 - **User input** is validated at system boundaries **(adapted)** with zod in API routes. The body is parsed inside `try`, so a malformed body is a 400, not a 500.
 - **SQL:** parameterised statements only. Writes that must be atomic go through SQL functions.
 - **API responses** never leak stack traces or internal paths.
-- **(repo rule) Authorisation:**
+- **(repo rule) Authorisation** (`CLAUDE.md` § Hard rules, Supabase migrations):
   - An API route checks `context.locals.user` and returns 401 itself.
   - New tables get RLS with per-operation, per-role policies.
   - Nothing is deleted: there are no delete policies, and "removing" is a status or `deleted_at`.
-- **(repo rule) Redirects:** only through `safeNextPath()`, so there is no open redirect.
+- **(repo rule) Redirects** (`CLAUDE.md` § Auth flow): only through `safeNextPath()`, so there is no open redirect.
 
 ## Testing
 
@@ -80,17 +80,17 @@ Markers:
 - **Each test** owns its setup and teardown.
 - **Assertions are specific:** `toEqual(expected)`, not `toBeTruthy()`.
 - **Edge cases are covered:** empty, null, boundary values and error paths.
-- **(repo rule) Proportional to risk:**
+- **(repo rule) Proportional to risk** (`CLAUDE.md` § Commands, `context/foundation/test-plan.md`):
   - every rule in `src/lib/domain/` has unit tests;
   - atomic writes have pgTAP tests;
   - each user-facing feature extends `scripts/smoke.mjs`;
   - phone-critical views keep their Playwright specs green.
-- **(repo rule) Migrations are additive and backward-compatible:**
+- **(repo rule) Migrations are additive and backward-compatible** (`context/foundation/lessons.md`, `CLAUDE.md` § Hard rules):
   - **What breaks:** drops, renames, type changes, or a new NOT NULL column without a default break the previous code version that runs on the new schema.
   - **Lint:** `npm run lint` flags them.
   - **Release order:** the owner runs `npx supabase db push` before pushing code that needs a migration.
 
-## UI (repo rule)
+## UI (repo rule, `CLAUDE.md` § UI contract)
 
 - **Design tokens:**
   - Colours, surfaces and focus come from the tokens in `src/styles/global.css` (`bg-card`, `text-muted-foreground`, `ring-ring`, …).

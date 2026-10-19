@@ -51,6 +51,10 @@ jobs:
     needs: validate
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    # Two quick pushes must not race to publish the same version (the loser would get a 409).
+    concurrency:
+      group: publish-ai-toolkit
+      cancel-in-progress: false
     permissions:
       contents: read
       packages: write

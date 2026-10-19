@@ -3,12 +3,26 @@
 // between sentinel markers in CLAUDE.md, and .claude/.ai-toolkit-manifest.json listing what it
 // owns. Runs as postinstall (consumer root = INIT_CWD) or by hand as `npx ai-toolkit`.
 // Idempotent; never touches skill directories or CLAUDE.md text it does not manage.
-import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+// npm hides a dependency's postinstall output, so every CLI run also records its outcome in
+// .claude/.ai-toolkit-status.json.
+import {
+  cpSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
+import { TextDecoder } from "node:util";
 
 export const PACKAGE_DIR = dirname(fileURLToPath(import.meta.url));
 export const MANIFEST_PATH = join(".claude", ".ai-toolkit-manifest.json");
+export const STATUS_PATH = join(".claude", ".ai-toolkit-status.json");
 const SKILL_NAME = /^[a-z0-9][a-z0-9-]*$/;
 
 /** A problem the user has to fix (bad markers, broken manifest); reported without a stack trace. */
@@ -60,6 +74,39 @@ export function withoutRulesBlock(text, markers) {
   return before + after;
 }
 
+/**
+ * The consumer's CLAUDE.md as text, or null when it does not exist. Refuses what a write would
+ * damage: a symlink whose target is missing or outside the project, and bytes that are not UTF-8.
+ */
+export function readClaudeMd(rootDir) {
+  const path = join(rootDir, "CLAUDE.md");
+  let stats;
+  try {
+    stats = lstatSync(path);
+  } catch (error) {
+    if (error.code === "ENOENT") return null;
+    throw error;
+  }
+  if (stats.isSymbolicLink()) {
+    let target;
+    try {
+      target = realpathSync(path);
+    } catch (error) {
+      throw new ToolkitError(`CLAUDE.md is a symlink to a missing file (${error.code}); fix or remove the link.`);
+    }
+    if (!isInside(target, realpathSync(rootDir))) {
+      throw new ToolkitError(`CLAUDE.md is a symlink to ${target}, outside the project; the toolkit will not edit it.`);
+    }
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(readFileSync(path));
+  } catch (error) {
+    if (error instanceof TypeError)
+      throw new ToolkitError("CLAUDE.md is not valid UTF-8; the toolkit will not edit it.");
+    throw error;
+  }
+}
+
 export function readManifest(root) {
   const path = join(root, MANIFEST_PATH);
   if (!existsSync(path)) return null;
@@ -71,12 +118,20 @@ export function readManifest(root) {
       `${MANIFEST_PATH} is not valid JSON (${error.message}); remove it and run \`npx ai-toolkit\`.`,
     );
   }
+  if (manifest === null || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw new ToolkitError(`${MANIFEST_PATH} is not a JSON object; remove it and run \`npx ai-toolkit\`.`);
+  }
   const skills = Array.isArray(manifest.skills) ? manifest.skills : [];
   // A hand-edited manifest must never point the installer or uninstaller outside .claude/skills/.
   const badName = skills.find((name) => typeof name !== "string" || !SKILL_NAME.test(name));
   if (badName !== undefined)
     throw new ToolkitError(`${MANIFEST_PATH} lists an invalid skill name: ${JSON.stringify(badName)}.`);
   return { ...manifest, skills };
+}
+
+function writeManifest(rootDir, manifest) {
+  mkdirSync(dirname(join(rootDir, MANIFEST_PATH)), { recursive: true });
+  writeFileSync(join(rootDir, MANIFEST_PATH), `${JSON.stringify(manifest, null, 2)}\n`);
 }
 
 function listFiles(dir) {
@@ -101,7 +156,7 @@ export function install({ root, packageDir = PACKAGE_DIR }) {
   const markers = markersFor(pkg.name);
   const previous = readManifest(rootDir);
   const claudeMdPath = join(rootDir, "CLAUDE.md");
-  const claudeMdBefore = existsSync(claudeMdPath) ? readFileSync(claudeMdPath, "utf8") : "";
+  const claudeMdBefore = readClaudeMd(rootDir) ?? "";
   // Computed before any write: bad markers stop the install with nothing changed.
   const claudeMdAfter = withRulesBlock(
     claudeMdBefore,
@@ -114,19 +169,23 @@ export function install({ root, packageDir = PACKAGE_DIR }) {
   const packaged = readdirSync(join(packageDir, "skills"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
     .map((entry) => entry.name);
-  const installed = [];
   const warnings = [];
+  const toInstall = packaged.filter((name) => {
+    if (!existsSync(join(skillsDir, name)) || owned.has(name)) return true;
+    warnings.push(`.claude/skills/${name}/ exists and was not installed by ${pkg.name}; left untouched`);
+    return false;
+  });
 
-  for (const name of packaged) {
+  // Ownership is recorded before any skill directory is touched: if a copy or the CLAUDE.md write
+  // fails halfway, the next run still treats these directories as the toolkit's and repairs them.
+  const base = { package: pkg.name, version: pkg.version, installedAt: new Date().toISOString() };
+  writeManifest(rootDir, { ...base, skills: [...new Set([...owned, ...toInstall])], files: [], complete: false });
+
+  for (const name of toInstall) {
     const target = join(skillsDir, name);
-    if (existsSync(target) && !owned.has(name)) {
-      warnings.push(`.claude/skills/${name}/ exists and was not installed by ${pkg.name}; left untouched`);
-      continue;
-    }
     rmSync(target, { recursive: true, force: true });
     mkdirSync(skillsDir, { recursive: true });
     cpSync(join(packageDir, "skills", name), target, { recursive: true });
-    installed.push(name);
   }
   // Skills this package used to ship but no longer does.
   for (const name of owned) {
@@ -135,20 +194,12 @@ export function install({ root, packageDir = PACKAGE_DIR }) {
 
   if (claudeMdAfter !== claudeMdBefore) writeFileSync(claudeMdPath, claudeMdAfter);
 
-  const files = installed.flatMap((name) => listFiles(join(skillsDir, name))).map((path) => relative(rootDir, path));
-  mkdirSync(dirname(join(rootDir, MANIFEST_PATH)), { recursive: true });
-  const manifest = {
-    package: pkg.name,
-    version: pkg.version,
-    installedAt: new Date().toISOString(),
-    skills: installed,
-    files: [...files, "CLAUDE.md (managed block)"],
-  };
-  writeFileSync(join(rootDir, MANIFEST_PATH), `${JSON.stringify(manifest, null, 2)}\n`);
+  const files = toInstall.flatMap((name) => listFiles(join(skillsDir, name))).map((path) => relative(rootDir, path));
+  writeManifest(rootDir, { ...base, skills: toInstall, files: [...files, "CLAUDE.md (managed block)"] });
 
   return {
     version: pkg.version,
-    skills: installed,
+    skills: toInstall,
     warnings,
     claudeMd:
       claudeMdAfter === claudeMdBefore ? "unchanged" : claudeMdBefore.includes(markers.begin) ? "updated" : "added",
@@ -161,6 +212,33 @@ export function consumerRoot(env = process.env, cwd = process.cwd()) {
 }
 
 /**
+ * Why the CLI must not install here, or null. The toolkit installs only as a project dependency:
+ * a global install, or the package's own directory (a development checkout, `npm install
+ * --prefix packages/ai-toolkit`), would otherwise write into whatever directory npm ran from.
+ */
+export function cliSkipReason(packageDir = PACKAGE_DIR, env = process.env) {
+  if (env.npm_config_global === "true") return "global install; run `npx ai-toolkit` inside a project instead";
+  if (!realpathSync(packageDir).split(sep).includes("node_modules")) {
+    return "not installed as a project dependency (development checkout or --prefix install), nothing to install";
+  }
+  return null;
+}
+
+/** Records the last CLI outcome, because npm does not show a dependency's postinstall output. */
+export function writeStatus(root, status) {
+  try {
+    mkdirSync(join(root, ".claude"), { recursive: true });
+    writeFileSync(join(root, STATUS_PATH), `${JSON.stringify({ ...status, at: new Date().toISOString() }, null, 2)}\n`);
+  } catch (error) {
+    console.warn(`[ai-toolkit] warning: could not write ${STATUS_PATH} (${error.message})`);
+  }
+}
+
+function describe(error) {
+  return error instanceof ToolkitError ? error.message : (error.stack ?? String(error));
+}
+
+/**
  * Runs an install/uninstall action as a CLI. During `npm install` (postinstall) a failure is a
  * warning and exit code 0, so the consumer's install never breaks; run by hand it is exit code 1.
  */
@@ -170,14 +248,13 @@ export function runCli(action, report) {
     for (const line of report(action())) console.log(`[ai-toolkit] ${line}`);
     return 0;
   } catch (error) {
-    const message = error instanceof ToolkitError ? error.message : (error.stack ?? String(error));
     if (isPostinstall) {
       console.warn(
-        `[ai-toolkit] warning: ${message}\n[ai-toolkit] npm install continues; fix the problem and run \`npx ai-toolkit\`.`,
+        `[ai-toolkit] warning: ${describe(error)}\n[ai-toolkit] npm install continues; fix the problem and run \`npx ai-toolkit\`.`,
       );
       return 0;
     }
-    console.error(`[ai-toolkit] error: ${message}`);
+    console.error(`[ai-toolkit] error: ${describe(error)}`);
     return 1;
   }
 }
@@ -195,7 +272,19 @@ export function isMain(moduleUrl) {
 
 if (isMain(import.meta.url)) {
   process.exitCode = runCli(
-    () => install({ root: consumerRoot() }),
+    () => {
+      const skip = cliSkipReason();
+      if (skip) return { skipped: skip };
+      const root = consumerRoot();
+      try {
+        const result = install({ root });
+        if (!result.skipped) writeStatus(root, { ok: true, ...result });
+        return result;
+      } catch (error) {
+        writeStatus(root, { ok: false, error: describe(error) });
+        throw error;
+      }
+    },
     (result) =>
       result.skipped
         ? [result.skipped]
