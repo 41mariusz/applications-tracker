@@ -66,4 +66,10 @@ The owner sees `ai-toolkit` in the **Packages** section of `41mariusz/applicatio
 
 ### Release 0.1.1 (review fixes)
 
-The review fixes changed the installer (`reviews/impl-review.md` F1–F3, F6), so `version` was bumped to `0.1.1`. Without the bump, the registry would keep serving the 0.1.0 installer. The run for that push is recorded below once it completes.
+The review fixes changed the installer (`reviews/impl-review.md` F1–F3, F6), so `version` was bumped to `0.1.1`. Without the bump, the registry would keep serving the 0.1.0 installer. The release push was `569ce9c`.
+
+- **Workflow run:** `Publish AI Toolkit` #39248241786 (https://github.com/41mariusz/applications-tracker/actions/runs/39248241786). `validate` and `publish` both succeeded, with the notice "published @41mariusz/ai-toolkit@0.1.1".
+- **Consumer upgrade** (2026-10-19): in `~/ai-toolkit-consumer`, `npm install --save-dev @41mariusz/ai-toolkit@0.1.1` reported "changed 1 package" and resolved `https://npm.pkg.github.com/download/@41mariusz/ai-toolkit/0.1.1`.
+  - The manifest now records `0.1.1`.
+  - The new `.claude/.ai-toolkit-status.json` has `ok: true` and `version: 0.1.1`.
+  - `CLAUDE.md` still has exactly one managed block.
