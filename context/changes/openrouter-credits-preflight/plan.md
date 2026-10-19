@@ -239,9 +239,9 @@ Not applicable.
 
 #### Automated
 
-- [ ] 1.1 `npm test` in `tools/code-reviewer` passes, including `src/credits.test.ts`
-- [ ] 1.2 `npm run typecheck` in `tools/code-reviewer` passes
-- [ ] 1.3 Making `assessCredits` return `ok` for an exhausted balance makes `npm test` fail; restoring makes it pass
+- [x] 1.1 `npm test` in `tools/code-reviewer` passes, including `src/credits.test.ts`
+- [x] 1.2 `npm run typecheck` in `tools/code-reviewer` passes
+- [x] 1.3 Making `assessCredits` return `ok` for an exhausted balance makes `npm test` fail; restoring makes it pass
 
 ### Phase 2: Wiring into the CLIs and the Evals, Docs
 
