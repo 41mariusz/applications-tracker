@@ -19,6 +19,7 @@ npm run view      # local web UI with prompts, outputs and grader reasons
 ```
 
 - **Key:** `OPENROUTER_API_KEY` is read from `tools/code-reviewer/.env`, the same file the agent's CLI uses.
+- **Credits pre-flight:** `npm run eval` first runs `npm run preflight -- --require-credits` in `tools/code-reviewer` and stops before promptfoo when the OpenRouter account or key has no credits left (an unreachable credits API only warns).
 - **Cost:** a run costs a few cents, mostly for the grader (`anthropic/claude-sonnet-5.5`).
 - **Fresh results:** `--no-cache` is set, so every run calls the models again.
 - **Provider overrides:** `promptfooconfig.yaml` sets `showThinking: false` and `max_tokens: 16384` for all three models. Without them, promptfoo prepends "Thinking: …" to the answer (so the JSON assertions fail) and cuts reasoning models off at 1024 tokens. Either way it would measure the setup, not the model. The agent's AI SDK call does neither.

@@ -11,6 +11,7 @@
   },
   "scripts": {
     "review": "tsx --env-file-if-exists=.env src/index.ts",
+    "preflight": "tsx --env-file-if-exists=.env src/preflight.ts",
     "eval:sync": "tsx src/eval-sync.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

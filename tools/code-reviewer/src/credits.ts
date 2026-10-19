@@ -8,6 +8,8 @@ import { z } from "zod";
 
 export const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 export const TOP_UP_URL = "https://openrouter.ai/settings/credits";
+/** Printed by both CLIs (review, preflight) when the key is missing; exit code 2. */
+export const MISSING_KEY_MESSAGE = "OPENROUTER_API_KEY is not set (put it in tools/code-reviewer/.env).";
 
 export type CreditsVerdict =
   | { kind: "ok"; remaining: number; keyLimitRemaining: number | null }

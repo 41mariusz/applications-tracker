@@ -239,18 +239,18 @@ Not applicable.
 
 #### Automated
 
-- [x] 1.1 `npm test` in `tools/code-reviewer` passes, including `src/credits.test.ts`
-- [x] 1.2 `npm run typecheck` in `tools/code-reviewer` passes
-- [x] 1.3 Making `assessCredits` return `ok` for an exhausted balance makes `npm test` fail; restoring makes it pass
+- [x] 1.1 `npm test` in `tools/code-reviewer` passes, including `src/credits.test.ts` — 41b5037
+- [x] 1.2 `npm run typecheck` in `tools/code-reviewer` passes — 41b5037
+- [x] 1.3 Making `assessCredits` return `ok` for an exhausted balance makes `npm test` fail; restoring makes it pass — 41b5037
 
 ### Phase 2: Wiring into the CLIs and the Evals, Docs
 
 #### Automated
 
-- [ ] 2.1 `npm test`, `npm run typecheck` and `npm run build` in `tools/code-reviewer` pass
-- [ ] 2.2 The CI bundle check still holds: `echo "" | OPENROUTER_API_KEY=unused node dist/review.js` exits 2 without any network call (empty diff, usage error first)
-- [ ] 2.3 `OPENROUTER_API_KEY=sk-or-invalid npm run preflight -- --require-credits` in `tools/code-reviewer` prints an `OpenRouter pre-flight:` warning line and exits 0 (OpenRouter answers 401 → unknown → continue)
-- [ ] 2.4 `grep -c "run preflight -- --require-credits" tools/code-reviewer/evals/package.json` prints 1
+- [x] 2.1 `npm test`, `npm run typecheck` and `npm run build` in `tools/code-reviewer` pass
+- [x] 2.2 The CI bundle check still holds: `echo "" | OPENROUTER_API_KEY=unused node dist/review.js` exits 2 without any network call (empty diff, usage error first)
+- [x] 2.3 `OPENROUTER_API_KEY=sk-or-invalid npm run preflight -- --require-credits` in `tools/code-reviewer` prints an `OpenRouter pre-flight:` warning line and exits 0 (OpenRouter answers 401 → unknown → continue)
+- [x] 2.4 `grep -c "run preflight -- --require-credits" tools/code-reviewer/evals/package.json` prints 1
 
 #### Manual
 

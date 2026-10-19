@@ -7,7 +7,7 @@
     "node": ">=22.22.0"
   },
   "scripts": {
-    "eval": "PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 promptfoo eval -c promptfooconfig.yaml --env-file ../.env --no-cache -o results/latest.json",
+    "eval": "npm --prefix .. run preflight -- --require-credits && PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 promptfoo eval -c promptfooconfig.yaml --env-file ../.env --no-cache -o results/latest.json",
     "view": "PROMPTFOO_DISABLE_TELEMETRY=1 PROMPTFOO_DISABLE_UPDATE=1 promptfoo view"
   },
   "devDependencies": {
