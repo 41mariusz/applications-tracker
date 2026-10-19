@@ -220,6 +220,7 @@ Show the delete control on crossed-out applications only, prove it in a browser,
 #### Manual Verification:
 
 - Owner runs `npx supabase db push` (the new migration), then pushes; CI deploys
+  - _Implementation note (2026-10-19): the first CI run on `b3ef91b` (run 39268411596) failed only in "Previous code version passes its smoke on the new schema". The step's `.env` lacked `ISSUES_WEBHOOK_SECRET`, so the old smoke's two webhook steps got 401. That is a CI bug from F-01, hidden until the first migration since. `ci.yml` was fixed in the next commit. The next push compares against `b3ef91b`, so the step is skipped (no migration change). Compatibility was instead verified locally: the smoke of `cb855a8` ran against the local stack with this migration and printed "All smoke steps passed"._
 - In production the owner withdraws one `[TEST]` application, deletes it from its details page, and sees it gone from the list; an active one shows no delete control
 
 ---
@@ -280,9 +281,9 @@ The change is additive (a new permissive policy), so the previous code version w
 
 #### Automated
 
-- [x] 3.1 `npx playwright test tests/e2e/delete-closed.spec.ts` passes (local preview, local Supabase)
-- [x] 3.2 `npm run lint` passes (incl. `check-ui-literals`)
-- [x] 3.3 `npx astro check` and `npm test` pass
+- [x] 3.1 `npx playwright test tests/e2e/delete-closed.spec.ts` passes (local preview, local Supabase) — b3ef91b
+- [x] 3.2 `npm run lint` passes (incl. `check-ui-literals`) — b3ef91b
+- [x] 3.3 `npx astro check` and `npm test` pass — b3ef91b
 
 #### Manual
 

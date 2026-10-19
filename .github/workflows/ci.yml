@@ -147,8 +147,10 @@ jobs:
           prev="$RUNNER_TEMP/prev"
           git worktree add --detach "$prev" "$base" || fail "worktree for $base could not be created"
           cd "$prev"
-          # Same secrets as "Configure secrets for build and preview": the local stack only.
+          # Same secrets as "Configure secrets for build and preview": the local stack only, plus the
+          # fixed webhook secret the smoke's /api/alerts/issue steps send (without it they get 401).
           printf 'SUPABASE_URL=%s\nSUPABASE_KEY=%s\n' "$API_URL" "$ANON_KEY" > .env
+          printf 'ISSUES_WEBHOOK_SECRET=smoke-webhook-secret\n' >> .env
           cp .env .dev.vars
           npm ci || fail "npm ci failed for base $base"
           npm run build || fail "build failed for base $base"
