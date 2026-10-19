@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { APPLICATION_STATUSES, EMPLOYMENT_TYPES, WORK_MODES, type Application, type ApplicationStatus } from "@/types";
-import { checkTransition, sortApplications } from "@/lib/domain/status";
+import { canDelete, checkTransition, sortApplications } from "@/lib/domain/status";
 import { diffFields, TRACKED_FIELDS, type TrackedField } from "@/lib/domain/changes";
 import { toServiceError } from "@/lib/services/errors";
 
@@ -146,6 +146,32 @@ export async function changeApplicationStatus(
     return { ok: false, code: "conflict", message: "Status zmienił się w międzyczasie. Odśwież stronę." };
   }
   return { ok: true, status: to };
+}
+
+export type DeleteApplicationResult = { ok: true } | { ok: false; code: "not_found" | "not_closed"; message: string };
+
+const NOT_CLOSED_MESSAGE = "Usunąć można tylko aplikację odrzuconą lub wycofaną.";
+
+/**
+ * Deletes a crossed-out (Rejected/Withdrawn) application permanently; its notes, note versions,
+ * status and field history go with it (on delete cascade), its CV file stays in the library.
+ * The RLS delete policy enforces the same rule, so a status changed after the read still refuses.
+ */
+export async function deleteApplication(supabase: SupabaseClient, id: string): Promise<DeleteApplicationResult> {
+  const {
+    data: current,
+    error: readError,
+    status: readStatus,
+  } = await supabase.from("applications").select("status").eq("id", id).maybeSingle<{ status: ApplicationStatus }>();
+  if (readError) throw toServiceError("application.delete.read", { error: readError, status: readStatus });
+  if (!current) return { ok: false, code: "not_found", message: "Nie znaleziono aplikacji." };
+  if (!canDelete(current.status)) return { ok: false, code: "not_closed", message: NOT_CLOSED_MESSAGE };
+
+  const { data: deleted, error, status } = await supabase.from("applications").delete().eq("id", id).select("id");
+  if (error) throw toServiceError("application.delete", { error, status });
+  // 0 rows: the status changed after the read and RLS refused the delete.
+  if (deleted.length === 0) return { ok: false, code: "not_closed", message: NOT_CLOSED_MESSAGE };
+  return { ok: true };
 }
 
 export async function listApplications(supabase: SupabaseClient): Promise<Application[]> {

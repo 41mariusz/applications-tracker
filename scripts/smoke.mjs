@@ -11,6 +11,8 @@ const email = `smoke-${Date.now()}@example.com`;
 const password = "Smoke-Test-Passw0rd!";
 const company = `Smoke Corp ${Date.now()}`;
 let applicationId = "";
+// A second application of the first user, deleted permanently once it is crossed out.
+let doomedId = "";
 let noteId = "";
 let activeNoteId = "";
 const agreement = `Agreed rate ${Date.now()}`;
@@ -179,6 +181,7 @@ const cvContent = `%PDF-1.4 smoke CV ${Date.now()}`;
 const oversizedCv = new Uint8Array(5 * 1024 * 1024 + 100 * 1024).fill(0x20);
 let cvId = "";
 
+const doomedCompany = `Smoke Do usunięcia ${Date.now()}`;
 const hrContact = { hr_contact_name: "Anna Łukasik", hr_contact_phone: "+48 600 100 200" };
 const editedFields = {
   company,
@@ -578,12 +581,56 @@ const steps = [
     },
     { status: 201 },
   ],
+  [
+    "an application to delete is saved",
+    async () => {
+      const result = await request("/api/applications", {
+        method: "POST",
+        form: { company: doomedCompany, position: "Developer" },
+      });
+      if (result.status === 201) doomedId = JSON.parse(result.body).id;
+      return result;
+    },
+    { status: 201 },
+  ],
+  [
+    "an active application cannot be deleted",
+    () => request(`/api/applications/${doomedId}`, { method: "DELETE" }),
+    { status: 409, bodyIncludes: "tylko aplikację odrzuconą lub wycofaną" },
+  ],
+  ["the refused application still opens", () => request(`/applications/${doomedId}`), { status: 200 }],
+  [
+    "the application is withdrawn",
+    () => request(`/api/applications/${doomedId}/status`, { method: "POST", form: { status: "withdrawn" } }),
+    { status: 200 },
+  ],
+  [
+    "a withdrawn application is deleted permanently",
+    () => request(`/api/applications/${doomedId}`, { method: "DELETE" }),
+    { status: 204 },
+  ],
+  ["the deleted application's page is gone", () => request(`/applications/${doomedId}`), { status: 404 }],
+  [
+    "the list no longer shows the deleted application",
+    () => request("/dashboard"),
+    { status: 200, bodyExcludes: doomedCompany },
+  ],
+  [
+    "deleting it again finds nothing",
+    () => request(`/api/applications/${doomedId}`, { method: "DELETE" }),
+    { status: 404 },
+  ],
   ["signout clears session", () => request("/api/auth/signout", { method: "POST" }), { status: 302, location: "/" }],
   ["dashboard redirects after signout", () => request("/dashboard"), { status: 302, location: "/auth/signin" }],
   ["CV library requires sign-in", () => request("/cv"), { status: 302, location: "/auth/signin" }],
   [
     "anonymous user cannot save an application",
     () => request("/api/applications", { method: "POST", form: { company: "X", position: "Y" } }),
+    { status: 401 },
+  ],
+  [
+    "anonymous user cannot delete an application",
+    () => request(`/api/applications/${applicationId}`, { method: "DELETE" }),
     { status: 401 },
   ],
   ["admin creates a second account", () => createUser(otherEmail), { status: 200 }],
@@ -634,6 +681,11 @@ const steps = [
     { status: 404 },
   ],
   ["second user cannot change the first user's status", () => changeStatus({ status: "accepted" }), { status: 404 }],
+  [
+    "second user cannot delete the first user's application",
+    () => request(`/api/applications/${applicationId}`, { method: "DELETE" }),
+    { status: 404 },
+  ],
   [
     "list puts stages in order of importance, most recent activity first, closed ones last",
     checkListOrder,

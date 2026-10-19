@@ -17,6 +17,14 @@ export function isClosed(status: ApplicationStatus): boolean {
   return (CLOSED_STATUSES as readonly ApplicationStatus[]).includes(status);
 }
 
+/**
+ * PRD FR-004 (update 2026-10-19): only a crossed-out application (Rejected or Withdrawn) can be
+ * deleted permanently; every other one stays. The database enforces the same rule (RLS delete policy).
+ */
+export function canDelete(status: ApplicationStatus): boolean {
+  return isClosed(status);
+}
+
 export type TransitionKind = "forward" | "close" | "revert";
 
 export type Transition =

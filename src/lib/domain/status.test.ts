@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allowedTargets, checkTransition, sortApplications } from "@/lib/domain/status";
+import { allowedTargets, canDelete, checkTransition, sortApplications } from "@/lib/domain/status";
 import type { ApplicationStatus } from "@/types";
 
 // Exhaustive transition matrix, typed by hand from the PRD (context/foundation/prd.md:111-113)
@@ -214,5 +214,22 @@ describe("sortApplications", () => {
     const input = [app("a", "sent", "2026-10-01T10:00:00Z"), app("b", "offer", "2026-10-01T10:00:00Z")];
     sortApplications(input);
     expect(input.map((a) => a.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("canDelete (PRD FR-004, update 2026-10-19)", () => {
+  // Typed by hand from the owner decision: only crossed-out applications can be deleted.
+  const deletable: Record<ApplicationStatus, boolean> = {
+    sent: false,
+    hr_contact: false,
+    interviews: false,
+    offer: false,
+    accepted: false,
+    rejected: true,
+    withdrawn: true,
+  };
+
+  it.each(Object.entries(deletable) as [ApplicationStatus, boolean][])("%s → %s", (status, expected) => {
+    expect(canDelete(status)).toBe(expected);
   });
 });

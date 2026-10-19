@@ -262,19 +262,19 @@ The change is additive (a new permissive policy), so the previous code version w
 
 #### Automated
 
-- [x] 1.1 `npx supabase db reset` applies all migrations cleanly on the local stack
-- [x] 1.2 `npx supabase test db` passes, including `delete_closed_applications.test.sql`
-- [x] 1.3 Removing the status condition from the policy (locally) makes the "active application stays" test fail; restoring makes it pass
-- [x] 1.4 `npm run lint` passes (migration lint: no breaking statements)
+- [x] 1.1 `npx supabase db reset` applies all migrations cleanly on the local stack — 5d0de1b
+- [x] 1.2 `npx supabase test db` passes, including `delete_closed_applications.test.sql` — 5d0de1b
+- [x] 1.3 Removing the status condition from the policy (locally) makes the "active application stays" test fail; restoring makes it pass — 5d0de1b
+- [x] 1.4 `npm run lint` passes (migration lint: no breaking statements) — 5d0de1b
 
 ### Phase 2: Rule, Service and API
 
 #### Automated
 
-- [ ] 2.1 `npm test` passes, including the `canDelete` cases
-- [ ] 2.2 `npx astro check` passes
-- [ ] 2.3 `npm run lint` passes
-- [ ] 2.4 `npm run smoke` passes against a local preview (`BASE_URL=http://localhost:4321`, local `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`)
+- [x] 2.1 `npm test` passes, including the `canDelete` cases
+- [x] 2.2 `npx astro check` passes
+- [x] 2.3 `npm run lint` passes
+- [x] 2.4 `npm run smoke` passes against a local preview (`BASE_URL=http://localhost:4321`, local `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`)
 
 ### Phase 3: UI, E2E and Docs
 
