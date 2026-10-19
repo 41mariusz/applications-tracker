@@ -254,5 +254,5 @@ Not applicable.
 
 #### Manual
 
-- [ ] 2.5 With the real key in `tools/code-reviewer/.env`, the owner runs `npm run preflight -- --require-credits` and sees the current balance (about 10 USD minus usage) on one line
-- [ ] 2.6 The owner reviews the unattended run (the phase commits on the worktree branch, the gate verdicts in the run log) and merges the branch into `main`
+- [x] 2.5 With the real key in `tools/code-reviewer/.env`, the owner runs `npm run preflight -- --require-credits` and sees the current balance (about 10 USD minus usage) on one line
+- [x] 2.6 The owner reviews the unattended run (the phase commits on the worktree branch, the gate verdicts in the run log) and merges the branch into `main`
