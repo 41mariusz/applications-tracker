@@ -247,10 +247,10 @@ Not applicable.
 
 #### Automated
 
-- [x] 2.1 `npm test`, `npm run typecheck` and `npm run build` in `tools/code-reviewer` pass
-- [x] 2.2 The CI bundle check still holds: `echo "" | OPENROUTER_API_KEY=unused node dist/review.js` exits 2 without any network call (empty diff, usage error first)
-- [x] 2.3 `OPENROUTER_API_KEY=sk-or-invalid npm run preflight -- --require-credits` in `tools/code-reviewer` prints an `OpenRouter pre-flight:` warning line and exits 0 (OpenRouter answers 401 → unknown → continue)
-- [x] 2.4 `grep -c "run preflight -- --require-credits" tools/code-reviewer/evals/package.json` prints 1
+- [x] 2.1 `npm test`, `npm run typecheck` and `npm run build` in `tools/code-reviewer` pass — b6a3963
+- [x] 2.2 The CI bundle check still holds: `echo "" | OPENROUTER_API_KEY=unused node dist/review.js` exits 2 without any network call (empty diff, usage error first) — b6a3963
+- [x] 2.3 `OPENROUTER_API_KEY=sk-or-invalid npm run preflight -- --require-credits` in `tools/code-reviewer` prints an `OpenRouter pre-flight:` warning line and exits 0 (OpenRouter answers 401 → unknown → continue) — b6a3963
+- [x] 2.4 `grep -c "run preflight -- --require-credits" tools/code-reviewer/evals/package.json` prints 1 — b6a3963
 
 #### Manual
 

@@ -1,7 +1,7 @@
 ---
 change_id: openrouter-credits-preflight
 title: OpenRouter credits pre-flight before AI review and evals (M5L5 unattended run)
-status: implementing
+status: implemented
 created: 2026-10-19
 updated: 2026-10-19
 archived_at: null
