@@ -1,10 +1,10 @@
 ---
 change_id: delete-closed-applications
 title: Permanent delete of crossed-out (Rejected/Withdrawn) applications
-status: implemented
+status: archived
 created: 2026-10-19
 updated: 2026-10-19
-archived_at: null
+archived_at: 2026-10-19T14:48:13Z
 ---
 
 ## Notes
